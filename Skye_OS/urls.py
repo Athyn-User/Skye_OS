@@ -7,7 +7,7 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('Skye_OS.urls')),
+    path('', include('core.urls')),  # Fixed: Include core app URLs, not self
 ]
 
 if settings.DEBUG:

@@ -1,9 +1,9 @@
-# Skye_OS/urls.py
+# core/urls.py
 
 from django.urls import path
 from . import views
 
-app_name = 'Skye_OS'
+app_name = 'core'
 
 urlpatterns = [
     path('', views.dashboard_view, name='dashboard'),
