@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skye OS - Catalog</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; background-color: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .nav { margin-bottom: 30px; }
+        .nav a { margin-right: 20px; text-decoration: none; color: #007bff; }
+        .nav a:hover { text-decoration: underline; }
+        h1 { color: #333; }
+        .section { margin: 30px 0; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background-color: #f8f9fa; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <nav class="nav">
+            <a href="/">Dashboard</a>
+            <a href="/catalog/">Catalog</a>
+            <a href="/machine-learning/">Machine Learning</a>
+        </nav>
+        
+        <h1>Catalog</h1>
+        
+        <div class="section">
+            <h2>Ventures</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>City</th>
+                        <th>State</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for venture in ventures %}
+                    <tr>
+                        <td>{{ venture.venture_id }}</td>
+                        <td>{{ venture.venture_name }}</td>
+                        <td>{{ venture.venture_city }}</td>
+                        <td>{{ venture.venture_state }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4">No ventures found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="section">
+            <h2>Drives</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Venture</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for drive in drives %}
+                    <tr>
+                        <td>{{ drive.drive_id }}</td>
+                        <td>{{ drive.drive_name }}</td>
+                        <td>{{ drive.venture.venture_name }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="3">No drives found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skye OS - Machine Learning</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; background-color: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .nav { margin-bottom: 30px; }
+        .nav a { margin-right: 20px; text-decoration: none; color: #007bff; }
+        .nav a:hover { text-decoration: underline; }
+        h1 { color: #333; }
+        .section { margin: 30px 0; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background-color: #f8f9fa; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <nav class="nav">
+            <a href="/">Dashboard</a>
+            <a href="/catalog/">Catalog</a>
+            <a href="/machine-learning/">Machine Learning</a>
+        </nav>
+        
+        <h1>Machine Learning</h1>
+        
+        <div class="section">
+            <h2>Generation Jobs</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Job ID</th>
+                        <th>Generator Model ID</th>
+                        <th>Product ID</th>
+                        <th>Data Seed ID</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for job in generation_jobs %}
+                    <tr>
+                        <td>{{ job.generation_job_id }}</td>
+                        <td>{{ job.generator_model_id }}</td>
+                        <td>{{ job.product_id }}</td>
+                        <td>{{ job.data_seed_id }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4">No generation jobs found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="section">
+            <h2>Parameters</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Parameter ID</th>
+                        <th>Name</th>
+                        <th>Type ID</th>
+                        <th>Quote</th>
+                        <th>Binder</th>
+                        <th>Policy</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for param in parameters %}
+                    <tr>
+                        <td>{{ param.parameter_id }}</td>
+                        <td>{{ param.parameter_name }}</td>
+                        <td>{{ param.parameter_type_id }}</td>
+                        <td>{{ param.parameter_quote|yesno:"Yes,No" }}</td>
+                        <td>{{ param.parameter_binder|yesno:"Yes,No" }}</td>
+                        <td>{{ param.parameter_policy|yesno:"Yes,No" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6">No parameters found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>
