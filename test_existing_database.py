@@ -1,12 +1,3 @@
-# .env file
-DB_NAME=postgres
-DB_USER=postgres
-DB_PASSWORD=MyPSW555
-DB_HOST=localhost
-DB_PORT=5432
-SECRET_KEY=your-secret-key-here-generate-a-new-one
-DEBUG=True
-
 #!/usr/bin/env python
 """Test connection to existing PostgreSQL database"""
 
