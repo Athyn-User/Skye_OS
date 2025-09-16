@@ -1,0 +1,29 @@
+{% extends "core/base_list.html" %}
+
+{% block table_headers %}
+<th>ID</th>
+<th>Function Name</th>
+<th>Description</th>
+<th>Actions</th>
+{% endblock %}
+
+{% block table_row %}
+<td>{{ object.employee_function_id }}</td>
+<td>
+    <a href="{% url 'core:employee_function_detail' object.employee_function_id %}" class="item-link">
+        {{ object.employee_function|default:"Unnamed Function" }}
+    </a>
+</td>
+<td>
+    <span style="color: #64748b; font-style: italic;">
+        {% if object.employee_function %}
+            {{ object.employee_function|truncatechars:50 }}
+        {% else %}
+            No description available
+        {% endif %}
+    </span>
+</td>
+<td>
+    <a href="{% url 'core:employee_function_detail' object.employee_function_id %}" class="item-link">View</a>
+</td>
+{% endblock %}

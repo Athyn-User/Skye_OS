@@ -1,0 +1,51 @@
+{% extends "core/base_list.html" %}
+
+{% block table_headers %}
+<th>ID</th>
+<th>Name</th>
+<th>Email</th>
+<th>Location</th>
+<th>Combined Name</th>
+<th>Actions</th>
+{% endblock %}
+
+{% block table_row %}
+<td>{{ object.employee_id }}</td>
+<td>
+    <a href="{% url 'core:employee_contact_detail' object.employee_id %}" class="item-link">
+        {% if object.employee_name_first or object.employee_name_last %}
+            {{ object.employee_name_first|default:"" }} {{ object.employee_name_last|default:"" }}
+        {% else %}
+            Employee {{ object.employee_id }}
+        {% endif %}
+    </a>
+</td>
+<td>
+    {% if object.employee_email %}
+        <a href="mailto:{{ object.employee_email }}" style="color: #059669;">
+            {{ object.employee_email|truncatechars:30 }}
+        </a>
+    {% else %}
+        <span style="color: #9ca3af;">No email</span>
+    {% endif %}
+</td>
+<td>
+    {% if object.employee_location %}
+        <span style="color: #7c3aed;">
+            {{ object.employee_location.employee_location_name|default:"Location"|truncatechars:20 }}
+        </span>
+    {% else %}
+        <span style="color: #9ca3af;">No location</span>
+    {% endif %}
+</td>
+<td>
+    {% if object.employee_name_combined %}
+        <span style="color: #4f46e5;">{{ object.employee_name_combined|truncatechars:25 }}</span>
+    {% else %}
+        <span style="color: #9ca3af;">N/A</span>
+    {% endif %}
+</td>
+<td>
+    <a href="{% url 'core:employee_contact_detail' object.employee_id %}" class="item-link">View</a>
+</td>
+{% endblock %}
