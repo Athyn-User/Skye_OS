@@ -45,4 +45,20 @@ urlpatterns = [
     
     # API endpoints
     path('api/ventures/', views.venture_api, name='venture_api'),
+
+    # Employee Contact URLs
+    path('employees/', views.employee_contact_list, name='employee_contact_list'),
+    path('employees/<int:pk>/', views.employee_contact_detail, name='employee_contact_detail'),
+
+# Products URLs  
+    path('products/', views.products_list, name='products_list'),
+    path('products/<int:pk>/', views.products_detail, name='products_detail'),
+
+# Cover URLs
+    path('coverage/', views.cover_list, name='cover_list'),
+    path('coverage/<int:pk>/', views.cover_detail, name='cover_detail'),
+
+# Employee Function URLs
+    path('functions/', views.employee_function_list, name='employee_function_list'),
+    path('functions/<int:pk>/', views.employee_function_detail, name='employee_function_detail'),
 ]

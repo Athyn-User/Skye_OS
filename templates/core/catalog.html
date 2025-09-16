@@ -3,14 +3,26 @@
 {% block title %}Catalog - Skye OS{% endblock %}
 
 {% block sidebar %}
-<h3>Catalog</h3>
-<p>Enterprise data and resources</p>
+<h3>Enterprise Catalog</h3>
+<p>Complete directory of all resources</p>
 
 <h4>Infrastructure</h4>
 <ul>
     <li><a href="#ventures">🏢 Ventures <span class="badge">{{ ventures|length }}</span></a></li>
     <li><a href="#drives">💾 Storage Drives <span class="badge">{{ drives|length }}</span></a></li>
     <li><a href="#employee-locations">📍 Employee Locations <span class="badge">{{ employee_locations|length }}</span></a></li>
+</ul>
+
+<h4>Business Operations</h4>
+<ul>
+    <li><a href="#products">🛍️ Products <span class="badge">{{ products|length }}</span></a></li>
+    <li><a href="#coverage-types">🛡️ Coverage Types <span class="badge">{{ coverage_types|length }}</span></a></li>
+</ul>
+
+<h4>Human Resources</h4>
+<ul>
+    <li><a href="#employee-contacts">👥 Employee Contacts <span class="badge">{{ employee_contacts|length }}</span></a></li>
+    <li><a href="#employee-functions">⚙️ Employee Functions <span class="badge">{{ employee_functions|length }}</span></a></li>
 </ul>
 
 <h4>Management</h4>
@@ -22,40 +34,50 @@
 
 <h4>Quick Actions</h4>
 <ul>
-    <li><a href="#ventures">➕ Add New Venture</a></li>
-    <li><a href="#drives">💽 Manage Storage</a></li>
+    <li><a href="{% url 'core:products_list' %}">View All Products</a></li>
+    <li><a href="{% url 'core:employee_contact_list' %}">Employee Directory</a></li>
+    <li><a href="{% url 'core:cover_list' %}">Coverage Management</a></li>
 </ul>
 {% endblock %}
 
 {% block page_title %}Enterprise Catalog{% endblock %}
-{% block page_subtitle %}Manage your ventures, storage drives, and employee locations{% endblock %}
+{% block page_subtitle %}Complete directory of ventures, products, employees, and business resources{% endblock %}
 
 {% block content %}
 {{ block.super }}
 
-<!-- Stats Overview -->
+<!-- Enhanced Stats Overview -->
 <div class="stats">
     <div class="stat-card">
         <div class="stat-number">{{ ventures|length }}</div>
         <div>Active Ventures</div>
     </div>
     <div class="stat-card">
+        <div class="stat-number">{{ products|length }}</div>
+        <div>Products</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-number">{{ employee_contacts|length }}</div>
+        <div>Employees</div>
+    </div>
+    <div class="stat-card">
         <div class="stat-number">{{ drives|length }}</div>
         <div>Storage Drives</div>
     </div>
     <div class="stat-card">
-        <div class="stat-number">{{ employee_locations|length }}</div>
-        <div>Employee Locations</div>
+        <div class="stat-number">{{ coverage_types|length }}</div>
+        <div>Coverage Types</div>
     </div>
     <div class="stat-card">
-        <div class="stat-number">100%</div>
-        <div>System Health</div>
+        <div class="stat-number">{{ employee_functions|length }}</div>
+        <div>Job Functions</div>
     </div>
 </div>
 
-<!-- Search Bar -->
+<!-- Enhanced Search Bar -->
 <div class="card">
-    <input type="text" id="globalSearch" placeholder="Search across all catalog items..." style="width: 300px; padding: 8px; margin-right: 10px;">
+    <h3>🔍 Search Across All Catalog Items</h3>
+    <input type="text" id="globalSearch" placeholder="Search ventures, products, employees, coverage..." style="width: 400px; padding: 10px; margin-right: 10px; border: 1px solid #ddd; border-radius: 4px;">
     <button class="btn" onclick="performGlobalSearch()">Search</button>
     <button class="btn btn-secondary" onclick="clearSearch()">Clear</button>
 </div>
@@ -63,8 +85,11 @@
 <!-- Ventures Section -->
 <div id="ventures" class="card">
     <h2>🏢 Business Ventures</h2>
-    <button class="btn" onclick="alert('Export functionality coming soon')">Export</button>
-    <button class="btn" onclick="alert('Add venture functionality coming soon')">Add Venture</button>
+    <div style="margin-bottom: 15px;">
+        <a href="{% url 'core:catalog' %}" class="btn">Refresh</a>
+        <button class="btn" onclick="alert('Export functionality coming soon')">Export</button>
+        <a href="{% url 'core:venture_api' %}" class="btn btn-secondary">API</a>
+    </div>
     
     <table>
         <thead>
@@ -78,7 +103,7 @@
             </tr>
         </thead>
         <tbody>
-            {% for venture in ventures %}
+            {% for venture in ventures|slice:":10" %}
             <tr>
                 <td>{{ venture.venture_id }}</td>
                 <td>
@@ -109,13 +134,283 @@
             {% endfor %}
         </tbody>
     </table>
+    {% if ventures|length > 10 %}
+        <p style="text-align: center; margin-top: 15px; color: #666;">
+            Showing first 10 of {{ ventures|length }} ventures. 
+            <a href="#" onclick="showAllVentures()">View all ventures</a>
+        </p>
+    {% endif %}
 </div>
 
-<!-- Storage Drives Section -->
+<!-- Products Section -->
+<div id="products" class="card">
+    <h2>🛍️ Products Catalog</h2>
+    <div style="margin-bottom: 15px;">
+        <a href="{% url 'core:products_list' %}" class="btn">View All Products</a>
+        <button class="btn" onclick="alert('Add product functionality coming soon')">Add Product</button>
+    </div>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>Product ID</th>
+                <th>Product Name</th>
+                <th>Code</th>
+                <th>Venture</th>
+                <th>Coverage</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for product in products|slice:":10" %}
+            <tr>
+                <td>{{ product.products_id }}</td>
+                <td>
+                    <a href="{% url 'core:products_detail' product.products_id %}">
+                        <strong>{{ product.product_name|default:"Unnamed Product" }}</strong>
+                    </a>
+                </td>
+                <td>
+                    {% if product.product_code %}
+                        <code style="background: #f0f0f0; padding: 2px 4px; border-radius: 3px;">{{ product.product_code }}</code>
+                    {% else %}
+                        <span style="color: #999;">No code</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if product.venture %}
+                        {{ product.venture.venture_name|default:"Unnamed Venture"|truncatechars:20 }}
+                    {% else %}
+                        <span style="color: #999;">No venture</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if product.coverage %}
+                        {{ product.coverage.coverage_name|default:"Coverage"|truncatechars:15 }}
+                    {% else %}
+                        <span style="color: #999;">No coverage</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="{% url 'core:products_detail' product.products_id %}">View Details</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6">
+                    <p>No products found. Add products to your catalog.</p>
+                    <button class="btn">Add Product</button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% if products|length > 10 %}
+        <p style="text-align: center; margin-top: 15px; color: #666;">
+            Showing first 10 of {{ products|length }} products. 
+            <a href="{% url 'core:products_list' %}">View all products</a>
+        </p>
+    {% endif %}
+</div>
+
+<!-- Coverage Types Section -->
+<div id="coverage-types" class="card">
+    <h2>🛡️ Coverage Types</h2>
+    <div style="margin-bottom: 15px;">
+        <a href="{% url 'core:cover_list' %}" class="btn">View All Coverage</a>
+        <button class="btn" onclick="alert('Add coverage functionality coming soon')">Add Coverage</button>
+    </div>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>Cover ID</th>
+                <th>Coverage Name</th>
+                <th>Associated Product</th>
+                <th>Product Code</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for cover in coverage_types|slice:":10" %}
+            <tr>
+                <td>{{ cover.cover_id }}</td>
+                <td>
+                    <a href="{% url 'core:cover_detail' cover.cover_id %}">
+                        <strong>{{ cover.cover_name|default:"Unnamed Coverage" }}</strong>
+                    </a>
+                </td>
+                <td>
+                    {% if cover.product %}
+                        <a href="{% url 'core:products_detail' cover.product.products_id %}">
+                            {{ cover.product.product_name|default:"Unnamed Product"|truncatechars:25 }}
+                        </a>
+                    {% else %}
+                        <span style="color: #999;">No product</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if cover.product and cover.product.product_code %}
+                        <code style="background: #f0f0f0; padding: 2px 4px; border-radius: 3px;">{{ cover.product.product_code }}</code>
+                    {% else %}
+                        <span style="color: #999;">No code</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="{% url 'core:cover_detail' cover.cover_id %}">View Details</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5">
+                    <p>No coverage types found. Add coverage types to your catalog.</p>
+                    <button class="btn">Add Coverage</button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% if coverage_types|length > 10 %}
+        <p style="text-align: center; margin-top: 15px; color: #666;">
+            Showing first 10 of {{ coverage_types|length }} coverage types. 
+            <a href="{% url 'core:cover_list' %}">View all coverage types</a>
+        </p>
+    {% endif %}
+</div>
+
+<!-- Employee Contacts Section -->
+<div id="employee-contacts" class="card">
+    <h2>👥 Employee Directory</h2>
+    <div style="margin-bottom: 15px;">
+        <a href="{% url 'core:employee_contact_list' %}" class="btn">Full Directory</a>
+        <button class="btn" onclick="alert('Add employee functionality coming soon')">Add Employee</button>
+    </div>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>Employee ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Location</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for employee in employee_contacts|slice:":10" %}
+            <tr>
+                <td>{{ employee.employee_id }}</td>
+                <td>
+                    <a href="{% url 'core:employee_contact_detail' employee.employee_id %}">
+                        <strong>
+                            {% if employee.employee_name_first or employee.employee_name_last %}
+                                {{ employee.employee_name_first|default:"" }} {{ employee.employee_name_last|default:"" }}
+                            {% else %}
+                                Employee {{ employee.employee_id }}
+                            {% endif %}
+                        </strong>
+                    </a>
+                </td>
+                <td>
+                    {% if employee.employee_email %}
+                        <a href="mailto:{{ employee.employee_email }}">{{ employee.employee_email|truncatechars:30 }}</a>
+                    {% else %}
+                        <span style="color: #999;">No email</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if employee.employee_location %}
+                        {{ employee.employee_location.employee_location_name|default:"Location"|truncatechars:20 }}
+                    {% else %}
+                        <span style="color: #999;">No location</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="{% url 'core:employee_contact_detail' employee.employee_id %}">View Profile</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5">
+                    <p>No employee contacts found. Add employees to your directory.</p>
+                    <button class="btn">Add Employee</button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% if employee_contacts|length > 10 %}
+        <p style="text-align: center; margin-top: 15px; color: #666;">
+            Showing first 10 of {{ employee_contacts|length }} employees. 
+            <a href="{% url 'core:employee_contact_list' %}">View full directory</a>
+        </p>
+    {% endif %}
+</div>
+
+<!-- Employee Functions Section -->
+<div id="employee-functions" class="card">
+    <h2>⚙️ Employee Functions</h2>
+    <div style="margin-bottom: 15px;">
+        <a href="{% url 'core:employee_function_list' %}" class="btn">View All Functions</a>
+        <button class="btn" onclick="alert('Add function functionality coming soon')">Add Function</button>
+    </div>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>Function ID</th>
+                <th>Function Name</th>
+                <th>Description</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for function in employee_functions|slice:":10" %}
+            <tr>
+                <td>{{ function.employee_function_id }}</td>
+                <td>
+                    <a href="{% url 'core:employee_function_detail' function.employee_function_id %}">
+                        <strong>{{ function.employee_function|default:"Unnamed Function" }}</strong>
+                    </a>
+                </td>
+                <td>
+                    <span style="color: #666; font-style: italic;">
+                        {% if function.employee_function %}
+                            {{ function.employee_function|truncatechars:50 }}
+                        {% else %}
+                            No description available
+                        {% endif %}
+                    </span>
+                </td>
+                <td>
+                    <a href="{% url 'core:employee_function_detail' function.employee_function_id %}">View Details</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4">
+                    <p>No employee functions found. Add job functions to organize roles.</p>
+                    <button class="btn">Add Function</button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% if employee_functions|length > 10 %}
+        <p style="text-align: center; margin-top: 15px; color: #666;">
+            Showing first 10 of {{ employee_functions|length }} functions. 
+            <a href="{% url 'core:employee_function_list' %}">View all functions</a>
+        </p>
+    {% endif %}
+</div>
+
+<!-- Storage Drives Section (Existing) -->
 <div id="drives" class="card">
     <h2>💾 Storage Drives</h2>
-    <button class="btn" onclick="alert('Storage analysis coming soon')">Analyze</button>
-    <button class="btn" onclick="alert('Add drive functionality coming soon')">Add Drive</button>
+    <div style="margin-bottom: 15px;">
+        <button class="btn" onclick="alert('Storage analysis coming soon')">Analyze</button>
+        <button class="btn" onclick="alert('Add drive functionality coming soon')">Add Drive</button>
+    </div>
     
     <table>
         <thead>
@@ -129,7 +424,7 @@
             </tr>
         </thead>
         <tbody>
-            {% for drive in drives %}
+            {% for drive in drives|slice:":8" %}
             <tr>
                 <td>{{ drive.drive_id }}</td>
                 <td>
@@ -160,13 +455,20 @@
             {% endfor %}
         </tbody>
     </table>
+    {% if drives|length > 8 %}
+        <p style="text-align: center; margin-top: 15px; color: #666;">
+            Showing first 8 of {{ drives|length }} drives. 
+        </p>
+    {% endif %}
 </div>
 
-<!-- Employee Locations Section -->
+<!-- Employee Locations Section (Existing) -->
 <div id="employee-locations" class="card">
     <h2>📍 Employee Locations</h2>
-    <button class="btn" onclick="alert('Map view coming soon')">View Map</button>
-    <button class="btn" onclick="alert('Add location functionality coming soon')">Add Location</button>
+    <div style="margin-bottom: 15px;">
+        <button class="btn" onclick="alert('Map view coming soon')">View Map</button>
+        <button class="btn" onclick="alert('Add location functionality coming soon')">Add Location</button>
+    </div>
     
     <table>
         <thead>
@@ -180,7 +482,7 @@
             </tr>
         </thead>
         <tbody>
-            {% for location in employee_locations %}
+            {% for location in employee_locations|slice:":8" %}
             <tr>
                 <td>{{ location.employee_location_id }}</td>
                 <td>
@@ -215,10 +517,15 @@
             {% endfor %}
         </tbody>
     </table>
+    {% if employee_locations|length > 8 %}
+        <p style="text-align: center; margin-top: 15px; color: #666;">
+            Showing first 8 of {{ employee_locations|length }} locations.
+        </p>
+    {% endif %}
 </div>
 
 <script>
-// Simple search functionality
+// Enhanced search functionality
 function performGlobalSearch() {
     const query = document.getElementById('globalSearch').value.toLowerCase();
     if (!query) {
@@ -234,6 +541,14 @@ function performGlobalSearch() {
         if (text.includes(query)) {
             row.style.display = '';
             hasResults = true;
+            // Highlight the section
+            const section = row.closest('.card');
+            if (section) {
+                section.style.border = '2px solid #007bff';
+                setTimeout(() => {
+                    section.style.border = '1px solid #ddd';
+                }, 3000);
+            }
         } else {
             row.style.display = 'none';
         }
@@ -249,6 +564,17 @@ function clearSearch() {
     document.getElementById('globalSearch').value = '';
     const allRows = document.querySelectorAll('tbody tr');
     allRows.forEach(row => row.style.display = '');
+    
+    // Reset section borders
+    document.querySelectorAll('.card').forEach(card => {
+        card.style.border = '1px solid #ddd';
+    });
+}
+
+function showAllVentures() {
+    // Show all venture rows
+    const ventureRows = document.querySelectorAll('#ventures tbody tr');
+    ventureRows.forEach(row => row.style.display = '');
 }
 
 // Enter key search
@@ -265,8 +591,15 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         const target = document.querySelector(this.getAttribute('href'));
         if (target) {
             target.scrollIntoView({ behavior: 'smooth' });
+            // Add a brief highlight effect
+            target.style.background = '#f0f8ff';
+            setTimeout(() => {
+                target.style.background = '';
+            }, 2000);
         }
     });
 });
+
+console.log('Enhanced Catalog loaded with {{ products|length }} products, {{ employee_contacts|length }} employees, {{ coverage_types|length }} coverage types');
 </script>
 {% endblock %}

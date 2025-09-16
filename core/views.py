@@ -9,10 +9,14 @@ from rest_framework.decorators import api_view
 from .models import (
     Venture, Drive, EmployeeLocation, GenerationJob, Parameter,
     DataSeed, GenerationLog, ModelParameter, TrainingJob, Products,
-    GenerationModel, TrainingModel, InputOutput
+    GenerationModel, TrainingModel, InputOutput, EmployeeContact,
+    Cover, EmployeeFunction
 )
 
-# Original views
+# =============================================================================
+# EXISTING VIEWS (KEEP THESE)
+# =============================================================================
+
 def catalog_view(request):
     """Main catalog page view"""
     ventures = Venture.objects.all()
@@ -31,7 +35,7 @@ def dashboard_view(request):
     return render(request, 'core/dashboard.html')
 
 # =============================================================================
-# MACHINE LEARNING SECTION
+# MACHINE LEARNING SECTION (EXISTING - KEEP THESE)
 # =============================================================================
 
 def machine_learning_view(request):
@@ -231,7 +235,169 @@ def training_job_detail(request, pk):
     return render(request, 'core/machine_learning/training_job_detail.html', context)
 
 # =============================================================================
-# GENERIC CRUD OPERATIONS (for future extensibility)
+# NEW EMPLOYEE CONTACT SECTION
+# =============================================================================
+
+def employee_contact_list(request):
+    """List all employee contacts"""
+    search_query = request.GET.get('search', '')
+    
+    employees = EmployeeContact.objects.select_related('employee_location').all()
+    
+    if search_query:
+        employees = employees.filter(
+            employee_name_first__icontains=search_query
+        ) | employees.filter(
+            employee_name_last__icontains=search_query
+        ) | employees.filter(
+            employee_email__icontains=search_query
+        )
+    
+    paginator = Paginator(employees, 25)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'page_obj': page_obj,
+        'search_query': search_query,
+        'title': 'Employee Contacts',
+        'total_count': employees.count(),
+    }
+    return render(request, 'core/employee_contact_list.html', context)
+
+def employee_contact_detail(request, pk):
+    """View individual employee contact"""
+    employee = get_object_or_404(EmployeeContact, pk=pk)
+    
+    context = {
+        'object': employee,
+        'title': f'Employee: {employee.employee_name_first} {employee.employee_name_last}',
+        'list_url': 'core:employee_contact_list',
+    }
+    return render(request, 'core/employee_contact_detail.html', context)
+
+# =============================================================================
+# NEW PRODUCTS SECTION
+# =============================================================================
+
+def products_list(request):
+    """List all products"""
+    search_query = request.GET.get('search', '')
+    
+    products = Products.objects.select_related('venture', 'coverage').all()
+    
+    if search_query:
+        products = products.filter(
+            product_name__icontains=search_query
+        ) | products.filter(
+            product_code__icontains=search_query
+        )
+    
+    paginator = Paginator(products, 25)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'page_obj': page_obj,
+        'search_query': search_query,
+        'title': 'Products',
+        'total_count': products.count(),
+    }
+    return render(request, 'core/products_list.html', context)
+
+def products_detail(request, pk):
+    """View individual product"""
+    product = get_object_or_404(Products, pk=pk)
+    
+    # Get related covers for this product
+    covers = Cover.objects.filter(product=product)
+    
+    context = {
+        'object': product,
+        'covers': covers,
+        'title': f'Product: {product.product_name or f"Product {product.products_id}"}',
+        'list_url': 'core:products_list',
+    }
+    return render(request, 'core/products_detail.html', context)
+
+# =============================================================================
+# NEW COVER SECTION
+# =============================================================================
+
+def cover_list(request):
+    """List all covers"""
+    search_query = request.GET.get('search', '')
+    
+    covers = Cover.objects.select_related('product').all()
+    
+    if search_query:
+        covers = covers.filter(
+            cover_name__icontains=search_query
+        )
+    
+    paginator = Paginator(covers, 25)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'page_obj': page_obj,
+        'search_query': search_query,
+        'title': 'Coverage Types',
+        'total_count': covers.count(),
+    }
+    return render(request, 'core/cover_list.html', context)
+
+def cover_detail(request, pk):
+    """View individual cover"""
+    cover = get_object_or_404(Cover, pk=pk)
+    
+    context = {
+        'object': cover,
+        'title': f'Cover: {cover.cover_name or f"Cover {cover.cover_id}"}',
+        'list_url': 'core:cover_list',
+    }
+    return render(request, 'core/cover_detail.html', context)
+
+# =============================================================================
+# NEW EMPLOYEE FUNCTION SECTION
+# =============================================================================
+
+def employee_function_list(request):
+    """List all employee functions"""
+    search_query = request.GET.get('search', '')
+    
+    functions = EmployeeFunction.objects.all()
+    
+    if search_query:
+        functions = functions.filter(
+            employee_function__icontains=search_query
+        )
+    
+    paginator = Paginator(functions, 25)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'page_obj': page_obj,
+        'search_query': search_query,
+        'title': 'Employee Functions',
+        'total_count': functions.count(),
+    }
+    return render(request, 'core/employee_function_list.html', context)
+
+def employee_function_detail(request, pk):
+    """View individual employee function"""
+    function = get_object_or_404(EmployeeFunction, pk=pk)
+    
+    context = {
+        'object': function,
+        'title': f'Function: {function.employee_function or f"Function {function.employee_function_id}"}',
+        'list_url': 'core:employee_function_list',
+    }
+    return render(request, 'core/employee_function_detail.html', context)
+
+# =============================================================================
+# GENERIC CRUD OPERATIONS (EXISTING - FOR FUTURE EXTENSIBILITY)
 # =============================================================================
 
 def generic_add_view(request, model_class, form_class, template_name, success_url):
@@ -273,7 +439,10 @@ def generic_edit_view(request, model_class, form_class, template_name, success_u
     }
     return render(request, template_name, context)
 
-# API Views for AJAX operations
+# =============================================================================
+# API VIEWS (EXISTING - FOR AJAX OPERATIONS)
+# =============================================================================
+
 @api_view(['GET', 'POST'])
 def venture_api(request):
     if request.method == 'GET':
