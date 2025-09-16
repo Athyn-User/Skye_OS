@@ -1,0 +1,44 @@
+{% extends "core/base_list.html" %}
+
+{% block table_headers %}
+<th>Job ID</th>
+<th>Generator Model ID</th>
+<th>Product ID</th>
+<th>Data Seed ID</th>
+<th>Actions</th>
+{% endblock %}
+
+{% block table_row %}
+<td>
+    <a href="{% url 'core:generation_job_detail' object.generation_job_id %}" class="item-link">
+        {{ object.generation_job_id }}
+    </a>
+</td>
+<td>
+    {% if object.generator_model_id %}
+        <span style="color: #4f46e5; font-weight: 500;">{{ object.generator_model_id }}</span>
+    {% else %}
+        <span style="color: #9ca3af;">N/A</span>
+    {% endif %}
+</td>
+<td>
+    {% if object.product_id %}
+        <span style="color: #059669;">{{ object.product_id }}</span>
+    {% else %}
+        <span style="color: #9ca3af;">N/A</span>
+    {% endif %}
+</td>
+<td>
+    {% if object.data_seed_id %}
+        <code style="background: #f3f4f6; padding: 2px 6px; border-radius: 4px; font-size: 0.9rem;">
+            {{ object.data_seed_id|truncatechars:20 }}
+        </code>
+    {% else %}
+        <span style="color: #9ca3af;">N/A</span>
+    {% endif %}
+</td>
+<td>
+    <a href="{% url 'core:generation_job_detail' object.generation_job_id %}" class="item-link">View</a> |
+    <a href="{% url 'core:generation_job_edit' object.generation_job_id %}" class="item-link">Edit</a>
+</td>
+{% endblock %}

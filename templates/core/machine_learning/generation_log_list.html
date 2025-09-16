@@ -1,0 +1,44 @@
+{% extends "core/base_list.html" %}
+
+{% block table_headers %}
+<th>Output ID</th>
+<th>Output File</th>
+<th>Model Code</th>
+<th>Product</th>
+<th>Actions</th>
+{% endblock %}
+
+{% block table_row %}
+<td>
+    <a href="{% url 'core:generation_log_detail' object.output_id %}" class="item-link">
+        {{ object.output_id }}
+    </a>
+</td>
+<td>
+    {% if object.output_file_name %}
+        <code style="background: #f3f4f6; padding: 2px 6px; border-radius: 4px; font-size: 0.9rem;">
+            {{ object.output_file_name|truncatechars:30 }}
+        </code>
+    {% else %}
+        <span style="color: #9ca3af;">No filename</span>
+    {% endif %}
+</td>
+<td>
+    {% if object.model_code %}
+        <span style="color: #7c3aed; font-weight: 500;">{{ object.model_code|truncatechars:15 }}</span>
+    {% else %}
+        <span style="color: #9ca3af;">N/A</span>
+    {% endif %}
+</td>
+<td>
+    {% if object.product %}
+        <span style="color: #059669;">{{ object.product|truncatechars:20 }}</span>
+    {% else %}
+        <span style="color: #9ca3af;">N/A</span>
+    {% endif %}
+</td>
+<td>
+    <a href="{% url 'core:generation_log_detail' object.output_id %}" class="item-link">View</a> |
+    <a href="{% url 'core:generation_log_edit' object.output_id %}" class="item-link">Edit</a>
+</td>
+{% endblock %}
