@@ -13,7 +13,8 @@ from .models import (
     Cover, EmployeeFunction, Paper, PaperDetail, Applications, ApplicationQuestion,
     ParameterMap, Document, Task, Workflow, WorkflowDetail, Attachment, 
     AttachmentDetail, Limits, Retention, Sublimit, ApplicationResponse,
-    Options, Company, CompanyLocation, CompanyContact, CompanyAlias
+    Options, Company, CompanyLocation, CompanyContact, CompanyAlias,
+    OrderOption, OrderDataVert, DocumentDetail
 )
 
 # =============================================================================
@@ -1432,3 +1433,215 @@ def company_alias_detail(request, pk):
         'list_url': 'core:company_alias_list',
     }
     return render(request, 'core/company_alias_detail.html', context)
+
+# =============================================================================
+# ORDER MANAGEMENT SECTION - Add these imports to your existing models import
+# =============================================================================
+# Add these to your existing imports: OrderOption, OrderDataVert, DocumentDetail
+
+# Update your workstation_view function to include order data
+def workstation_view(request):
+    """Main workstation page with all sections - matches Catalog format"""
+    # Get application responses from PostgreSQL (limit to 20 for main page performance)
+    application_responses = ApplicationResponse.objects.select_related(
+        'application', 'application_question', 'order'
+    ).all()[:20]
+    
+    # Get company management data (limit to 20 each)
+    options = Options.objects.all()[:20]
+    companies = Company.objects.all()[:20]
+    company_locations = CompanyLocation.objects.select_related('company').all()[:20]
+    company_contacts = CompanyContact.objects.select_related('company').all()[:20]
+    company_aliases = CompanyAlias.objects.select_related('company').all()[:20]
+    
+    # Get order management data (limit to 20 each)
+    order_options = OrderOption.objects.select_related(
+        'orders', 'options', 'cover', 'retention', 'limits'
+    ).all()[:20]
+    order_data_verts = OrderDataVert.objects.select_related(
+        'order', 'parameter', 'parameter_map'
+    ).all()[:20]
+    document_details = DocumentDetail.objects.select_related(
+        'order_option', 'document'
+    ).all()[:20]
+    
+    # Calculate stats for dashboard
+    total_responses = ApplicationResponse.objects.count()
+    unique_applications = ApplicationResponse.objects.values('application').distinct().count()
+    unique_orders = ApplicationResponse.objects.exclude(order=None).values('order').distinct().count()
+    
+    # Company management stats
+    total_options = Options.objects.count()
+    total_companies = Company.objects.count()
+    total_locations = CompanyLocation.objects.count()
+    total_contacts = CompanyContact.objects.count()
+    total_aliases = CompanyAlias.objects.count()
+    
+    # Order management stats
+    total_order_options = OrderOption.objects.count()
+    total_order_data_verts = OrderDataVert.objects.count()
+    total_document_details = DocumentDetail.objects.count()
+    
+    # Debug information - you can remove this after testing
+    print(f"Debug: Found {total_responses} total application responses in database")
+    print(f"Debug: Found {total_companies} companies, {total_contacts} contacts, {total_locations} locations")
+    print(f"Debug: Found {total_order_options} order options, {total_order_data_verts} order data verts, {total_document_details} document details")
+    
+    context = {
+        # Application Response data
+        'application_responses': application_responses,
+        'unique_applications': unique_applications,
+        'unique_orders': unique_orders,
+        'total_responses': total_responses,
+        # Company Management data
+        'options': options,
+        'companies': companies,
+        'company_locations': company_locations,
+        'company_contacts': company_contacts,
+        'company_aliases': company_aliases,
+        # Company stats
+        'total_options': total_options,
+        'total_companies': total_companies,
+        'total_locations': total_locations,
+        'total_contacts': total_contacts,
+        'total_aliases': total_aliases,
+        # Order Management data
+        'order_options': order_options,
+        'order_data_verts': order_data_verts,
+        'document_details': document_details,
+        # Order stats
+        'total_order_options': total_order_options,
+        'total_order_data_verts': total_order_data_verts,
+        'total_document_details': total_document_details,
+    }
+    return render(request, 'core/workstation.html', context)
+
+# =============================================================================
+# ORDER OPTION SECTION
+# =============================================================================
+
+def order_option_list(request):
+    """List all order options with pagination and search"""
+    search_query = request.GET.get('search', '')
+    
+    order_options = OrderOption.objects.select_related(
+        'orders', 'options', 'cover', 'retention', 'limits'
+    ).all()
+    
+    if search_query:
+        order_options = order_options.filter(
+            options__option_name__icontains=search_query
+        ) | order_options.filter(
+            orders__orders_id__icontains=search_query
+        ) | order_options.filter(
+            cover__cover_name__icontains=search_query
+        )
+    
+    paginator = Paginator(order_options, 25)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'page_obj': page_obj,
+        'search_query': search_query,
+        'title': 'Order Options',
+        'total_count': order_options.count(),
+    }
+    return render(request, 'core/order_option_list.html', context)
+
+def order_option_detail(request, pk):
+    """View individual order option"""
+    order_option = get_object_or_404(OrderOption, pk=pk)
+    
+    context = {
+        'object': order_option,
+        'title': f'Order Option: {order_option.order_option_id}',
+        'list_url': 'core:order_option_list',
+    }
+    return render(request, 'core/order_option_detail.html', context)
+
+# =============================================================================
+# ORDER DATA VERT SECTION
+# =============================================================================
+
+def order_data_vert_list(request):
+    """List all order data verts with pagination and search"""
+    search_query = request.GET.get('search', '')
+    
+    order_data_verts = OrderDataVert.objects.select_related(
+        'order', 'parameter', 'parameter_map'
+    ).all()
+    
+    if search_query:
+        order_data_verts = order_data_verts.filter(
+            vert_value__icontains=search_query
+        ) | order_data_verts.filter(
+            parameter__parameter_name__icontains=search_query
+        ) | order_data_verts.filter(
+            order__orders_id__icontains=search_query
+        )
+    
+    paginator = Paginator(order_data_verts, 25)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'page_obj': page_obj,
+        'search_query': search_query,
+        'title': 'Order Data Verts',
+        'total_count': order_data_verts.count(),
+    }
+    return render(request, 'core/order_data_vert_list.html', context)
+
+def order_data_vert_detail(request, pk):
+    """View individual order data vert"""
+    order_data_vert = get_object_or_404(OrderDataVert, pk=pk)
+    
+    context = {
+        'object': order_data_vert,
+        'title': f'Order Data Vert: {order_data_vert.order_date_vert_id}',
+        'list_url': 'core:order_data_vert_list',
+    }
+    return render(request, 'core/order_data_vert_detail.html', context)
+
+# =============================================================================
+# DOCUMENT DETAIL SECTION
+# =============================================================================
+
+def document_detail_list(request):
+    """List all document details with pagination and search"""
+    search_query = request.GET.get('search', '')
+    
+    document_details = DocumentDetail.objects.select_related(
+        'order_option', 'document'
+    ).all()
+    
+    if search_query:
+        document_details = document_details.filter(
+            document__document_name__icontains=search_query
+        ) | document_details.filter(
+            order_option__order_option_id__icontains=search_query
+        )
+    
+    paginator = Paginator(document_details, 25)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'page_obj': page_obj,
+        'search_query': search_query,
+        'title': 'Document Details',
+        'total_count': document_details.count(),
+    }
+    return render(request, 'core/document_detail_list.html', context)
+
+def document_detail_detail(request, pk):
+    """View individual document detail"""
+    document_detail = get_object_or_404(DocumentDetail, pk=pk)
+    
+    context = {
+        'object': document_detail,
+        'title': f'Document Detail: {document_detail.document_detail_id}',
+        'list_url': 'core:document_detail_list',
+    }
+    return render(request, 'core/document_detail_detail.html', context)

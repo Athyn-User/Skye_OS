@@ -13,6 +13,13 @@
     <li><a href="#applications">📱 Applications <span class="badge">Coming Soon</span></a></li>
 </ul>
 
+<h4>Order Management</h4>
+<ul>
+    <li><a href="#order-options">📋 Order Options <span class="badge">{{ order_options|length }}</span></a></li>
+    <li><a href="#order-data-verts">📊 Order Data Verts <span class="badge">{{ order_data_verts|length }}</span></a></li>
+    <li><a href="#document-details">📄 Document Details <span class="badge">{{ document_details|length }}</span></a></li>
+</ul>
+
 <h4>Company Management</h4>
 <ul>
     <li><a href="#options">⚙️ Options <span class="badge">{{ options|length }}</span></a></li>
@@ -36,6 +43,9 @@
     <li><a href="{% url 'core:options_list' %}">View All Options</a></li>
     <li><a href="{% url 'core:company_list' %}">View All Companies</a></li>
     <li><a href="{% url 'core:company_contact_list' %}">View All Contacts</a></li>
+    <li><a href="{% url 'core:order_option_list' %}">View All Order Options</a></li>
+    <li><a href="{% url 'core:order_data_vert_list' %}">View All Order Data Verts</a></li>
+    <li><a href="{% url 'core:document_detail_list' %}">View All Document Details</a></li>
 </ul>
 {% endblock %}
 
@@ -70,6 +80,18 @@
     <div class="stat-card">
         <div class="stat-number">{{ total_aliases }}</div>
         <div>Company Aliases</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-number">{{ total_order_options }}</div>
+        <div>Order Options</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-number">{{ total_order_data_verts }}</div>
+        <div>Order Data Verts</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-number">{{ total_document_details }}</div>
+        <div>Document Details</div>
     </div>
 </div>
 
@@ -483,6 +505,248 @@
         Total: {{ total_aliases }} company aliases
         {% if company_aliases|length >= 20 %}
             (showing first 20 - <a href="{% url 'core:company_alias_list' %}">view all</a>)
+        {% endif %}
+    </p>
+</div>
+
+<!-- Order Options Section -->
+<div id="order-options" class="card">
+    <h2>📋 Order Options</h2>
+    <div style="margin-bottom: 15px;">
+        <a href="{% url 'core:order_option_list' %}" class="btn">View All Order Options</a>
+        <button class="btn" onclick="alert('Add order option functionality coming soon')">Add Order Option</button>
+        <button class="btn btn-secondary" onclick="alert('Export functionality coming soon')">Export</button>
+    </div>
+    
+    <div style="max-height: 500px; overflow-y: auto;">
+        <table>
+            <thead>
+                <tr>
+                    <th>Option ID</th>
+                    <th>Order</th>
+                    <th>Option</th>
+                    <th>Cover</th>
+                    <th>Premium</th>
+                    <th>Bound</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order_option in order_options %}
+                <tr>
+                    <td>{{ order_option.order_option_id }}</td>
+                    <td>
+                        {% if order_option.orders %}
+                            <a href="#" onclick="alert('Order details: {{ order_option.orders.orders_id }}')">
+                                <span style="color: #7c3aed;">Order {{ order_option.orders.orders_id }}</span>
+                            </a>
+                        {% else %}
+                            <span style="color: #999;">No Order</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if order_option.options %}
+                            <a href="{% url 'core:options_detail' order_option.options.options_id %}">
+                                {{ order_option.options.option_name|default:"Unnamed Option"|truncatechars:20 }}
+                            </a>
+                        {% else %}
+                            <span style="color: #999;">No Option</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if order_option.cover %}
+                            <a href="{% url 'core:cover_detail' order_option.cover.cover_id %}">
+                                {{ order_option.cover.cover_name|default:"Unnamed Cover"|truncatechars:15 }}
+                            </a>
+                        {% else %}
+                            <span style="color: #999;">No Cover</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if order_option.premium %}
+                            <span style="color: #059669; font-weight: 500;">${{ order_option.premium|floatformat:2 }}</span>
+                        {% else %}
+                            <span style="color: #999;">No Premium</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if order_option.bound %}
+                            <span style="color: #059669;">✓ Bound</span>
+                        {% else %}
+                            <span style="color: #999;">Not Bound</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'core:order_option_detail' order_option.order_option_id %}">View Details</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7">
+                        <p>No order options found in the database.</p>
+                        <button class="btn">Add Order Option</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <p style="text-align: center; margin-top: 15px; color: #666;">
+        Total: {{ total_order_options }} order options
+        {% if order_options|length >= 20 %}
+            (showing first 20 - <a href="{% url 'core:order_option_list' %}">view all</a>)
+        {% endif %}
+    </p>
+</div>
+
+<!-- Order Data Verts Section -->
+<div id="order-data-verts" class="card">
+    <h2>📊 Order Data Verts</h2>
+    <div style="margin-bottom: 15px;">
+        <a href="{% url 'core:order_data_vert_list' %}" class="btn">View All Order Data Verts</a>
+        <button class="btn" onclick="alert('Add order data vert functionality coming soon')">Add Order Data Vert</button>
+        <button class="btn btn-secondary" onclick="alert('Export functionality coming soon')">Export</button>
+    </div>
+    
+    <div style="max-height: 500px; overflow-y: auto;">
+        <table>
+            <thead>
+                <tr>
+                    <th>Vert ID</th>
+                    <th>Order</th>
+                    <th>Parameter</th>
+                    <th>Vert Value</th>
+                    <th>Parameter Map</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order_data_vert in order_data_verts %}
+                <tr>
+                    <td>{{ order_data_vert.order_date_vert_id }}</td>
+                    <td>
+                        {% if order_data_vert.order %}
+                            <a href="#" onclick="alert('Order details: {{ order_data_vert.order.orders_id }}')">
+                                <span style="color: #7c3aed;">Order {{ order_data_vert.order.orders_id }}</span>
+                            </a>
+                        {% else %}
+                            <span style="color: #999;">No Order</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if order_data_vert.parameter %}
+                            <a href="{% url 'core:parameter_detail' order_data_vert.parameter.parameter_id %}">
+                                {{ order_data_vert.parameter.parameter_name|default:"Unnamed Parameter"|truncatechars:20 }}
+                            </a>
+                        {% else %}
+                            <span style="color: #999;">No Parameter</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span style="color: #374151;" title="{{ order_data_vert.vert_value }}">
+                            {{ order_data_vert.vert_value|default:"No Value"|truncatechars:30 }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if order_data_vert.parameter_map %}
+                            <a href="{% url 'core:parameter_map_detail' order_data_vert.parameter_map.parameter_map_id %}">
+                                Map {{ order_data_vert.parameter_map.parameter_map_id }}
+                            </a>
+                        {% else %}
+                            <span style="color: #999;">No Map</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'core:order_data_vert_detail' order_data_vert.order_date_vert_id %}">View Details</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6">
+                        <p>No order data verts found in the database.</p>
+                        <button class="btn">Add Order Data Vert</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <p style="text-align: center; margin-top: 15px; color: #666;">
+        Total: {{ total_order_data_verts }} order data verts
+        {% if order_data_verts|length >= 20 %}
+            (showing first 20 - <a href="{% url 'core:order_data_vert_list' %}">view all</a>)
+        {% endif %}
+    </p>
+</div>
+
+<!-- Document Details Section -->
+<div id="document-details" class="card">
+    <h2>📄 Document Details</h2>
+    <div style="margin-bottom: 15px;">
+        <a href="{% url 'core:document_detail_list' %}" class="btn">View All Document Details</a>
+        <button class="btn" onclick="alert('Add document detail functionality coming soon')">Add Document Detail</button>
+        <button class="btn btn-secondary" onclick="alert('Export functionality coming soon')">Export</button>
+    </div>
+    
+    <div style="max-height: 500px; overflow-y: auto;">
+        <table>
+            <thead>
+                <tr>
+                    <th>Detail ID</th>
+                    <th>Order Option</th>
+                    <th>Document</th>
+                    <th>Document Code</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for document_detail in document_details %}
+                <tr>
+                    <td>{{ document_detail.document_detail_id }}</td>
+                    <td>
+                        {% if document_detail.order_option %}
+                            <a href="{% url 'core:order_option_detail' document_detail.order_option.order_option_id %}">
+                                Option {{ document_detail.order_option.order_option_id }}
+                            </a>
+                        {% else %}
+                            <span style="color: #999;">No Order Option</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if document_detail.document %}
+                            <a href="{% url 'core:document_detail' document_detail.document.document_id %}">
+                                <strong>{{ document_detail.document.document_name|default:"Unnamed Document"|truncatechars:25 }}</strong>
+                            </a>
+                        {% else %}
+                            <span style="color: #999;">No Document</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if document_detail.document and document_detail.document.document_code %}
+                            <code style="background: #f0f0f0; padding: 2px 4px; border-radius: 3px;">{{ document_detail.document.document_code }}</code>
+                        {% else %}
+                            <span style="color: #999;">No Code</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'core:document_detail_detail' document_detail.document_detail_id %}">View Details</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5">
+                        <p>No document details found in the database.</p>
+                        <button class="btn">Add Document Detail</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <p style="text-align: center; margin-top: 15px; color: #666;">
+        Total: {{ total_document_details }} document details
+        {% if document_details|length >= 20 %}
+            (showing first 20 - <a href="{% url 'core:document_detail_list' %}">view all</a>)
         {% endif %}
     </p>
 </div>

@@ -145,4 +145,14 @@ path('workstation/company-contacts/<int:pk>/', views.company_contact_detail, nam
 path('workstation/company-aliases/', views.company_alias_list, name='company_alias_list'),
 path('workstation/company-aliases/<int:pk>/', views.company_alias_detail, name='company_alias_detail'),
 
+# Order Management URLs
+path('workstation/order-options/', views.order_option_list, name='order_option_list'),
+path('workstation/order-options/<int:pk>/', views.order_option_detail, name='order_option_detail'),
+
+path('workstation/order-data-verts/', views.order_data_vert_list, name='order_data_vert_list'),
+path('workstation/order-data-verts/<int:pk>/', views.order_data_vert_detail, name='order_data_vert_detail'),
+
+path('workstation/document-details/', views.document_detail_list, name='document_detail_list'),
+path('workstation/document-details/<int:pk>/', views.document_detail_detail, name='document_detail_detail'),
+
 ]
