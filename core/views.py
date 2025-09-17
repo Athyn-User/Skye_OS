@@ -12,7 +12,7 @@ from .models import (
     GenerationModel, TrainingModel, InputOutput, EmployeeContact,
     Cover, EmployeeFunction, Paper, PaperDetail, Applications, ApplicationQuestion,
     ParameterMap, Document, Task, Workflow, WorkflowDetail, Attachment, 
-    AttachmentDetail, Limits, Retention, Sublimit
+    AttachmentDetail, Limits, Retention, Sublimit, ApplicationResponse
 )
 
 # =============================================================================
@@ -1127,3 +1127,71 @@ def sublimit_detail(request, pk):
         'list_url': 'core:sublimit_list',
     }
     return render(request, 'core/sublimit_detail.html', context)
+
+# =============================================================================
+# WORKSTATION SECTION
+# =============================================================================
+
+def workstation_view(request):
+    """Main workstation page with ApplicationResponse section"""
+    # Get recent application responses (limit to 20 for performance)
+    application_responses = ApplicationResponse.objects.select_related(
+        'application', 'application_question', 'order'
+    ).all()[:20]
+    
+    # Calculate stats
+    total_responses = ApplicationResponse.objects.count()
+    unique_applications = ApplicationResponse.objects.values('application').distinct().count()
+    unique_orders = ApplicationResponse.objects.values('order').distinct().count()
+    
+    context = {
+        'application_responses': application_responses,
+        'unique_applications': unique_applications,
+        'unique_orders': unique_orders,
+        'total_responses': total_responses,
+    }
+    return render(request, 'core/workstation.html', context)
+
+# =============================================================================
+# APPLICATION RESPONSE SECTION
+# =============================================================================
+
+def application_response_list(request):
+    """List all application responses with pagination and search"""
+    search_query = request.GET.get('search', '')
+    
+    responses = ApplicationResponse.objects.select_related(
+        'application', 'application_question', 'order'
+    ).all()
+    
+    if search_query:
+        responses = responses.filter(
+            response__icontains=search_query
+        ) | responses.filter(
+            application__application_name__icontains=search_query
+        ) | responses.filter(
+            application_question__custom_question__icontains=search_query
+        )
+    
+    paginator = Paginator(responses, 25)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'page_obj': page_obj,
+        'search_query': search_query,
+        'title': 'Application Responses',
+        'total_count': responses.count(),
+    }
+    return render(request, 'core/application_response_list.html', context)
+
+def application_response_detail(request, pk):
+    """View individual application response"""
+    response = get_object_or_404(ApplicationResponse, pk=pk)
+    
+    context = {
+        'object': response,
+        'title': f'Application Response: {response.application_response_id}',
+        'list_url': 'core:application_response_list',
+    }
+    return render(request, 'core/application_response_detail.html', context)

@@ -113,6 +113,7 @@
             <a href="{% url 'core:dashboard' %}">Dashboard</a>
             <a href="{% url 'core:catalog' %}">Catalog</a>
             <a href="{% url 'core:machine_learning' %}">Machine Learning</a>
+            <a href="{% url 'core:workstation' %}">Workstation</a>
             <a href="{% url 'core:employee_contact_list' %}">Employees</a>
             <a href="{% url 'core:products_list' %}">Products</a>
             <a href="{% url 'core:cover_list' %}">Coverage</a>
@@ -207,10 +208,20 @@
                 <li>Check out <a href="{% url 'core:products_list' %}">Products</a> to understand your offerings</li>
                 <li>Explore <a href="{% url 'core:employee_contact_list' %}">Employee Directory</a> for organizational structure</li>
                 <li>Visit the <a href="{% url 'core:machine_learning' %}">Machine Learning</a> hub for AI capabilities</li>
+                <li>Use the <a href="{% url 'core:workstation' %}">Workstation</a> for data management tasks</li>  <!-- ADD THIS LINE -->
                 <li>Access the <a href="/admin/">Admin Panel</a> for advanced configuration</li>
             </ol>
         </div>
     </div>
+
+    <div class="card">
+    <h3>🔧 Workstation</h3>
+    <p>Manage application responses, orders, and workflow data in your operational workspace.</p>
+    <ul class="quick-links">
+        <li><a href="{% url 'core:workstation' %}">Open Workstation</a></li>
+        <li><a href="{% url 'core:application_response_list' %}">Application Responses</a></li>
+    </ul>
+</div>
 
     <script>
         // Add some basic interactivity

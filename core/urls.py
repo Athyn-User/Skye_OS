@@ -122,4 +122,11 @@ path('retentions/<int:pk>/', views.retention_detail, name='retention_detail'),
 path('sublimits/', views.sublimit_list, name='sublimit_list'),
 path('sublimits/<int:pk>/', views.sublimit_detail, name='sublimit_detail'),
 
+# Workstation main page
+path('workstation/', views.workstation_view, name='workstation'),
+
+# Application Response URLs
+path('workstation/application-responses/', views.application_response_list, name='application_response_list'),
+path('workstation/application-responses/<int:pk>/', views.application_response_detail, name='application_response_detail'),
+
 ]

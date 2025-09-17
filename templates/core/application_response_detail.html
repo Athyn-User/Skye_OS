@@ -1,0 +1,298 @@
+<!-- templates/core/application_response_detail.html -->
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}{{ title }} - Skye OS{% endblock %}
+
+{% block extra_css %}
+<style>
+    .detail-container {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    
+    .detail-header {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+    }
+    
+    .detail-title {
+        color: #1976d2;
+        font-size: 24px;
+        font-weight: 500;
+        margin-bottom: 10px;
+    }
+    
+    .back-link {
+        color: #666;
+        text-decoration: none;
+        font-size: 14px;
+    }
+    
+    .back-link:hover {
+        color: #1976d2;
+    }
+    
+    .detail-card {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        overflow: hidden;
+        margin-bottom: 20px;
+    }
+    
+    .card-header {
+        background: #f5f5f5;
+        padding: 16px 20px;
+        font-weight: 500;
+        color: #333;
+        border-bottom: 1px solid #e0e0e0;
+    }
+    
+    .card-content {
+        padding: 20px;
+    }
+    
+    .field-group {
+        margin-bottom: 20px;
+    }
+    
+    .field-label {
+        font-weight: 500;
+        color: #333;
+        margin-bottom: 8px;
+        display: block;
+    }
+    
+    .field-value {
+        color: #666;
+        line-height: 1.5;
+        background: #f9f9f9;
+        padding: 12px;
+        border-radius: 4px;
+        border-left: 4px solid #1976d2;
+    }
+    
+    .field-value.empty {
+        color: #999;
+        font-style: italic;
+        border-left-color: #ccc;
+    }
+    
+    .btn-link {
+        color: #1976d2;
+        text-decoration: none;
+        font-weight: 500;
+    }
+    
+    .btn-link:hover {
+        text-decoration: underline;
+        color: #1565c0;
+    }
+    
+    .actions-section {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        text-align: center;
+    }
+    
+    .btn {
+        display: inline-block;
+        padding: 10px 20px;
+        margin: 0 10px;
+        background: #1976d2;
+        color: white;
+        text-decoration: none;
+        border-radius: 4px;
+        font-weight: 500;
+        transition: background 0.2s ease;
+    }
+    
+    .btn:hover {
+        background: #1565c0;
+        color: white;
+        text-decoration: none;
+    }
+    
+    .btn-secondary {
+        background: #666;
+    }
+    
+    .btn-secondary:hover {
+        background: #555;
+    }
+    
+    .related-info {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+    
+    @media (max-width: 768px) {
+        .related-info {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="detail-container">
+    <!-- Header -->
+    <div class="detail-header">
+        <div class="detail-title">{{ title }}</div>
+        <a href="{% url 'core:application_response_list' %}" class="back-link">← Back to Application Responses</a>
+        <br>
+        <a href="{% url 'core:workstation' %}" class="back-link">← Back to Workstation</a>
+    </div>
+    
+    <!-- Main Details -->
+    <div class="detail-card">
+        <div class="card-header">Response Details</div>
+        <div class="card-content">
+            <div class="field-group">
+                <span class="field-label">Response ID:</span>
+                <div class="field-value">{{ object.application_response_id }}</div>
+            </div>
+            
+            <div class="field-group">
+                <span class="field-label">Response:</span>
+                <div class="field-value{% if not object.response %} empty{% endif %}">
+                    {% if object.response %}
+                        {{ object.response }}
+                    {% else %}
+                        No response provided
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Related Information -->
+    <div class="related-info">
+        <!-- Application Information -->
+        <div class="detail-card">
+            <div class="card-header">Application Information</div>
+            <div class="card-content">
+                {% if object.application %}
+                    <div class="field-group">
+                        <span class="field-label">Application Name:</span>
+                        <div class="field-value">
+                            <a href="{% url 'core:application_detail' object.application.application_id %}" class="btn-link">
+                                {{ object.application.application_name|default:"Unnamed Application" }}
+                            </a>
+                        </div>
+                    </div>
+                    <div class="field-group">
+                        <span class="field-label">Application ID:</span>
+                        <div class="field-value">{{ object.application.application_id }}</div>
+                    </div>
+                {% else %}
+                    <div class="field-value empty">No application associated</div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Question Information -->
+        <div class="detail-card">
+            <div class="card-header">Question Information</div>
+            <div class="card-content">
+                {% if object.application_question %}
+                    <div class="field-group">
+                        <span class="field-label">Question ID:</span>
+                        <div class="field-value">{{ object.application_question.application_question_id }}</div>
+                    </div>
+                    <div class="field-group">
+                        <span class="field-label">Custom Question:</span>
+                        <div class="field-value">
+                            {{ object.application_question.custom_question|default:"No question text" }}
+                        </div>
+                    </div>
+                    {% if object.application_question.parameter %}
+                    <div class="field-group">
+                        <span class="field-label">Parameter:</span>
+                        <div class="field-value">
+                            <a href="{% url 'core:parameter_detail' object.application_question.parameter.parameter_id %}" class="btn-link">
+                                {{ object.application_question.parameter.parameter_name|default:"Unnamed Parameter" }}
+                            </a>
+                        </div>
+                    </div>
+                    {% endif %}
+                {% else %}
+                    <div class="field-value empty">No question associated</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Order Information -->
+    {% if object.order %}
+    <div class="detail-card">
+        <div class="card-header">Order Information</div>
+        <div class="card-content">
+            <div class="field-group">
+                <span class="field-label">Order ID:</span>
+                <div class="field-value">
+                    <a href="#" class="btn-link">{{ object.order.orders_id }}</a>
+                </div>
+            </div>
+            
+            {% if object.order.company %}
+            <div class="field-group">
+                <span class="field-label">Company:</span>
+                <div class="field-value">{{ object.order.company.company_name|default:"Unnamed Company" }}</div>
+            </div>
+            {% endif %}
+            
+            {% if object.order.products %}
+            <div class="field-group">
+                <span class="field-label">Product:</span>
+                <div class="field-value">
+                    <a href="{% url 'core:products_detail' object.order.products.products_id %}" class="btn-link">
+                        {{ object.order.products.product_name|default:"Unnamed Product" }}
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if object.order.stage %}
+            <div class="field-group">
+                <span class="field-label">Stage:</span>
+                <div class="field-value">{{ object.order.stage.stage_name|default:"No Stage" }}</div>
+            </div>
+            {% endif %}
+            
+            {% if object.order.order_created %}
+            <div class="field-group">
+                <span class="field-label">Created:</span>
+                <div class="field-value">{{ object.order.order_created|date:"M d, Y H:i" }}</div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% else %}
+    <div class="detail-card">
+        <div class="card-header">Order Information</div>
+        <div class="card-content">
+            <div class="field-value empty">No order associated</div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Actions -->
+    <div class="actions-section">
+        <a href="{% url 'core:application_response_list' %}" class="btn btn-secondary">
+            View All Responses
+        </a>
+        <a href="{% url 'core:workstation' %}" class="btn">
+            Back to Workstation
+        </a>
+    </div>
+</div>
+{% endblock %}
