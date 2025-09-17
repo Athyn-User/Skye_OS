@@ -103,7 +103,7 @@
             </tr>
         </thead>
         <tbody>
-            {% for venture in ventures|slice:":10" %}
+            {% for venture in ventures %}
             <tr>
                 <td>{{ venture.venture_id }}</td>
                 <td>
@@ -134,15 +134,31 @@
             {% endfor %}
         </tbody>
     </table>
-    {% if ventures|length > 10 %}
-        <p style="text-align: center; margin-top: 15px; color: #666;">
-            Showing first 10 of {{ ventures|length }} ventures. 
-            <a href="#" onclick="showAllVentures()">View all ventures</a>
-        </p>
+</div>
+
+<!-- Products Section - SHOWING ALL PRODUCTS -->
+
+<!-- DEBUG Products Section - Add this ABOVE the existing Products section -->
+<div class="card" style="background: #ffeeee; border: 2px solid red;">
+    <h2>🔍 DEBUG: Products Information</h2>
+    <p><strong>Products variable exists:</strong> {% if products %}YES{% else %}NO{% endif %}</p>
+    <p><strong>Products count:</strong> {{ products|length }}</p>
+    <p><strong>Products type:</strong> {{ products|default:"None" }}</p>
+    
+    {% if products %}
+        <p><strong>First 3 products:</strong></p>
+        <ul>
+            {% for product in products|slice:":3" %}
+                <li>ID: {{ product.products_id }} - Name: {{ product.product_name|default:"No name" }}</li>
+            {% empty %}
+                <li>Products exist but loop is empty?</li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p style="color: red;"><strong>Products variable is empty or None!</strong></p>
     {% endif %}
 </div>
 
-<!-- Products Section -->
 <div id="products" class="card">
     <h2>🛍️ Products Catalog</h2>
     <div style="margin-bottom: 15px;">
@@ -150,70 +166,69 @@
         <button class="btn" onclick="alert('Add product functionality coming soon')">Add Product</button>
     </div>
     
-    <table>
-        <thead>
-            <tr>
-                <th>Product ID</th>
-                <th>Product Name</th>
-                <th>Code</th>
-                <th>Venture</th>
-                <th>Coverage</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for product in products|slice:":10" %}
-            <tr>
-                <td>{{ product.products_id }}</td>
-                <td>
-                    <a href="{% url 'core:products_detail' product.products_id %}">
-                        <strong>{{ product.product_name|default:"Unnamed Product" }}</strong>
-                    </a>
-                </td>
-                <td>
-                    {% if product.product_code %}
-                        <code style="background: #f0f0f0; padding: 2px 4px; border-radius: 3px;">{{ product.product_code }}</code>
-                    {% else %}
-                        <span style="color: #999;">No code</span>
-                    {% endif %}
-                </td>
-                <td>
-                    {% if product.venture %}
-                        {{ product.venture.venture_name|default:"Unnamed Venture"|truncatechars:20 }}
-                    {% else %}
-                        <span style="color: #999;">No venture</span>
-                    {% endif %}
-                </td>
-                <td>
-                    {% if product.coverage %}
-                        {{ product.coverage.coverage_name|default:"Coverage"|truncatechars:15 }}
-                    {% else %}
-                        <span style="color: #999;">No coverage</span>
-                    {% endif %}
-                </td>
-                <td>
-                    <a href="{% url 'core:products_detail' product.products_id %}">View Details</a>
-                </td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="6">
-                    <p>No products found. Add products to your catalog.</p>
-                    <button class="btn">Add Product</button>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    {% if products|length > 10 %}
-        <p style="text-align: center; margin-top: 15px; color: #666;">
-            Showing first 10 of {{ products|length }} products. 
-            <a href="{% url 'core:products_list' %}">View all products</a>
-        </p>
-    {% endif %}
+    <div style="max-height: 500px; overflow-y: auto;">
+        <table>
+            <thead>
+                <tr>
+                    <th>Product ID</th>
+                    <th>Product Name</th>
+                    <th>Code</th>
+                    <th>Venture</th>
+                    <th>Coverage</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for product in products %}
+                <tr>
+                    <td>{{ product.products_id }}</td>
+                    <td>
+                        <a href="{% url 'core:products_detail' product.products_id %}">
+                            <strong>{{ product.product_name|default:"Unnamed Product" }}</strong>
+                        </a>
+                    </td>
+                    <td>
+                        {% if product.product_code %}
+                            <code style="background: #f0f0f0; padding: 2px 4px; border-radius: 3px;">{{ product.product_code }}</code>
+                        {% else %}
+                            <span style="color: #999;">No code</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if product.venture %}
+                            {{ product.venture.venture_name|default:"Unnamed Venture"|truncatechars:20 }}
+                        {% else %}
+                            <span style="color: #999;">No venture</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if product.coverage %}
+                            {{ product.coverage.coverage_name|default:"Coverage"|truncatechars:15 }}
+                        {% else %}
+                            <span style="color: #999;">No coverage</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'core:products_detail' product.products_id %}">View Details</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6">
+                        <p>No products found. Add products to your catalog.</p>
+                        <button class="btn">Add Product</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <p style="text-align: center; margin-top: 15px; color: #666;">
+        Total: {{ products|length }} products
+    </p>
 </div>
 
-<!-- Coverage Types Section -->
+<!-- Coverage Types Section - SHOWING ALL COVERAGE -->
 <div id="coverage-types" class="card">
     <h2>🛡️ Coverage Types</h2>
     <div style="margin-bottom: 15px;">
@@ -221,64 +236,63 @@
         <button class="btn" onclick="alert('Add coverage functionality coming soon')">Add Coverage</button>
     </div>
     
-    <table>
-        <thead>
-            <tr>
-                <th>Cover ID</th>
-                <th>Coverage Name</th>
-                <th>Associated Product</th>
-                <th>Product Code</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for cover in coverage_types|slice:":10" %}
-            <tr>
-                <td>{{ cover.cover_id }}</td>
-                <td>
-                    <a href="{% url 'core:cover_detail' cover.cover_id %}">
-                        <strong>{{ cover.cover_name|default:"Unnamed Coverage" }}</strong>
-                    </a>
-                </td>
-                <td>
-                    {% if cover.product %}
-                        <a href="{% url 'core:products_detail' cover.product.products_id %}">
-                            {{ cover.product.product_name|default:"Unnamed Product"|truncatechars:25 }}
+    <div style="max-height: 500px; overflow-y: auto;">
+        <table>
+            <thead>
+                <tr>
+                    <th>Cover ID</th>
+                    <th>Coverage Name</th>
+                    <th>Associated Product</th>
+                    <th>Product Code</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for cover in coverage_types %}
+                <tr>
+                    <td>{{ cover.cover_id }}</td>
+                    <td>
+                        <a href="{% url 'core:cover_detail' cover.cover_id %}">
+                            <strong>{{ cover.cover_name|default:"Unnamed Coverage" }}</strong>
                         </a>
-                    {% else %}
-                        <span style="color: #999;">No product</span>
-                    {% endif %}
-                </td>
-                <td>
-                    {% if cover.product and cover.product.product_code %}
-                        <code style="background: #f0f0f0; padding: 2px 4px; border-radius: 3px;">{{ cover.product.product_code }}</code>
-                    {% else %}
-                        <span style="color: #999;">No code</span>
-                    {% endif %}
-                </td>
-                <td>
-                    <a href="{% url 'core:cover_detail' cover.cover_id %}">View Details</a>
-                </td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="5">
-                    <p>No coverage types found. Add coverage types to your catalog.</p>
-                    <button class="btn">Add Coverage</button>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    {% if coverage_types|length > 10 %}
-        <p style="text-align: center; margin-top: 15px; color: #666;">
-            Showing first 10 of {{ coverage_types|length }} coverage types. 
-            <a href="{% url 'core:cover_list' %}">View all coverage types</a>
-        </p>
-    {% endif %}
+                    </td>
+                    <td>
+                        {% if cover.product %}
+                            <a href="{% url 'core:products_detail' cover.product.products_id %}">
+                                {{ cover.product.product_name|default:"Unnamed Product"|truncatechars:25 }}
+                            </a>
+                        {% else %}
+                            <span style="color: #999;">No product</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if cover.product and cover.product.product_code %}
+                            <code style="background: #f0f0f0; padding: 2px 4px; border-radius: 3px;">{{ cover.product.product_code }}</code>
+                        {% else %}
+                            <span style="color: #999;">No code</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'core:cover_detail' cover.cover_id %}">View Details</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5">
+                        <p>No coverage types found. Add coverage types to your catalog.</p>
+                        <button class="btn">Add Coverage</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <p style="text-align: center; margin-top: 15px; color: #666;">
+        Total: {{ coverage_types|length }} coverage types
+    </p>
 </div>
 
-<!-- Employee Contacts Section -->
+<!-- Employee Contacts Section - SHOWING ALL EMPLOYEES -->
 <div id="employee-contacts" class="card">
     <h2>👥 Employee Directory</h2>
     <div style="margin-bottom: 15px;">
@@ -286,68 +300,67 @@
         <button class="btn" onclick="alert('Add employee functionality coming soon')">Add Employee</button>
     </div>
     
-    <table>
-        <thead>
-            <tr>
-                <th>Employee ID</th>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Location</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for employee in employee_contacts|slice:":10" %}
-            <tr>
-                <td>{{ employee.employee_id }}</td>
-                <td>
-                    <a href="{% url 'core:employee_contact_detail' employee.employee_id %}">
-                        <strong>
-                            {% if employee.employee_name_first or employee.employee_name_last %}
-                                {{ employee.employee_name_first|default:"" }} {{ employee.employee_name_last|default:"" }}
-                            {% else %}
-                                Employee {{ employee.employee_id }}
-                            {% endif %}
-                        </strong>
-                    </a>
-                </td>
-                <td>
-                    {% if employee.employee_email %}
-                        <a href="mailto:{{ employee.employee_email }}">{{ employee.employee_email|truncatechars:30 }}</a>
-                    {% else %}
-                        <span style="color: #999;">No email</span>
-                    {% endif %}
-                </td>
-                <td>
-                    {% if employee.employee_location %}
-                        {{ employee.employee_location.employee_location_name|default:"Location"|truncatechars:20 }}
-                    {% else %}
-                        <span style="color: #999;">No location</span>
-                    {% endif %}
-                </td>
-                <td>
-                    <a href="{% url 'core:employee_contact_detail' employee.employee_id %}">View Profile</a>
-                </td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="5">
-                    <p>No employee contacts found. Add employees to your directory.</p>
-                    <button class="btn">Add Employee</button>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    {% if employee_contacts|length > 10 %}
-        <p style="text-align: center; margin-top: 15px; color: #666;">
-            Showing first 10 of {{ employee_contacts|length }} employees. 
-            <a href="{% url 'core:employee_contact_list' %}">View full directory</a>
-        </p>
-    {% endif %}
+    <div style="max-height: 500px; overflow-y: auto;">
+        <table>
+            <thead>
+                <tr>
+                    <th>Employee ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Location</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for employee in employee_contacts %}
+                <tr>
+                    <td>{{ employee.employee_id }}</td>
+                    <td>
+                        <a href="{% url 'core:employee_contact_detail' employee.employee_id %}">
+                            <strong>
+                                {% if employee.employee_name_first or employee.employee_name_last %}
+                                    {{ employee.employee_name_first|default:"" }} {{ employee.employee_name_last|default:"" }}
+                                {% else %}
+                                    Employee {{ employee.employee_id }}
+                                {% endif %}
+                            </strong>
+                        </a>
+                    </td>
+                    <td>
+                        {% if employee.employee_email %}
+                            <a href="mailto:{{ employee.employee_email }}">{{ employee.employee_email|truncatechars:30 }}</a>
+                        {% else %}
+                            <span style="color: #999;">No email</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if employee.employee_location %}
+                            {{ employee.employee_location.employee_location_name|default:"Location"|truncatechars:20 }}
+                        {% else %}
+                            <span style="color: #999;">No location</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'core:employee_contact_detail' employee.employee_id %}">View Profile</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5">
+                        <p>No employee contacts found. Add employees to your directory.</p>
+                        <button class="btn">Add Employee</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <p style="text-align: center; margin-top: 15px; color: #666;">
+        Total: {{ employee_contacts|length }} employees
+    </p>
 </div>
 
-<!-- Employee Functions Section -->
+<!-- Employee Functions Section - SHOWING ALL FUNCTIONS -->
 <div id="employee-functions" class="card">
     <h2>⚙️ Employee Functions</h2>
     <div style="margin-bottom: 15px;">
@@ -355,56 +368,55 @@
         <button class="btn" onclick="alert('Add function functionality coming soon')">Add Function</button>
     </div>
     
-    <table>
-        <thead>
-            <tr>
-                <th>Function ID</th>
-                <th>Function Name</th>
-                <th>Description</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for function in employee_functions|slice:":10" %}
-            <tr>
-                <td>{{ function.employee_function_id }}</td>
-                <td>
-                    <a href="{% url 'core:employee_function_detail' function.employee_function_id %}">
-                        <strong>{{ function.employee_function|default:"Unnamed Function" }}</strong>
-                    </a>
-                </td>
-                <td>
-                    <span style="color: #666; font-style: italic;">
-                        {% if function.employee_function %}
-                            {{ function.employee_function|truncatechars:50 }}
-                        {% else %}
-                            No description available
-                        {% endif %}
-                    </span>
-                </td>
-                <td>
-                    <a href="{% url 'core:employee_function_detail' function.employee_function_id %}">View Details</a>
-                </td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="4">
-                    <p>No employee functions found. Add job functions to organize roles.</p>
-                    <button class="btn">Add Function</button>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    {% if employee_functions|length > 10 %}
-        <p style="text-align: center; margin-top: 15px; color: #666;">
-            Showing first 10 of {{ employee_functions|length }} functions. 
-            <a href="{% url 'core:employee_function_list' %}">View all functions</a>
-        </p>
-    {% endif %}
+    <div style="max-height: 500px; overflow-y: auto;">
+        <table>
+            <thead>
+                <tr>
+                    <th>Function ID</th>
+                    <th>Function Name</th>
+                    <th>Description</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for function in employee_functions %}
+                <tr>
+                    <td>{{ function.employee_function_id }}</td>
+                    <td>
+                        <a href="{% url 'core:employee_function_detail' function.employee_function_id %}">
+                            <strong>{{ function.employee_function|default:"Unnamed Function" }}</strong>
+                        </a>
+                    </td>
+                    <td>
+                        <span style="color: #666; font-style: italic;">
+                            {% if function.employee_function %}
+                                {{ function.employee_function|truncatechars:50 }}
+                            {% else %}
+                                No description available
+                            {% endif %}
+                        </span>
+                    </td>
+                    <td>
+                        <a href="{% url 'core:employee_function_detail' function.employee_function_id %}">View Details</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4">
+                        <p>No employee functions found. Add job functions to organize roles.</p>
+                        <button class="btn">Add Function</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <p style="text-align: center; margin-top: 15px; color: #666;">
+        Total: {{ employee_functions|length }} functions
+    </p>
 </div>
 
-<!-- Storage Drives Section (Existing) -->
+<!-- Storage Drives Section -->
 <div id="drives" class="card">
     <h2>💾 Storage Drives</h2>
     <div style="margin-bottom: 15px;">
@@ -412,57 +424,57 @@
         <button class="btn" onclick="alert('Add drive functionality coming soon')">Add Drive</button>
     </div>
     
-    <table>
-        <thead>
-            <tr>
-                <th>Drive ID</th>
-                <th>Drive Name</th>
-                <th>Associated Venture</th>
-                <th>Type</th>
-                <th>Status</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for drive in drives|slice:":8" %}
-            <tr>
-                <td>{{ drive.drive_id }}</td>
-                <td>
-                    <strong>{{ drive.drive_name|default:"Unnamed Drive" }}</strong>
-                </td>
-                <td>
-                    {% if drive.venture %}
-                        <a href="#ventures">{{ drive.venture.venture_name|default:"Unnamed Venture" }}</a>
-                    {% else %}
-                        No venture assigned
-                    {% endif %}
-                </td>
-                <td>Storage</td>
-                <td>
-                    <span style="color: green;">✅ Online</span>
-                </td>
-                <td>
-                    <a href="#" onclick="alert('Manage drive {{ drive.drive_id }}')">Manage</a>
-                </td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="6">
-                    <p>No storage drives found. Add drives to organize your data.</p>
-                    <button class="btn">Add Drive</button>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    {% if drives|length > 8 %}
-        <p style="text-align: center; margin-top: 15px; color: #666;">
-            Showing first 8 of {{ drives|length }} drives. 
-        </p>
-    {% endif %}
+    <div style="max-height: 500px; overflow-y: auto;">
+        <table>
+            <thead>
+                <tr>
+                    <th>Drive ID</th>
+                    <th>Drive Name</th>
+                    <th>Associated Venture</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for drive in drives %}
+                <tr>
+                    <td>{{ drive.drive_id }}</td>
+                    <td>
+                        <strong>{{ drive.drive_name|default:"Unnamed Drive" }}</strong>
+                    </td>
+                    <td>
+                        {% if drive.venture %}
+                            <a href="#ventures">{{ drive.venture.venture_name|default:"Unnamed Venture" }}</a>
+                        {% else %}
+                            No venture assigned
+                        {% endif %}
+                    </td>
+                    <td>Storage</td>
+                    <td>
+                        <span style="color: green;">✅ Online</span>
+                    </td>
+                    <td>
+                        <a href="#" onclick="alert('Manage drive {{ drive.drive_id }}')">Manage</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6">
+                        <p>No storage drives found. Add drives to organize your data.</p>
+                        <button class="btn">Add Drive</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <p style="text-align: center; margin-top: 15px; color: #666;">
+        Total: {{ drives|length }} drives
+    </p>
 </div>
 
-<!-- Employee Locations Section (Existing) -->
+<!-- Employee Locations Section -->
 <div id="employee-locations" class="card">
     <h2>📍 Employee Locations</h2>
     <div style="margin-bottom: 15px;">
@@ -470,58 +482,58 @@
         <button class="btn" onclick="alert('Add location functionality coming soon')">Add Location</button>
     </div>
     
-    <table>
-        <thead>
-            <tr>
-                <th>Location ID</th>
-                <th>Location Name</th>
-                <th>Venture</th>
-                <th>City & State</th>
-                <th>Address</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for location in employee_locations|slice:":8" %}
-            <tr>
-                <td>{{ location.employee_location_id }}</td>
-                <td>
-                    <strong>{{ location.employee_location_name|default:"Unnamed Location" }}</strong>
-                </td>
-                <td>
-                    {% if location.venture %}
-                        <a href="#ventures">{{ location.venture.venture_name|default:"Unnamed Venture" }}</a>
-                    {% else %}
-                        No venture assigned
-                    {% endif %}
-                </td>
-                <td>
-                    {% if location.employee_location_city and location.employee_location_state %}
-                        {{ location.employee_location_city }}, {{ location.employee_location_state }}
-                    {% else %}
-                        Not specified
-                    {% endif %}
-                </td>
-                <td>{{ location.employee_location_address_1|truncatechars:30|default:"No address" }}</td>
-                <td>
-                    <a href="#" onclick="alert('View location {{ location.employee_location_id }}')">View Details</a>
-                </td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="6">
-                    <p>No employee locations found. Add locations to track workforce distribution.</p>
-                    <button class="btn">Add Location</button>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    {% if employee_locations|length > 8 %}
-        <p style="text-align: center; margin-top: 15px; color: #666;">
-            Showing first 8 of {{ employee_locations|length }} locations.
-        </p>
-    {% endif %}
+    <div style="max-height: 500px; overflow-y: auto;">
+        <table>
+            <thead>
+                <tr>
+                    <th>Location ID</th>
+                    <th>Location Name</th>
+                    <th>Venture</th>
+                    <th>City & State</th>
+                    <th>Address</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for location in employee_locations %}
+                <tr>
+                    <td>{{ location.employee_location_id }}</td>
+                    <td>
+                        <strong>{{ location.employee_location_name|default:"Unnamed Location" }}</strong>
+                    </td>
+                    <td>
+                        {% if location.venture %}
+                            <a href="#ventures">{{ location.venture.venture_name|default:"Unnamed Venture" }}</a>
+                        {% else %}
+                            No venture assigned
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if location.employee_location_city and location.employee_location_state %}
+                            {{ location.employee_location_city }}, {{ location.employee_location_state }}
+                        {% else %}
+                            Not specified
+                        {% endif %}
+                    </td>
+                    <td>{{ location.employee_location_address_1|truncatechars:30|default:"No address" }}</td>
+                    <td>
+                        <a href="#" onclick="alert('View location {{ location.employee_location_id }}')">View Details</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6">
+                        <p>No employee locations found. Add locations to track workforce distribution.</p>
+                        <button class="btn">Add Location</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <p style="text-align: center; margin-top: 15px; color: #666;">
+        Total: {{ employee_locations|length }} locations
+    </p>
 </div>
 
 <script>
@@ -569,12 +581,6 @@ function clearSearch() {
     document.querySelectorAll('.card').forEach(card => {
         card.style.border = '1px solid #ddd';
     });
-}
-
-function showAllVentures() {
-    // Show all venture rows
-    const ventureRows = document.querySelectorAll('#ventures tbody tr');
-    ventureRows.forEach(row => row.style.display = '');
 }
 
 // Enter key search

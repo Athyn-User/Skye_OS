@@ -1,45 +1,46 @@
 # core/views.py
 
+# core/views.py
+# Replace your entire catalog_view function with this:
+
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse
 from django.contrib import messages
 from django.core.paginator import Paginator
 from rest_framework import viewsets
 from rest_framework.decorators import api_view
-from .models import (
-    Venture, Drive, EmployeeLocation, GenerationJob, Parameter,
-    DataSeed, GenerationLog, ModelParameter, TrainingJob, Products,
-    GenerationModel, TrainingModel, InputOutput, EmployeeContact,
-    Cover, EmployeeFunction
-)
+   from .models import (
+       Venture, Drive, EmployeeLocation, GenerationJob, Parameter,
+       DataSeed, GenerationLog, ModelParameter, TrainingJob, Products,
+       GenerationModel, TrainingModel, InputOutput, EmployeeContact,
+       Cover, EmployeeFunction
+   )
 
-# Original views
 def catalog_view(request):
     """Main catalog page view with all sections"""
-    # Original sections
     ventures = Venture.objects.all()
     drives = Drive.objects.select_related('venture').all()
     employee_locations = EmployeeLocation.objects.select_related('venture').all()
     
-    # New sections
     products = Products.objects.select_related('venture', 'coverage').all()
     coverage_types = Cover.objects.select_related('product').all()
     employee_contacts = EmployeeContact.objects.select_related('employee_location').all()
     employee_functions = EmployeeFunction.objects.all()
     
     context = {
-        # Original data
         'ventures': ventures,
         'drives': drives,
         'employee_locations': employee_locations,
-        
-        # New data
         'products': products,
         'coverage_types': coverage_types,
         'employee_contacts': employee_contacts,
         'employee_functions': employee_functions,
     }
     return render(request, 'core/catalog.html', context)
+
+def dashboard_view(request):
+    """Main dashboard view"""
+    return render(request, 'core/dashboard.html')
 
 # =============================================================================
 # MACHINE LEARNING SECTION
