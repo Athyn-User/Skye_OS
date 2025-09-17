@@ -13,11 +13,13 @@
     <li><a href="#applications">📱 Applications <span class="badge">Coming Soon</span></a></li>
 </ul>
 
-<h4>Workflow Operations</h4>
+<h4>Company Management</h4>
 <ul>
-    <li><a href="#companies">🏢 Companies <span class="badge">Coming Soon</span></a></li>
-    <li><a href="#company-contacts">👥 Company Contacts <span class="badge">Coming Soon</span></a></li>
-    <li><a href="#documents">📄 Documents <span class="badge">Coming Soon</span></a></li>
+    <li><a href="#options">⚙️ Options <span class="badge">{{ options|length }}</span></a></li>
+    <li><a href="#companies">🏢 Companies <span class="badge">{{ companies|length }}</span></a></li>
+    <li><a href="#company-locations">📍 Company Locations <span class="badge">{{ company_locations|length }}</span></a></li>
+    <li><a href="#company-contacts">👥 Company Contacts <span class="badge">{{ company_contacts|length }}</span></a></li>
+    <li><a href="#company-aliases">🏷️ Company Aliases <span class="badge">{{ company_aliases|length }}</span></a></li>
 </ul>
 
 <h4>Management Tools</h4>
@@ -31,8 +33,9 @@
 <h4>Quick Actions</h4>
 <ul>
     <li><a href="{% url 'core:application_response_list' %}">View All Responses</a></li>
-    <li><a href="{% url 'core:application_list' %}">View All Applications</a></li>
-    <li><a href="{% url 'core:application_question_list' %}">View All Questions</a></li>
+    <li><a href="{% url 'core:options_list' %}">View All Options</a></li>
+    <li><a href="{% url 'core:company_list' %}">View All Companies</a></li>
+    <li><a href="{% url 'core:company_contact_list' %}">View All Contacts</a></li>
 </ul>
 {% endblock %}
 
@@ -49,23 +52,31 @@
         <div>Application Responses</div>
     </div>
     <div class="stat-card">
-        <div class="stat-number">{{ unique_applications }}</div>
-        <div>Unique Applications</div>
+        <div class="stat-number">{{ total_companies }}</div>
+        <div>Companies</div>
     </div>
     <div class="stat-card">
-        <div class="stat-number">{{ unique_orders }}</div>
-        <div>Associated Orders</div>
+        <div class="stat-number">{{ total_contacts }}</div>
+        <div>Company Contacts</div>
     </div>
     <div class="stat-card">
-        <div class="stat-number">{{ total_responses }}</div>
-        <div>Total Records</div>
+        <div class="stat-number">{{ total_locations }}</div>
+        <div>Company Locations</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-number">{{ total_options }}</div>
+        <div>Options</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-number">{{ total_aliases }}</div>
+        <div>Company Aliases</div>
     </div>
 </div>
 
 <!-- Enhanced Search Bar -->
 <div class="card">
     <h3>🔍 Search Workstation Data</h3>
-    <input type="text" id="globalSearch" placeholder="Search application responses, applications, orders..." style="width: 400px; padding: 10px; margin-right: 10px; border: 1px solid #ddd; border-radius: 4px;">
+    <input type="text" id="globalSearch" placeholder="Search across all workstation data..." style="width: 400px; padding: 10px; margin-right: 10px; border: 1px solid #ddd; border-radius: 4px;">
     <button class="btn" onclick="performGlobalSearch()">Search</button>
     <button class="btn btn-secondary" onclick="clearSearch()">Clear</button>
 </div>
@@ -144,8 +155,334 @@
     </div>
     <p style="text-align: center; margin-top: 15px; color: #666;">
         Total: {{ application_responses|length }} application responses
-        {% if application_responses|length > 20 %}
+        {% if application_responses|length >= 20 %}
             (showing first 20 - <a href="{% url 'core:application_response_list' %}">view all</a>)
+        {% endif %}
+    </p>
+</div>
+
+<!-- Options Section -->
+<div id="options" class="card">
+    <h2>⚙️ Options</h2>
+    <div style="margin-bottom: 15px;">
+        <a href="{% url 'core:options_list' %}" class="btn">View All Options</a>
+        <button class="btn" onclick="alert('Add option functionality coming soon')">Add Option</button>
+        <button class="btn btn-secondary" onclick="alert('Export functionality coming soon')">Export</button>
+    </div>
+    
+    <div style="max-height: 500px; overflow-y: auto;">
+        <table>
+            <thead>
+                <tr>
+                    <th>Option ID</th>
+                    <th>Option Name</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for option in options %}
+                <tr>
+                    <td>{{ option.options_id }}</td>
+                    <td>
+                        <a href="{% url 'core:options_detail' option.options_id %}">
+                            <strong>{{ option.option_name|default:"Unnamed Option" }}</strong>
+                        </a>
+                    </td>
+                    <td>
+                        <a href="{% url 'core:options_detail' option.options_id %}">View Details</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="3">
+                        <p>No options found in the database.</p>
+                        <button class="btn">Add Option</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <p style="text-align: center; margin-top: 15px; color: #666;">
+        Total: {{ total_options }} options
+        {% if options|length >= 20 %}
+            (showing first 20 - <a href="{% url 'core:options_list' %}">view all</a>)
+        {% endif %}
+    </p>
+</div>
+
+<!-- Companies Section -->
+<div id="companies" class="card">
+    <h2>🏢 Companies</h2>
+    <div style="margin-bottom: 15px;">
+        <a href="{% url 'core:company_list' %}" class="btn">View All Companies</a>
+        <button class="btn" onclick="alert('Add company functionality coming soon')">Add Company</button>
+        <button class="btn btn-secondary" onclick="alert('Export functionality coming soon')">Export</button>
+    </div>
+    
+    <div style="max-height: 500px; overflow-y: auto;">
+        <table>
+            <thead>
+                <tr>
+                    <th>Company ID</th>
+                    <th>Company Name</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for company in companies %}
+                <tr>
+                    <td>{{ company.company_id }}</td>
+                    <td>
+                        <a href="{% url 'core:company_detail' company.company_id %}">
+                            <strong>{{ company.company_name|default:"Unnamed Company" }}</strong>
+                        </a>
+                    </td>
+                    <td>
+                        <a href="{% url 'core:company_detail' company.company_id %}">View Details</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="3">
+                        <p>No companies found in the database.</p>
+                        <button class="btn">Add Company</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <p style="text-align: center; margin-top: 15px; color: #666;">
+        Total: {{ total_companies }} companies
+        {% if companies|length >= 20 %}
+            (showing first 20 - <a href="{% url 'core:company_list' %}">view all</a>)
+        {% endif %}
+    </p>
+</div>
+
+<!-- Company Locations Section -->
+<div id="company-locations" class="card">
+    <h2>📍 Company Locations</h2>
+    <div style="margin-bottom: 15px;">
+        <a href="{% url 'core:company_location_list' %}" class="btn">View All Locations</a>
+        <button class="btn" onclick="alert('Add location functionality coming soon')">Add Location</button>
+        <button class="btn btn-secondary" onclick="alert('Export functionality coming soon')">Export</button>
+    </div>
+    
+    <div style="max-height: 500px; overflow-y: auto;">
+        <table>
+            <thead>
+                <tr>
+                    <th>Location ID</th>
+                    <th>Company</th>
+                    <th>City, State</th>
+                    <th>Address</th>
+                    <th>Mailing</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for location in company_locations %}
+                <tr>
+                    <td>{{ location.company_location_id }}</td>
+                    <td>
+                        {% if location.company %}
+                            <a href="{% url 'core:company_detail' location.company.company_id %}">
+                                {{ location.company.company_name|default:"Unnamed Company"|truncatechars:20 }}
+                            </a>
+                        {% else %}
+                            <span style="color: #999;">No Company</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if location.company_location_city and location.company_location_state %}
+                            {{ location.company_location_city }}, {{ location.company_location_state }}
+                        {% else %}
+                            <span style="color: #999;">Not specified</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ location.company_location_address_1|truncatechars:30|default:"No address" }}</td>
+                    <td>
+                        {% if location.company_mailing %}
+                            <span style="color: #059669;">✓ Mailing</span>
+                        {% else %}
+                            <span style="color: #999;">-</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'core:company_location_detail' location.company_location_id %}">View Details</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6">
+                        <p>No company locations found in the database.</p>
+                        <button class="btn">Add Location</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <p style="text-align: center; margin-top: 15px; color: #666;">
+        Total: {{ total_locations }} company locations
+        {% if company_locations|length >= 20 %}
+            (showing first 20 - <a href="{% url 'core:company_location_list' %}">view all</a>)
+        {% endif %}
+    </p>
+</div>
+
+<!-- Company Contacts Section -->
+<div id="company-contacts" class="card">
+    <h2>👥 Company Contacts</h2>
+    <div style="margin-bottom: 15px;">
+        <a href="{% url 'core:company_contact_list' %}" class="btn">View All Contacts</a>
+        <button class="btn" onclick="alert('Add contact functionality coming soon')">Add Contact</button>
+        <button class="btn btn-secondary" onclick="alert('Export functionality coming soon')">Export</button>
+    </div>
+    
+    <div style="max-height: 500px; overflow-y: auto;">
+        <table>
+            <thead>
+                <tr>
+                    <th>Contact ID</th>
+                    <th>Company</th>
+                    <th>Name</th>
+                    <th>Title</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for contact in company_contacts %}
+                <tr>
+                    <td>{{ contact.company_contact_id }}</td>
+                    <td>
+                        {% if contact.company %}
+                            <a href="{% url 'core:company_detail' contact.company.company_id %}">
+                                {{ contact.company.company_name|default:"Unnamed Company"|truncatechars:15 }}
+                            </a>
+                        {% else %}
+                            <span style="color: #999;">No Company</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'core:company_contact_detail' contact.company_contact_id %}">
+                            <strong>
+                                {% if contact.company_contact_first or contact.company_contact_last %}
+                                    {{ contact.company_contact_first|default:"" }} {{ contact.company_contact_last|default:"" }}
+                                {% else %}
+                                    Contact {{ contact.company_contact_id }}
+                                {% endif %}
+                            </strong>
+                        </a>
+                    </td>
+                    <td>{{ contact.company_contact_title|default:"No title"|truncatechars:20 }}</td>
+                    <td>
+                        {% if contact.company_contact_email %}
+                            <a href="mailto:{{ contact.company_contact_email }}">{{ contact.company_contact_email|truncatechars:25 }}</a>
+                        {% else %}
+                            <span style="color: #999;">No email</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ contact.company_contact_phone|default:"No phone" }}</td>
+                    <td>
+                        <a href="{% url 'core:company_contact_detail' contact.company_contact_id %}">View Details</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7">
+                        <p>No company contacts found in the database.</p>
+                        <button class="btn">Add Contact</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <p style="text-align: center; margin-top: 15px; color: #666;">
+        Total: {{ total_contacts }} company contacts
+        {% if company_contacts|length >= 20 %}
+            (showing first 20 - <a href="{% url 'core:company_contact_list' %}">view all</a>)
+        {% endif %}
+    </p>
+</div>
+
+<!-- Company Aliases Section -->
+<div id="company-aliases" class="card">
+    <h2>🏷️ Company Aliases</h2>
+    <div style="margin-bottom: 15px;">
+        <a href="{% url 'core:company_alias_list' %}" class="btn">View All Aliases</a>
+        <button class="btn" onclick="alert('Add alias functionality coming soon')">Add Alias</button>
+        <button class="btn btn-secondary" onclick="alert('Export functionality coming soon')">Export</button>
+    </div>
+    
+    <div style="max-height: 500px; overflow-y: auto;">
+        <table>
+            <thead>
+                <tr>
+                    <th>Alias ID</th>
+                    <th>Company</th>
+                    <th>Alias Name</th>
+                    <th>Effective Date</th>
+                    <th>Expiration Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for alias in company_aliases %}
+                <tr>
+                    <td>{{ alias.company_alias_id }}</td>
+                    <td>
+                        {% if alias.company %}
+                            <a href="{% url 'core:company_detail' alias.company.company_id %}">
+                                {{ alias.company.company_name|default:"Unnamed Company"|truncatechars:20 }}
+                            </a>
+                        {% else %}
+                            <span style="color: #999;">No Company</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'core:company_alias_detail' alias.company_alias_id %}">
+                            <strong>{{ alias.company_alias_name|default:"Unnamed Alias" }}</strong>
+                        </a>
+                    </td>
+                    <td>
+                        {% if alias.company_alias_eff_dte %}
+                            {{ alias.company_alias_eff_dte|date:"M d, Y" }}
+                        {% else %}
+                            <span style="color: #999;">No date</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if alias.company_alias_exp_dte %}
+                            {{ alias.company_alias_exp_dte|date:"M d, Y" }}
+                        {% else %}
+                            <span style="color: #999;">No expiration</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'core:company_alias_detail' alias.company_alias_id %}">View Details</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6">
+                        <p>No company aliases found in the database.</p>
+                        <button class="btn">Add Alias</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <p style="text-align: center; margin-top: 15px; color: #666;">
+        Total: {{ total_aliases }} company aliases
+        {% if company_aliases|length >= 20 %}
+            (showing first 20 - <a href="{% url 'core:company_alias_list' %}">view all</a>)
         {% endif %}
     </p>
 </div>
@@ -242,6 +579,6 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     });
 });
 
-console.log('Workstation loaded with {{ application_responses|length }} application responses');
+console.log('Workstation loaded with {{ application_responses|length }} application responses and {{ total_companies }} companies');
 </script>
 {% endblock %}

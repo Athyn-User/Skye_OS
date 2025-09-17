@@ -129,4 +129,20 @@ path('workstation/', views.workstation_view, name='workstation'),
 path('workstation/application-responses/', views.application_response_list, name='application_response_list'),
 path('workstation/application-responses/<int:pk>/', views.application_response_detail, name='application_response_detail'),
 
+# Company Management URLs
+path('workstation/options/', views.options_list, name='options_list'),
+path('workstation/options/<int:pk>/', views.options_detail, name='options_detail'),
+
+path('workstation/companies/', views.company_list, name='company_list'),
+path('workstation/companies/<int:pk>/', views.company_detail, name='company_detail'),
+
+path('workstation/company-locations/', views.company_location_list, name='company_location_list'),
+path('workstation/company-locations/<int:pk>/', views.company_location_detail, name='company_location_detail'),
+
+path('workstation/company-contacts/', views.company_contact_list, name='company_contact_list'),
+path('workstation/company-contacts/<int:pk>/', views.company_contact_detail, name='company_contact_detail'),
+
+path('workstation/company-aliases/', views.company_alias_list, name='company_alias_list'),
+path('workstation/company-aliases/<int:pk>/', views.company_alias_detail, name='company_alias_detail'),
+
 ]

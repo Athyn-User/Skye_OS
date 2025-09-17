@@ -12,7 +12,8 @@ from .models import (
     GenerationModel, TrainingModel, InputOutput, EmployeeContact,
     Cover, EmployeeFunction, Paper, PaperDetail, Applications, ApplicationQuestion,
     ParameterMap, Document, Task, Workflow, WorkflowDetail, Attachment, 
-    AttachmentDetail, Limits, Retention, Sublimit, ApplicationResponse
+    AttachmentDetail, Limits, Retention, Sublimit, ApplicationResponse,
+    Options, Company, CompanyLocation, CompanyContact, CompanyAlias
 )
 
 # =============================================================================
@@ -1133,27 +1134,53 @@ def sublimit_detail(request, pk):
 # =============================================================================
 
 def workstation_view(request):
-    """Main workstation page with ApplicationResponse section - matches Catalog format"""
+    """Main workstation page with all sections - matches Catalog format"""
     # Get application responses from PostgreSQL (limit to 20 for main page performance)
     application_responses = ApplicationResponse.objects.select_related(
         'application', 'application_question', 'order'
     ).all()[:20]
+    
+    # Get company management data (limit to 20 each)
+    options = Options.objects.all()[:20]
+    companies = Company.objects.all()[:20]
+    company_locations = CompanyLocation.objects.select_related('company').all()[:20]
+    company_contacts = CompanyContact.objects.select_related('company').all()[:20]
+    company_aliases = CompanyAlias.objects.select_related('company').all()[:20]
     
     # Calculate stats for dashboard
     total_responses = ApplicationResponse.objects.count()
     unique_applications = ApplicationResponse.objects.values('application').distinct().count()
     unique_orders = ApplicationResponse.objects.exclude(order=None).values('order').distinct().count()
     
+    # Company management stats
+    total_options = Options.objects.count()
+    total_companies = Company.objects.count()
+    total_locations = CompanyLocation.objects.count()
+    total_contacts = CompanyContact.objects.count()
+    total_aliases = CompanyAlias.objects.count()
+    
     # Debug information - you can remove this after testing
     print(f"Debug: Found {total_responses} total application responses in database")
-    print(f"Debug: Found {unique_applications} unique applications")
-    print(f"Debug: Found {unique_orders} unique orders")
+    print(f"Debug: Found {total_companies} companies, {total_contacts} contacts, {total_locations} locations")
     
     context = {
+        # Application Response data
         'application_responses': application_responses,
         'unique_applications': unique_applications,
         'unique_orders': unique_orders,
         'total_responses': total_responses,
+        # Company Management data
+        'options': options,
+        'companies': companies,
+        'company_locations': company_locations,
+        'company_contacts': company_contacts,
+        'company_aliases': company_aliases,
+        # Stats
+        'total_options': total_options,
+        'total_companies': total_companies,
+        'total_locations': total_locations,
+        'total_contacts': total_contacts,
+        'total_aliases': total_aliases,
     }
     return render(request, 'core/workstation.html', context)
 
@@ -1199,3 +1226,209 @@ def application_response_detail(request, pk):
         'list_url': 'core:application_response_list',
     }
     return render(request, 'core/application_response_detail.html', context)
+
+def options_list(request):
+    """List all options with pagination and search"""
+    search_query = request.GET.get('search', '')
+    
+    options = Options.objects.all()
+    
+    if search_query:
+        options = options.filter(
+            option_name__icontains=search_query
+        )
+    
+    paginator = Paginator(options, 25)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'page_obj': page_obj,
+        'search_query': search_query,
+        'title': 'Options',
+        'total_count': options.count(),
+    }
+    return render(request, 'core/options_list.html', context)
+
+def options_detail(request, pk):
+    """View individual option"""
+    option = get_object_or_404(Options, pk=pk)
+    
+    context = {
+        'object': option,
+        'title': f'Option: {option.option_name or f"Option {option.options_id}"}',
+        'list_url': 'core:options_list',
+    }
+    return render(request, 'core/options_detail.html', context)
+
+# =============================================================================
+# COMPANY SECTION
+# =============================================================================
+
+def company_list(request):
+    """List all companies with pagination and search"""
+    search_query = request.GET.get('search', '')
+    
+    companies = Company.objects.all()
+    
+    if search_query:
+        companies = companies.filter(
+            company_name__icontains=search_query
+        )
+    
+    paginator = Paginator(companies, 25)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'page_obj': page_obj,
+        'search_query': search_query,
+        'title': 'Companies',
+        'total_count': companies.count(),
+    }
+    return render(request, 'core/company_list.html', context)
+
+def company_detail(request, pk):
+    """View individual company with related data"""
+    company = get_object_or_404(Company, pk=pk)
+    
+    # Get related company data
+    company_locations = CompanyLocation.objects.filter(company=company)
+    company_contacts = CompanyContact.objects.filter(company=company)
+    company_aliases = CompanyAlias.objects.filter(company=company)
+    
+    context = {
+        'object': company,
+        'company_locations': company_locations,
+        'company_contacts': company_contacts,
+        'company_aliases': company_aliases,
+        'title': f'Company: {company.company_name or f"Company {company.company_id}"}',
+        'list_url': 'core:company_list',
+    }
+    return render(request, 'core/company_detail.html', context)
+
+# =============================================================================
+# COMPANY LOCATION SECTION
+# =============================================================================
+
+def company_location_list(request):
+    """List all company locations with pagination and search"""
+    search_query = request.GET.get('search', '')
+    
+    locations = CompanyLocation.objects.select_related('company').all()
+    
+    if search_query:
+        locations = locations.filter(
+            company_location_city__icontains=search_query
+        ) | locations.filter(
+            company_location_state__icontains=search_query
+        ) | locations.filter(
+            company__company_name__icontains=search_query
+        )
+    
+    paginator = Paginator(locations, 25)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'page_obj': page_obj,
+        'search_query': search_query,
+        'title': 'Company Locations',
+        'total_count': locations.count(),
+    }
+    return render(request, 'core/company_location_list.html', context)
+
+def company_location_detail(request, pk):
+    """View individual company location"""
+    location = get_object_or_404(CompanyLocation, pk=pk)
+    
+    context = {
+        'object': location,
+        'title': f'Location: {location.company_location_city or f"Location {location.company_location_id}"}',
+        'list_url': 'core:company_location_list',
+    }
+    return render(request, 'core/company_location_detail.html', context)
+
+# =============================================================================
+# COMPANY CONTACT SECTION
+# =============================================================================
+
+def company_contact_list(request):
+    """List all company contacts with pagination and search"""
+    search_query = request.GET.get('search', '')
+    
+    contacts = CompanyContact.objects.select_related('company').all()
+    
+    if search_query:
+        contacts = contacts.filter(
+            company_contact_first__icontains=search_query
+        ) | contacts.filter(
+            company_contact_last__icontains=search_query
+        ) | contacts.filter(
+            company_contact_email__icontains=search_query
+        ) | contacts.filter(
+            company__company_name__icontains=search_query
+        )
+    
+    paginator = Paginator(contacts, 25)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'page_obj': page_obj,
+        'search_query': search_query,
+        'title': 'Company Contacts',
+        'total_count': contacts.count(),
+    }
+    return render(request, 'core/company_contact_list.html', context)
+
+def company_contact_detail(request, pk):
+    """View individual company contact"""
+    contact = get_object_or_404(CompanyContact, pk=pk)
+    
+    context = {
+        'object': contact,
+        'title': f'Contact: {contact.company_contact_first} {contact.company_contact_last}',
+        'list_url': 'core:company_contact_list',
+    }
+    return render(request, 'core/company_contact_detail.html', context)
+
+# =============================================================================
+# COMPANY ALIAS SECTION
+# =============================================================================
+
+def company_alias_list(request):
+    """List all company aliases with pagination and search"""
+    search_query = request.GET.get('search', '')
+    
+    aliases = CompanyAlias.objects.select_related('company').all()
+    
+    if search_query:
+        aliases = aliases.filter(
+            company_alias_name__icontains=search_query
+        ) | aliases.filter(
+            company__company_name__icontains=search_query
+        )
+    
+    paginator = Paginator(aliases, 25)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'page_obj': page_obj,
+        'search_query': search_query,
+        'title': 'Company Aliases',
+        'total_count': aliases.count(),
+    }
+    return render(request, 'core/company_alias_list.html', context)
+
+def company_alias_detail(request, pk):
+    """View individual company alias"""
+    alias = get_object_or_404(CompanyAlias, pk=pk)
+    
+    context = {
+        'object': alias,
+        'title': f'Alias: {alias.company_alias_name or f"Alias {alias.company_alias_id}"}',
+        'list_url': 'core:company_alias_list',
+    }
+    return render(request, 'core/company_alias_detail.html', context)
