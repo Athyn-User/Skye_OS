@@ -78,4 +78,48 @@ path('applications/<int:pk>/', views.application_detail, name='application_detai
 path('application-questions/', views.application_question_list, name='application_question_list'),
 path('application-questions/<int:pk>/', views.application_question_detail, name='application_question_detail'),
 
+# Parameter URLs
+path('parameters/', views.parameter_list, name='parameter_list'),
+path('parameters/<int:pk>/', views.parameter_detail, name='parameter_detail'),
+
+# Parameter Map URLs  
+path('parameter-maps/', views.parameter_map_list, name='parameter_map_list'),
+path('parameter-maps/<int:pk>/', views.parameter_map_detail, name='parameter_map_detail'),
+
+# Document URLs
+path('documents/', views.document_list, name='document_list'),
+path('documents/<int:pk>/', views.document_detail, name='document_detail'),
+
+# Task URLs
+path('tasks/', views.task_list, name='task_list'),
+path('tasks/<int:pk>/', views.task_detail, name='task_detail'),
+
+# Workflow URLs
+path('workflows/', views.workflow_list, name='workflow_list'),
+path('workflows/<int:pk>/', views.workflow_detail, name='workflow_detail'),
+
+# Workflow Detail URLs  
+path('workflow-details/', views.workflow_detail_list, name='workflow_detail_list'),
+path('workflow-details/<int:pk>/', views.workflow_detail_detail, name='workflow_detail_detail'),
+
+# Attachment URLs
+path('attachments/', views.attachment_list, name='attachment_list'),
+path('attachments/<int:pk>/', views.attachment_detail, name='attachment_detail'),
+
+# Attachment Detail URLs
+path('attachment-details/', views.attachment_detail_list, name='attachment_detail_list'),
+path('attachment-details/<int:pk>/', views.attachment_detail_detail, name='attachment_detail_detail'),
+
+# Limits URLs
+path('limits/', views.limits_list, name='limits_list'),
+path('limits/<int:pk>/', views.limits_detail, name='limits_detail'),
+
+# Retention URLs
+path('retentions/', views.retention_list, name='retention_list'),
+path('retentions/<int:pk>/', views.retention_detail, name='retention_detail'),
+
+# Sublimit URLs
+path('sublimits/', views.sublimit_list, name='sublimit_list'),
+path('sublimits/<int:pk>/', views.sublimit_detail, name='sublimit_detail'),
+
 ]

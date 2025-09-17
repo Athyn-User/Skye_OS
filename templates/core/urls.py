@@ -71,4 +71,37 @@ urlpatterns = [
     # Employee Function URLs
     path('functions/', views.employee_function_list, name='employee_function_list'),
     path('functions/<int:pk>/', views.employee_function_detail, name='employee_function_detail'),
+
+    path('papers/', views.paper_list, name='paper_list'),
+    path('papers/<int:pk>/', views.paper_detail, name='paper_detail'),
+
+    # Paper Detail URLs  
+    path('paper-details/', views.paper_detail_list, name='paper_detail_list'),
+    path('paper-details/<int:pk>/', views.paper_detail_detail, name='paper_detail_detail'),
+
+    # Applications URLs
+    path('applications/', views.application_list, name='application_list'),
+    path('applications/<int:pk>/', views.application_detail, name='application_detail'),
+
+    # Application Question URLs
+    path('application-questions/', views.application_question_list, name='application_question_list'),
+    path('application-questions/<int:pk>/', views.application_question_detail, name='application_question_detail'),
+
+    # Parameter URLs
+    path('parameters/', views.parameter_list, name='parameter_list'),
+    path('parameters/<int:pk>/', views.parameter_detail, name='parameter_detail'),
+
+    # Parameter Map URLs  
+    path('parameter-maps/', views.parameter_map_list, name='parameter_map_list'),
+    path('parameter-maps/<int:pk>/', views.parameter_map_detail, name='parameter_map_detail'),
+
+    # Document URLs
+    path('documents/', views.document_list, name='document_list'),
+    path('documents/<int:pk>/', views.document_detail, name='document_detail'),
+
+    # Task URLs
+    path('tasks/', views.task_list, name='task_list'),
+    path('tasks/<int:pk>/', views.task_detail, name='task_detail'),
+
+
 ]

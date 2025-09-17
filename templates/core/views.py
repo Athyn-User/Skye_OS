@@ -10,22 +10,37 @@ from django.core.paginator import Paginator
 from rest_framework import viewsets
 from rest_framework.decorators import api_view
    from .models import (
-       Venture, Drive, EmployeeLocation, GenerationJob, Parameter,
-       DataSeed, GenerationLog, ModelParameter, TrainingJob, Products,
-       GenerationModel, TrainingModel, InputOutput, EmployeeContact,
-       Cover, EmployeeFunction
+    Venture, Drive, EmployeeLocation, GenerationJob, Parameter,
+    DataSeed, GenerationLog, ModelParameter, TrainingJob, Products,
+    GenerationModel, TrainingModel, InputOutput, EmployeeContact,
+    Cover, EmployeeFunction, Paper, PaperDetail, Applications, ApplicationQuestion,
+    ParameterMap, Document, Task
    )
 
 def catalog_view(request):
     """Main catalog page view with all sections"""
+    # Original sections (these work)
     ventures = Venture.objects.all()
     drives = Drive.objects.select_related('venture').all()
     employee_locations = EmployeeLocation.objects.select_related('venture').all()
     
+    # Existing new sections
     products = Products.objects.select_related('venture', 'coverage').all()
     coverage_types = Cover.objects.select_related('product').all()
     employee_contacts = EmployeeContact.objects.select_related('employee_location').all()
     employee_functions = EmployeeFunction.objects.all()
+    
+    # Previous additions - Paper, PaperDetail, Applications, ApplicationQuestion
+    papers = Paper.objects.all()
+    paper_details = PaperDetail.objects.select_related('products', 'paper').all()
+    applications = Applications.objects.select_related('product').all()
+    application_questions = ApplicationQuestion.objects.select_related('application', 'parameter').all()
+    
+    # NEWEST sections - Parameter, ParameterMap, Document, Task
+    parameters = Parameter.objects.all()
+    parameter_maps = ParameterMap.objects.select_related('products', 'parameter').all()
+    documents = Document.objects.select_related('product').all()
+    tasks = Task.objects.all()
     
     context = {
         'ventures': ventures,
@@ -35,6 +50,15 @@ def catalog_view(request):
         'coverage_types': coverage_types,
         'employee_contacts': employee_contacts,
         'employee_functions': employee_functions,
+        'papers': papers,
+        'paper_details': paper_details,
+        'applications': applications,
+        'application_questions': application_questions,
+        # Add the 4 newest data sets
+        'parameters': parameters,
+        'parameter_maps': parameter_maps,
+        'documents': documents,
+        'tasks': tasks,
     }
     return render(request, 'core/catalog.html', context)
 

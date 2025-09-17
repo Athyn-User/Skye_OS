@@ -10,13 +10,14 @@ from .models import (
     Venture, Drive, EmployeeLocation, GenerationJob, Parameter,
     DataSeed, GenerationLog, ModelParameter, TrainingJob, Products,
     GenerationModel, TrainingModel, InputOutput, EmployeeContact,
-    Cover, EmployeeFunction, Paper, PaperDetail, Applications, ApplicationQuestion
+    Cover, EmployeeFunction, Paper, PaperDetail, Applications, ApplicationQuestion,
+    ParameterMap, Document, Task, Workflow, WorkflowDetail, Attachment, 
+    AttachmentDetail, Limits, Retention, Sublimit
 )
 
 # =============================================================================
 # EXISTING VIEWS (KEEP THESE)
 # =============================================================================
-
 def catalog_view(request):
     """Main catalog page view with all sections"""
     # Original sections (these work)
@@ -30,11 +31,26 @@ def catalog_view(request):
     employee_contacts = EmployeeContact.objects.select_related('employee_location').all()
     employee_functions = EmployeeFunction.objects.all()
     
-    # BRAND NEW sections - Paper, PaperDetail, Applications, ApplicationQuestion
+    # Previous additions - Paper, PaperDetail, Applications, ApplicationQuestion
     papers = Paper.objects.all()
     paper_details = PaperDetail.objects.select_related('products', 'paper').all()
     applications = Applications.objects.select_related('product').all()
     application_questions = ApplicationQuestion.objects.select_related('application', 'parameter').all()
+    
+    # Recent additions - Parameter, ParameterMap, Document, Task
+    parameters = Parameter.objects.all()
+    parameter_maps = ParameterMap.objects.select_related('products', 'parameter').all()
+    documents = Document.objects.select_related('product').all()
+    tasks = Task.objects.all()
+    
+    # NEWEST sections - Workflow and Business Logic models
+    workflows = Workflow.objects.all()
+    workflow_details = WorkflowDetail.objects.select_related('workflow', 'task').all()
+    attachments = Attachment.objects.select_related('attachment_type').all()
+    attachment_details = AttachmentDetail.objects.select_related('attachment', 'product', 'task', 'attachment_type').all()
+    limits = Limits.objects.select_related('product', 'cover').all()
+    retentions = Retention.objects.select_related('products').all()
+    sublimits = Sublimit.objects.select_related('orders', 'products').all()
     
     context = {
         'ventures': ventures,
@@ -44,11 +60,22 @@ def catalog_view(request):
         'coverage_types': coverage_types,
         'employee_contacts': employee_contacts,
         'employee_functions': employee_functions,
-        # Add the 4 new data sets
         'papers': papers,
         'paper_details': paper_details,
         'applications': applications,
         'application_questions': application_questions,
+        'parameters': parameters,
+        'parameter_maps': parameter_maps,
+        'documents': documents,
+        'tasks': tasks,
+        # Add the 7 newest data sets
+        'workflows': workflows,
+        'workflow_details': workflow_details,
+        'attachments': attachments,
+        'attachment_details': attachment_details,
+        'limits': limits,
+        'retentions': retentions,
+        'sublimits': sublimits,
     }
     return render(request, 'core/catalog.html', context)
 
@@ -652,3 +679,451 @@ def application_question_detail(request, pk):
         'list_url': 'core:application_question_list',
     }
     return render(request, 'core/application_question_detail.html', context)
+
+def parameter_list(request):
+    """List all parameters"""
+    search_query = request.GET.get('search', '')
+    
+    parameters = Parameter.objects.all()
+    
+    if search_query:
+        parameters = parameters.filter(
+            parameter_name__icontains=search_query
+        ) | parameters.filter(
+            parameter_docs__icontains=search_query
+        )
+    
+    paginator = Paginator(parameters, 25)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'page_obj': page_obj,
+        'search_query': search_query,
+        'title': 'Parameters',
+        'total_count': parameters.count(),
+    }
+    return render(request, 'core/parameter_list.html', context)
+
+def parameter_detail(request, pk):
+    """View individual parameter"""
+    parameter = get_object_or_404(Parameter, pk=pk)
+    
+    # Get related parameter maps for this parameter
+    related_maps = ParameterMap.objects.filter(parameter=parameter).select_related('products')
+    
+    context = {
+        'object': parameter,
+        'related_maps': related_maps,
+        'title': f'Parameter: {parameter.parameter_name or f"Parameter {parameter.parameter_id}"}',
+        'list_url': 'core:parameter_list',
+    }
+    return render(request, 'core/parameter_detail.html', context)
+
+# =============================================================================
+# NEWEST PARAMETER MAP SECTION
+# =============================================================================
+
+def parameter_map_list(request):
+    """List all parameter maps"""
+    search_query = request.GET.get('search', '')
+    
+    parameter_maps = ParameterMap.objects.select_related('products', 'parameter').all()
+    
+    if search_query:
+        parameter_maps = parameter_maps.filter(
+            parameter__parameter_name__icontains=search_query
+        ) | parameter_maps.filter(
+            products__product_name__icontains=search_query
+        )
+    
+    paginator = Paginator(parameter_maps, 25)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'page_obj': page_obj,
+        'search_query': search_query,
+        'title': 'Parameter Maps',
+        'total_count': parameter_maps.count(),
+    }
+    return render(request, 'core/parameter_map_list.html', context)
+
+def parameter_map_detail(request, pk):
+    """View individual parameter map"""
+    parameter_map = get_object_or_404(ParameterMap, pk=pk)
+    
+    context = {
+        'object': parameter_map,
+        'title': f'Parameter Map: {parameter_map.parameter_map_id}',
+        'list_url': 'core:parameter_map_list',
+    }
+    return render(request, 'core/parameter_map_detail.html', context)
+
+# =============================================================================
+# NEWEST DOCUMENT SECTION
+# =============================================================================
+
+def document_list(request):
+    """List all documents"""
+    search_query = request.GET.get('search', '')
+    
+    documents = Document.objects.select_related('product').all()
+    
+    if search_query:
+        documents = documents.filter(
+            document_name__icontains=search_query
+        ) | documents.filter(
+            document_code__icontains=search_query
+        )
+    
+    paginator = Paginator(documents, 25)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'page_obj': page_obj,
+        'search_query': search_query,
+        'title': 'Documents',
+        'total_count': documents.count(),
+    }
+    return render(request, 'core/document_list.html', context)
+
+def document_detail(request, pk):
+    """View individual document"""
+    document = get_object_or_404(Document, pk=pk)
+    
+    context = {
+        'object': document,
+        'title': f'Document: {document.document_name or f"Document {document.document_id}"}',
+        'list_url': 'core:document_list',
+    }
+    return render(request, 'core/document_detail.html', context)
+
+# =============================================================================
+# NEWEST TASK SECTION
+# =============================================================================
+
+def task_list(request):
+    """List all tasks"""
+    search_query = request.GET.get('search', '')
+    
+    tasks = Task.objects.all()
+    
+    if search_query:
+        tasks = tasks.filter(
+            task_name__icontains=search_query
+        ) | tasks.filter(
+            task_description__icontains=search_query
+        )
+    
+    paginator = Paginator(tasks, 25)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'page_obj': page_obj,
+        'search_query': search_query,
+        'title': 'Tasks',
+        'total_count': tasks.count(),
+    }
+    return render(request, 'core/task_list.html', context)
+
+def task_detail(request, pk):
+    """View individual task"""
+    task = get_object_or_404(Task, pk=pk)
+    
+    context = {
+        'object': task,
+        'title': f'Task: {task.task_name or f"Task {task.task_id}"}',
+        'list_url': 'core:task_list',
+    }
+    return render(request, 'core/task_detail.html', context)
+
+# =============================================================================
+# WORKFLOW SECTION
+# =============================================================================
+
+def workflow_list(request):
+    """List all workflows"""
+    search_query = request.GET.get('search', '')
+    
+    workflows = Workflow.objects.all()
+    
+    if search_query:
+        workflows = workflows.filter(
+            workflow_name__icontains=search_query
+        ) | workflows.filter(
+            workflow_type__icontains=search_query
+        )
+    
+    paginator = Paginator(workflows, 25)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'page_obj': page_obj,
+        'search_query': search_query,
+        'title': 'Workflows',
+        'total_count': workflows.count(),
+    }
+    return render(request, 'core/workflow_list.html', context)
+
+def workflow_detail(request, pk):
+    """View individual workflow"""
+    workflow = get_object_or_404(Workflow, pk=pk)
+    
+    # Get related workflow details
+    related_details = WorkflowDetail.objects.filter(workflow=workflow).select_related('task')
+    
+    context = {
+        'object': workflow,
+        'related_details': related_details,
+        'title': f'Workflow: {workflow.workflow_name or f"Workflow {workflow.workflow_id}"}',
+        'list_url': 'core:workflow_list',
+    }
+    return render(request, 'core/workflow_detail.html', context)
+
+# =============================================================================
+# WORKFLOW DETAIL SECTION
+# =============================================================================
+
+def workflow_detail_list(request):
+    """List all workflow details"""
+    search_query = request.GET.get('search', '')
+    
+    workflow_details = WorkflowDetail.objects.select_related('workflow', 'task').all()
+    
+    if search_query:
+        workflow_details = workflow_details.filter(
+            workflow__workflow_name__icontains=search_query
+        ) | workflow_details.filter(
+            task__task_name__icontains=search_query
+        )
+    
+    paginator = Paginator(workflow_details, 25)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'page_obj': page_obj,
+        'search_query': search_query,
+        'title': 'Workflow Details',
+        'total_count': workflow_details.count(),
+    }
+    return render(request, 'core/workflow_detail_list.html', context)
+
+def workflow_detail_detail(request, pk):
+    """View individual workflow detail"""
+    workflow_detail = get_object_or_404(WorkflowDetail, pk=pk)
+    
+    context = {
+        'object': workflow_detail,
+        'title': f'Workflow Detail: {workflow_detail.workflow_detail_id}',
+        'list_url': 'core:workflow_detail_list',
+    }
+    return render(request, 'core/workflow_detail_detail.html', context)
+
+# =============================================================================
+# ATTACHMENT SECTION
+# =============================================================================
+
+def attachment_list(request):
+    """List all attachments"""
+    search_query = request.GET.get('search', '')
+    
+    attachments = Attachment.objects.select_related('attachment_type').all()
+    
+    if search_query:
+        attachments = attachments.filter(
+            attachment_name__icontains=search_query
+        ) | attachments.filter(
+            output_description__icontains=search_query
+        )
+    
+    paginator = Paginator(attachments, 25)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'page_obj': page_obj,
+        'search_query': search_query,
+        'title': 'Attachments',
+        'total_count': attachments.count(),
+    }
+    return render(request, 'core/attachment_list.html', context)
+
+def attachment_detail(request, pk):
+    """View individual attachment"""
+    attachment = get_object_or_404(Attachment, pk=pk)
+    
+    # Get related attachment details
+    related_details = AttachmentDetail.objects.filter(attachment=attachment).select_related('product', 'task', 'attachment_type')
+    
+    context = {
+        'object': attachment,
+        'related_details': related_details,
+        'title': f'Attachment: {attachment.attachment_name or f"Attachment {attachment.attachment_id}"}',
+        'list_url': 'core:attachment_list',
+    }
+    return render(request, 'core/attachment_detail.html', context)
+
+# =============================================================================
+# ATTACHMENT DETAIL SECTION
+# =============================================================================
+
+def attachment_detail_list(request):
+    """List all attachment details"""
+    search_query = request.GET.get('search', '')
+    
+    attachment_details = AttachmentDetail.objects.select_related('attachment', 'product', 'task', 'attachment_type').all()
+    
+    if search_query:
+        attachment_details = attachment_details.filter(
+            attachment__attachment_name__icontains=search_query
+        ) | attachment_details.filter(
+            product__product_name__icontains=search_query
+        )
+    
+    paginator = Paginator(attachment_details, 25)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'page_obj': page_obj,
+        'search_query': search_query,
+        'title': 'Attachment Details',
+        'total_count': attachment_details.count(),
+    }
+    return render(request, 'core/attachment_detail_list.html', context)
+
+def attachment_detail_detail(request, pk):
+    """View individual attachment detail"""
+    attachment_detail = get_object_or_404(AttachmentDetail, pk=pk)
+    
+    context = {
+        'object': attachment_detail,
+        'title': f'Attachment Detail: {attachment_detail.attachment_detail_id}',
+        'list_url': 'core:attachment_detail_list',
+    }
+    return render(request, 'core/attachment_detail_detail.html', context)
+
+# =============================================================================
+# LIMITS SECTION
+# =============================================================================
+
+def limits_list(request):
+    """List all limits"""
+    search_query = request.GET.get('search', '')
+    
+    limits = Limits.objects.select_related('product', 'cover').all()
+    
+    if search_query:
+        limits = limits.filter(
+            limit_text__icontains=search_query
+        ) | limits.filter(
+            product__product_name__icontains=search_query
+        )
+    
+    paginator = Paginator(limits, 25)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'page_obj': page_obj,
+        'search_query': search_query,
+        'title': 'Limits',
+        'total_count': limits.count(),
+    }
+    return render(request, 'core/limits_list.html', context)
+
+def limits_detail(request, pk):
+    """View individual limits"""
+    limits = get_object_or_404(Limits, pk=pk)
+    
+    context = {
+        'object': limits,
+        'title': f'Limits: {limits.limit_text or f"Limits {limits.limits_id}"}',
+        'list_url': 'core:limits_list',
+    }
+    return render(request, 'core/limits_detail.html', context)
+
+# =============================================================================
+# RETENTION SECTION
+# =============================================================================
+
+def retention_list(request):
+    """List all retentions"""
+    search_query = request.GET.get('search', '')
+    
+    retentions = Retention.objects.select_related('products').all()
+    
+    if search_query:
+        retentions = retentions.filter(
+            retention_text__icontains=search_query
+        ) | retentions.filter(
+            products__product_name__icontains=search_query
+        )
+    
+    paginator = Paginator(retentions, 25)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'page_obj': page_obj,
+        'search_query': search_query,
+        'title': 'Retentions',
+        'total_count': retentions.count(),
+    }
+    return render(request, 'core/retention_list.html', context)
+
+def retention_detail(request, pk):
+    """View individual retention"""
+    retention = get_object_or_404(Retention, pk=pk)
+    
+    context = {
+        'object': retention,
+        'title': f'Retention: {retention.retention_text or f"Retention {retention.retention_id}"}',
+        'list_url': 'core:retention_list',
+    }
+    return render(request, 'core/retention_detail.html', context)
+
+# =============================================================================
+# SUBLIMIT SECTION
+# =============================================================================
+
+def sublimit_list(request):
+    """List all sublimits"""
+    search_query = request.GET.get('search', '')
+    
+    sublimits = Sublimit.objects.select_related('orders', 'products').all()
+    
+    if search_query:
+        sublimits = sublimits.filter(
+            sublimit_name__icontains=search_query
+        ) | sublimits.filter(
+            products__product_name__icontains=search_query
+        )
+    
+    paginator = Paginator(sublimits, 25)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'page_obj': page_obj,
+        'search_query': search_query,
+        'title': 'Sublimits',
+        'total_count': sublimits.count(),
+    }
+    return render(request, 'core/sublimit_list.html', context)
+
+def sublimit_detail(request, pk):
+    """View individual sublimit"""
+    sublimit = get_object_or_404(Sublimit, pk=pk)
+    
+    context = {
+        'object': sublimit,
+        'title': f'Sublimit: {sublimit.sublimit_name or f"Sublimit {sublimit.sublimit_id}"}',
+        'list_url': 'core:sublimit_list',
+    }
+    return render(request, 'core/sublimit_detail.html', context)
