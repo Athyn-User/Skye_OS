@@ -1,354 +1,247 @@
-<!-- templates/core/workstation.html -->
-{% extends 'Skye_OS/base.html' %}
-{% load static %}
+{% extends "core/base_simple.html" %}
 
 {% block title %}Workstation - Skye OS{% endblock %}
 
-{% block extra_css %}
-<style>
-    .workstation-container {
-        display: flex;
-        height: calc(100vh - 80px);
-        background: #fafafa;
-    }
-    
-    .workstation-sidebar {
-        width: 280px;
-        background: white;
-        border-right: 1px solid #e0e0e0;
-        padding: 20px;
-        overflow-y: auto;
-    }
-    
-    .workstation-main {
-        flex: 1;
-        padding: 20px;
-        overflow-y: auto;
-    }
-    
-    .section-card {
-        background: white;
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        margin-bottom: 20px;
-        overflow: hidden;
-    }
-    
-    .section-header {
-        background: #1976d2;
-        color: white;
-        padding: 16px 20px;
-        font-size: 18px;
-        font-weight: 500;
-    }
-    
-    .section-content {
-        padding: 20px;
-    }
-    
-    .sidebar-section {
-        margin-bottom: 24px;
-    }
-    
-    .sidebar-section h3 {
-        color: #1976d2;
-        font-size: 16px;
-        font-weight: 500;
-        margin-bottom: 12px;
-        padding-bottom: 8px;
-        border-bottom: 2px solid #e3f2fd;
-    }
-    
-    .sidebar-item {
-        display: block;
-        padding: 8px 12px;
-        margin-bottom: 4px;
-        color: #666;
-        text-decoration: none;
-        border-radius: 4px;
-        transition: all 0.2s ease;
-    }
-    
-    .sidebar-item:hover {
-        background: #e3f2fd;
-        color: #1976d2;
-        text-decoration: none;
-    }
-    
-    .sidebar-item.active {
-        background: #1976d2;
-        color: white;
-    }
-    
-    .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 16px;
-        margin-bottom: 24px;
-    }
-    
-    .stat-card {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 20px;
-        border-radius: 8px;
-        text-align: center;
-    }
-    
-    .stat-number {
-        font-size: 32px;
-        font-weight: bold;
-        margin-bottom: 8px;
-    }
-    
-    .stat-label {
-        font-size: 14px;
-        opacity: 0.9;
-    }
-    
-    .data-table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 16px;
-    }
-    
-    .data-table th {
-        background: #f5f5f5;
-        padding: 12px;
-        text-align: left;
-        font-weight: 500;
-        border-bottom: 2px solid #e0e0e0;
-        font-size: 14px;
-    }
-    
-    .data-table td {
-        padding: 12px;
-        border-bottom: 1px solid #e0e0e0;
-        vertical-align: top;
-    }
-    
-    .data-table tr:hover {
-        background: #f9f9f9;
-    }
-    
-    .btn-link {
-        color: #1976d2;
-        text-decoration: none;
-        font-weight: 500;
-    }
-    
-    .btn-link:hover {
-        text-decoration: underline;
-        color: #1565c0;
-    }
-    
-    .search-box {
-        width: 100%;
-        padding: 10px;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        margin-bottom: 16px;
-        font-size: 14px;
-    }
-    
-    .no-data {
-        text-align: center;
-        color: #666;
-        font-style: italic;
-        padding: 40px;
-    }
-    
-    .truncate {
-        max-width: 200px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-</style>
+{% block sidebar %}
+<h3>Workstation Hub</h3>
+<p>Operational data management workspace</p>
+
+<h4>Data Management</h4>
+<ul>
+    <li><a href="#application-responses">📝 Application Responses <span class="badge">{{ application_responses|length }}</span></a></li>
+    <li><a href="#orders">📋 Orders <span class="badge">Coming Soon</span></a></li>
+    <li><a href="#applications">📱 Applications <span class="badge">Coming Soon</span></a></li>
+</ul>
+
+<h4>Workflow Operations</h4>
+<ul>
+    <li><a href="#companies">🏢 Companies <span class="badge">Coming Soon</span></a></li>
+    <li><a href="#company-contacts">👥 Company Contacts <span class="badge">Coming Soon</span></a></li>
+    <li><a href="#documents">📄 Documents <span class="badge">Coming Soon</span></a></li>
+</ul>
+
+<h4>Management Tools</h4>
+<ul>
+    <li><a href="{% url 'core:catalog' %}">📊 View Catalog</a></li>
+    <li><a href="{% url 'core:machine_learning' %}">🤖 Machine Learning</a></li>
+    <li><a href="#" onclick="alert('Reports coming soon')">📈 Reports</a></li>
+    <li><a href="#" onclick="alert('Analytics coming soon')">📊 Analytics</a></li>
+</ul>
+
+<h4>Quick Actions</h4>
+<ul>
+    <li><a href="{% url 'core:application_response_list' %}">View All Responses</a></li>
+    <li><a href="{% url 'core:application_list' %}">View All Applications</a></li>
+    <li><a href="{% url 'core:application_question_list' %}">View All Questions</a></li>
+</ul>
 {% endblock %}
 
+{% block page_title %}Workstation Hub{% endblock %}
+{% block page_subtitle %}Operational data management and workflow processing center{% endblock %}
+
 {% block content %}
-<div class="workstation-container">
-    <!-- Sidebar -->
-    <div class="workstation-sidebar">
-        <div class="sidebar-section">
-            <h3>Data Management</h3>
-            <a href="#application-responses" class="sidebar-item active" onclick="showSection('application-responses')">
-                Application Responses
-            </a>
-            <!-- Future sections will go here -->
-            <a href="#orders" class="sidebar-item" onclick="showSection('orders')" style="color: #ccc;">
-                Orders (Coming Soon)
-            </a>
-            <a href="#applications" class="sidebar-item" onclick="showSection('applications')" style="color: #ccc;">
-                Applications (Coming Soon)
-            </a>
-        </div>
+{{ block.super }}
+
+<!-- Enhanced Stats Overview -->
+<div class="stats">
+    <div class="stat-card">
+        <div class="stat-number">{{ application_responses|length }}</div>
+        <div>Application Responses</div>
     </div>
-    
-    <!-- Main Content -->
-    <div class="workstation-main">
-        <!-- Application Responses Section -->
-        <div id="application-responses-section" class="content-section">
-            <div class="section-card">
-                <div class="section-header">
-                    Application Responses
-                </div>
-                <div class="section-content">
-                    <!-- Stats -->
-                    <div class="stats-grid">
-                        <div class="stat-card">
-                            <div class="stat-number">{{ application_responses.count }}</div>
-                            <div class="stat-label">Total Responses</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-number">{{ unique_applications }}</div>
-                            <div class="stat-label">Applications</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-number">{{ unique_orders }}</div>
-                            <div class="stat-label">Orders</div>
-                        </div>
-                    </div>
-                    
-                    <!-- Search -->
-                    <input type="text" class="search-box" placeholder="Search application responses..." 
-                           onkeyup="filterTable(this.value)">
-                    
-                    <!-- Data Table -->
-                    {% if application_responses %}
-                    <table class="data-table" id="responses-table">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Application</th>
-                                <th>Question</th>
-                                <th>Order</th>
-                                <th>Response</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for response in application_responses %}
-                            <tr>
-                                <td>{{ response.application_response_id }}</td>
-                                <td>
-                                    {% if response.application %}
-                                        <a href="{% url 'core:application_detail' response.application.application_id %}" class="btn-link">
-                                            {{ response.application.application_name|default:"Unnamed Application" }}
-                                        </a>
-                                    {% else %}
-                                        <em>No Application</em>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    {% if response.application_question %}
-                                        <div class="truncate" title="{{ response.application_question.custom_question }}">
-                                            {{ response.application_question.custom_question|default:"No Question"|truncatechars:50 }}
-                                        </div>
-                                    {% else %}
-                                        <em>No Question</em>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    {% if response.order %}
-                                        <a href="#" class="btn-link">Order {{ response.order.orders_id }}</a>
-                                    {% else %}
-                                        <em>No Order</em>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    <div class="truncate" title="{{ response.response }}">
-                                        {{ response.response|default:"No Response"|truncatechars:60 }}
-                                    </div>
-                                </td>
-                                <td>
-                                    <a href="{% url 'core:application_response_detail' response.application_response_id %}" class="btn-link">
-                                        View Details
-                                    </a>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                    {% else %}
-                    <div class="no-data">
-                        No application responses found.
-                    </div>
-                    {% endif %}
-                    
-                    <!-- View All Link -->
-                    <div style="margin-top: 20px; text-align: center;">
-                        <a href="{% url 'core:application_response_list' %}" class="btn-link">
-                            View All Application Responses →
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Future sections will be added here -->
-        <div id="orders-section" class="content-section" style="display: none;">
-            <div class="section-card">
-                <div class="section-header">Orders</div>
-                <div class="section-content">
-                    <div class="no-data">Orders section coming soon...</div>
-                </div>
-            </div>
-        </div>
-        
-        <div id="applications-section" class="content-section" style="display: none;">
-            <div class="section-card">
-                <div class="section-header">Applications</div>
-                <div class="section-content">
-                    <div class="no-data">Applications section coming soon...</div>
-                </div>
-            </div>
-        </div>
+    <div class="stat-card">
+        <div class="stat-number">{{ unique_applications }}</div>
+        <div>Unique Applications</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-number">{{ unique_orders }}</div>
+        <div>Associated Orders</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-number">{{ total_responses }}</div>
+        <div>Total Records</div>
     </div>
 </div>
 
+<!-- Enhanced Search Bar -->
+<div class="card">
+    <h3>🔍 Search Workstation Data</h3>
+    <input type="text" id="globalSearch" placeholder="Search application responses, applications, orders..." style="width: 400px; padding: 10px; margin-right: 10px; border: 1px solid #ddd; border-radius: 4px;">
+    <button class="btn" onclick="performGlobalSearch()">Search</button>
+    <button class="btn btn-secondary" onclick="clearSearch()">Clear</button>
+</div>
+
+<!-- Application Responses Section -->
+<div id="application-responses" class="card">
+    <h2>📝 Application Responses</h2>
+    <div style="margin-bottom: 15px;">
+        <a href="{% url 'core:application_response_list' %}" class="btn">View All Responses</a>
+        <button class="btn" onclick="alert('Add response functionality coming soon')">Add Response</button>
+        <button class="btn btn-secondary" onclick="alert('Export functionality coming soon')">Export</button>
+    </div>
+    
+    <div style="max-height: 500px; overflow-y: auto;">
+        <table>
+            <thead>
+                <tr>
+                    <th>Response ID</th>
+                    <th>Application</th>
+                    <th>Question</th>
+                    <th>Order</th>
+                    <th>Response</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for response in application_responses %}
+                <tr>
+                    <td>{{ response.application_response_id }}</td>
+                    <td>
+                        {% if response.application %}
+                            <a href="{% url 'core:application_detail' response.application.application_id %}">
+                                <strong>{{ response.application.application_name|default:"Unnamed Application"|truncatechars:20 }}</strong>
+                            </a>
+                        {% else %}
+                            <span style="color: #999;">No Application</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if response.application_question %}
+                            <span style="color: #666;" title="{{ response.application_question.custom_question }}">
+                                {{ response.application_question.custom_question|default:"No Question"|truncatechars:30 }}
+                            </span>
+                        {% else %}
+                            <span style="color: #999;">No Question</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if response.order %}
+                            <a href="#" onclick="alert('Order details: {{ response.order.orders_id }}')">
+                                <span style="color: #7c3aed;">Order {{ response.order.orders_id }}</span>
+                            </a>
+                        {% else %}
+                            <span style="color: #999;">No Order</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span style="color: #374151;" title="{{ response.response }}">
+                            {{ response.response|default:"No Response"|truncatechars:40 }}
+                        </span>
+                    </td>
+                    <td>
+                        <a href="{% url 'core:application_response_detail' response.application_response_id %}">View Details</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6">
+                        <p>No application responses found in the database.</p>
+                        <button class="btn">Add Response</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <p style="text-align: center; margin-top: 15px; color: #666;">
+        Total: {{ application_responses|length }} application responses
+        {% if application_responses|length > 20 %}
+            (showing first 20 - <a href="{% url 'core:application_response_list' %}">view all</a>)
+        {% endif %}
+    </p>
+</div>
+
+<!-- Future Orders Section (Placeholder) -->
+<div id="orders" class="card">
+    <h2>📋 Orders</h2>
+    <div style="margin-bottom: 15px;">
+        <button class="btn btn-secondary" disabled>Coming Soon</button>
+    </div>
+    <p style="color: #666; text-align: center; padding: 40px;">
+        Orders management section will be added next. This will show order data from your PostgreSQL database.
+    </p>
+</div>
+
+<!-- Future Applications Section (Placeholder) -->
+<div id="applications" class="card">
+    <h2>📱 Applications</h2>
+    <div style="margin-bottom: 15px;">
+        <button class="btn btn-secondary" disabled>Coming Soon</button>
+    </div>
+    <p style="color: #666; text-align: center; padding: 40px;">
+        Applications management section will be added next. This will show application data from your PostgreSQL database.
+    </p>
+</div>
+
 <script>
-    function showSection(sectionName) {
-        // Hide all sections
-        const sections = document.querySelectorAll('.content-section');
-        sections.forEach(section => section.style.display = 'none');
-        
-        // Show selected section
-        document.getElementById(sectionName + '-section').style.display = 'block';
-        
-        // Update sidebar active state
-        const sidebarItems = document.querySelectorAll('.sidebar-item');
-        sidebarItems.forEach(item => item.classList.remove('active'));
-        event.target.classList.add('active');
+// Enhanced search functionality (same as catalog)
+function performGlobalSearch() {
+    const query = document.getElementById('globalSearch').value.toLowerCase();
+    if (!query) {
+        alert('Please enter a search term');
+        return;
     }
     
-    function filterTable(searchTerm) {
-        const table = document.getElementById('responses-table');
-        if (!table) return;
-        
-        const rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
-        
-        for (let i = 0; i < rows.length; i++) {
-            const row = rows[i];
-            const cells = row.getElementsByTagName('td');
-            let found = false;
-            
-            for (let j = 0; j < cells.length; j++) {
-                const cellText = cells[j].textContent || cells[j].innerText;
-                if (cellText.toLowerCase().indexOf(searchTerm.toLowerCase()) > -1) {
-                    found = true;
-                    break;
-                }
+    const allRows = document.querySelectorAll('tbody tr');
+    let hasResults = false;
+    
+    allRows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        if (text.includes(query)) {
+            row.style.display = '';
+            hasResults = true;
+            // Highlight the section
+            const section = row.closest('.card');
+            if (section) {
+                section.style.border = '2px solid #007bff';
+                setTimeout(() => {
+                    section.style.border = '1px solid #ddd';
+                }, 3000);
             }
-            
-            row.style.display = found ? '' : 'none';
+        } else {
+            row.style.display = 'none';
         }
-    }
-    
-    // Initialize the page
-    document.addEventListener('DOMContentLoaded', function() {
-        showSection('application-responses');
     });
+    
+    if (!hasResults) {
+        alert('No results found for "' + query + '"');
+        clearSearch();
+    }
+}
+
+function clearSearch() {
+    document.getElementById('globalSearch').value = '';
+    const allRows = document.querySelectorAll('tbody tr');
+    allRows.forEach(row => row.style.display = '');
+    
+    // Reset section borders
+    document.querySelectorAll('.card').forEach(card => {
+        card.style.border = '1px solid #ddd';
+    });
+}
+
+// Enter key search
+document.getElementById('globalSearch').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        performGlobalSearch();
+    }
+});
+
+// Simple smooth scrolling for anchor links (same as catalog)
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+            target.scrollIntoView({ behavior: 'smooth' });
+            // Add a brief highlight effect
+            target.style.background = '#f0f8ff';
+            setTimeout(() => {
+                target.style.background = '';
+            }, 2000);
+        }
+    });
+});
+
+console.log('Workstation loaded with {{ application_responses|length }} application responses');
 </script>
 {% endblock %}

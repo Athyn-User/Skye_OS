@@ -1129,20 +1129,25 @@ def sublimit_detail(request, pk):
     return render(request, 'core/sublimit_detail.html', context)
 
 # =============================================================================
-# WORKSTATION SECTION
+# WORKSTATION SECTION - Add these views to your existing core/views.py
 # =============================================================================
 
 def workstation_view(request):
-    """Main workstation page with ApplicationResponse section"""
-    # Get recent application responses (limit to 20 for performance)
+    """Main workstation page with ApplicationResponse section - matches Catalog format"""
+    # Get application responses from PostgreSQL (limit to 20 for main page performance)
     application_responses = ApplicationResponse.objects.select_related(
         'application', 'application_question', 'order'
     ).all()[:20]
     
-    # Calculate stats
+    # Calculate stats for dashboard
     total_responses = ApplicationResponse.objects.count()
     unique_applications = ApplicationResponse.objects.values('application').distinct().count()
-    unique_orders = ApplicationResponse.objects.values('order').distinct().count()
+    unique_orders = ApplicationResponse.objects.exclude(order=None).values('order').distinct().count()
+    
+    # Debug information - you can remove this after testing
+    print(f"Debug: Found {total_responses} total application responses in database")
+    print(f"Debug: Found {unique_applications} unique applications")
+    print(f"Debug: Found {unique_orders} unique orders")
     
     context = {
         'application_responses': application_responses,
@@ -1152,18 +1157,16 @@ def workstation_view(request):
     }
     return render(request, 'core/workstation.html', context)
 
-# =============================================================================
-# APPLICATION RESPONSE SECTION
-# =============================================================================
-
 def application_response_list(request):
-    """List all application responses with pagination and search"""
+    """List all application responses with pagination and search - PostgreSQL data"""
     search_query = request.GET.get('search', '')
     
+    # Query PostgreSQL for all application responses
     responses = ApplicationResponse.objects.select_related(
         'application', 'application_question', 'order'
     ).all()
     
+    # Apply search filter if provided
     if search_query:
         responses = responses.filter(
             response__icontains=search_query
@@ -1173,6 +1176,7 @@ def application_response_list(request):
             application_question__custom_question__icontains=search_query
         )
     
+    # Add pagination
     paginator = Paginator(responses, 25)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -1186,7 +1190,7 @@ def application_response_list(request):
     return render(request, 'core/application_response_list.html', context)
 
 def application_response_detail(request, pk):
-    """View individual application response"""
+    """View individual application response - PostgreSQL data"""
     response = get_object_or_404(ApplicationResponse, pk=pk)
     
     context = {

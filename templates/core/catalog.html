@@ -1,80 +1,43 @@
 {% extends "core/base_simple.html" %}
 
-{% block title %}Catalog - Skye OS{% endblock %}
+{% block title %}Workstation - Skye OS{% endblock %}
 
 {% block sidebar %}
-<h3>Enterprise Catalog</h3>
-<p>Complete directory of all resources</p>
+<h3>Workstation Hub</h3>
+<p>Operational data management workspace</p>
 
-<h4>Infrastructure</h4>
+<h4>Data Management</h4>
 <ul>
-    <li><a href="#ventures">🏢 Ventures <span class="badge">{{ ventures|length }}</span></a></li>
-    <li><a href="#drives">💾 Storage Drives <span class="badge">{{ drives|length }}</span></a></li>
-    <li><a href="#employee-locations">📍 Employee Locations <span class="badge">{{ employee_locations|length }}</span></a></li>
+    <li><a href="#application-responses">📝 Application Responses <span class="badge">{{ application_responses|length }}</span></a></li>
+    <li><a href="#orders">📋 Orders <span class="badge">Coming Soon</span></a></li>
+    <li><a href="#applications">📱 Applications <span class="badge">Coming Soon</span></a></li>
 </ul>
 
-<h4>Business Operations</h4>
+<h4>Workflow Operations</h4>
 <ul>
-    <li><a href="#products">🛍️ Products <span class="badge">{{ products|length }}</span></a></li>
-    <li><a href="#coverage-types">🛡️ Coverage Types <span class="badge">{{ coverage_types|length }}</span></a></li>
+    <li><a href="#companies">🏢 Companies <span class="badge">Coming Soon</span></a></li>
+    <li><a href="#company-contacts">👥 Company Contacts <span class="badge">Coming Soon</span></a></li>
+    <li><a href="#documents">📄 Documents <span class="badge">Coming Soon</span></a></li>
 </ul>
 
-<h4>Human Resources</h4>
+<h4>Management Tools</h4>
 <ul>
-    <li><a href="#employee-contacts">👥 Employee Contacts <span class="badge">{{ employee_contacts|length }}</span></a></li>
-    <li><a href="#employee-functions">⚙️ Employee Functions <span class="badge">{{ employee_functions|length }}</span></a></li>
-</ul>
-
-
-<h4>Management</h4>
-<ul>
+    <li><a href="{% url 'core:catalog' %}">📊 View Catalog</a></li>
     <li><a href="{% url 'core:machine_learning' %}">🤖 Machine Learning</a></li>
-    <li><a href="#" onclick="alert('Coming soon')">📊 Reports</a></li>
-    <li><a href="#" onclick="alert('Coming soon')">⭐ Analytics</a></li>
-</ul>
-
-<h4>System Configuration</h4>
-<ul>
-    <li><a href="#parameters">⚙️ Parameters <span class="badge">{{ parameters|length }}</span></a></li>
-    <li><a href="#parameter-maps">🗺️ Parameter Maps <span class="badge">{{ parameter_maps|length }}</span></a></li>
-    <li><a href="#documents">📄 Documents <span class="badge">{{ documents|length }}</span></a></li>
-    <li><a href="#tasks">📋 Tasks <span class="badge">{{ tasks|length }}</span></a></li>
-</ul>
-
-<h4>Workflow & Business Logic</h4>
-<ul>
-    <li><a href="#workflows">⚡ Workflows <span class="badge">{{ workflows|length }}</span></a></li>
-    <li><a href="#workflow-details">📋 Workflow Details <span class="badge">{{ workflow_details|length }}</span></a></li>
-    <li><a href="#attachments">📎 Attachments <span class="badge">{{ attachments|length }}</span></a></li>
-    <li><a href="#attachment-details">🔗 Attachment Details <span class="badge">{{ attachment_details|length }}</span></a></li>
-    <li><a href="#limits">🚧 Limits <span class="badge">{{ limits|length }}</span></a></li>
-    <li><a href="#retentions">💰 Retentions <span class="badge">{{ retentions|length }}</span></a></li>
-    <li><a href="#sublimits">📊 Sublimits <span class="badge">{{ sublimits|length }}</span></a></li>
-</ul>
-
-<h4>Paper & Applications</h4>
-<ul>
-    <li><a href="#papers">📄 Papers <span class="badge">{{ papers|length }}</span></a></li>
-    <li><a href="#paper-details">📊 Paper Details <span class="badge">{{ paper_details|length }}</span></a></li>
-    <li><a href="#applications">📱 Applications <span class="badge">{{ applications|length }}</span></a></li>
-    <li><a href="#application-questions">❓ Application Questions <span class="badge">{{ application_questions|length }}</span></a></li>
-    <li><a href="{% url 'core:paper_list' %}">View All Papers</a></li>
-    <li><a href="{% url 'core:application_list' %}">View All Applications</a></li>
+    <li><a href="#" onclick="alert('Reports coming soon')">📈 Reports</a></li>
+    <li><a href="#" onclick="alert('Analytics coming soon')">📊 Analytics</a></li>
 </ul>
 
 <h4>Quick Actions</h4>
 <ul>
-    <li><a href="{% url 'core:products_list' %}">View All Products</a></li>
-    <li><a href="{% url 'core:employee_contact_list' %}">Employee Directory</a></li>
-    <li><a href="{% url 'core:cover_list' %}">Coverage Management</a></li>
-    <li><a href="{% url 'core:parameter_list' %}">View All Parameters</a></li>
-    <li><a href="{% url 'core:document_list' %}">View All Documents</a></li>
-    <li><a href="{% url 'core:task_list' %}">View All Tasks</a></li>
+    <li><a href="{% url 'core:application_response_list' %}">View All Responses</a></li>
+    <li><a href="{% url 'core:application_list' %}">View All Applications</a></li>
+    <li><a href="{% url 'core:application_question_list' %}">View All Questions</a></li>
 </ul>
 {% endblock %}
 
-{% block page_title %}Enterprise Catalog{% endblock %}
-{% block page_subtitle %}Complete directory of ventures, products, employees, and business resources{% endblock %}
+{% block page_title %}Workstation Hub{% endblock %}
+{% block page_subtitle %}Operational data management and workflow processing center{% endblock %}
 
 {% block content %}
 {{ block.super }}
@@ -82,480 +45,97 @@
 <!-- Enhanced Stats Overview -->
 <div class="stats">
     <div class="stat-card">
-        <div class="stat-number">{{ ventures|length }}</div>
-        <div>Active Ventures</div>
+        <div class="stat-number">{{ application_responses|length }}</div>
+        <div>Application Responses</div>
     </div>
     <div class="stat-card">
-        <div class="stat-number">{{ products|length }}</div>
-        <div>Products</div>
+        <div class="stat-number">{{ unique_applications }}</div>
+        <div>Unique Applications</div>
     </div>
     <div class="stat-card">
-        <div class="stat-number">{{ employee_contacts|length }}</div>
-        <div>Employees</div>
+        <div class="stat-number">{{ unique_orders }}</div>
+        <div>Associated Orders</div>
     </div>
     <div class="stat-card">
-        <div class="stat-number">{{ drives|length }}</div>
-        <div>Storage Drives</div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-number">{{ coverage_types|length }}</div>
-        <div>Coverage Types</div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-number">{{ employee_functions|length }}</div>
-        <div>Job Functions</div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-number">{{ papers|length }}</div>
-        <div>Papers</div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-number">{{ paper_details|length }}</div>
-        <div>Paper Details</div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-number">{{ applications|length }}</div>
-        <div>Applications</div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-number">{{ application_questions|length }}</div>
-        <div>App Questions</div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-number">{{ parameters|length }}</div>
-        <div>Parameters</div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-number">{{ parameter_maps|length }}</div>
-        <div>Parameter Maps</div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-number">{{ documents|length }}</div>
-        <div>Documents</div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-number">{{ tasks|length }}</div>
-        <div>Tasks</div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-number">{{ workflows|length }}</div>
-        <div>Workflows</div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-number">{{ workflow_details|length }}</div>
-        <div>Workflow Details</div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-number">{{ attachments|length }}</div>
-        <div>Attachments</div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-number">{{ attachment_details|length }}</div>
-        <div>Attachment Details</div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-number">{{ limits|length }}</div>
-        <div>Limits</div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-number">{{ retentions|length }}</div>
-        <div>Retentions</div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-number">{{ sublimits|length }}</div>
-        <div>Sublimits</div>
+        <div class="stat-number">{{ total_responses }}</div>
+        <div>Total Records</div>
     </div>
 </div>
 
 <!-- Enhanced Search Bar -->
 <div class="card">
-    <h3>🔍 Search Across All Catalog Items</h3>
-    <input type="text" id="globalSearch" placeholder="Search ventures, products, employees, coverage..." style="width: 400px; padding: 10px; margin-right: 10px; border: 1px solid #ddd; border-radius: 4px;">
+    <h3>🔍 Search Workstation Data</h3>
+    <input type="text" id="globalSearch" placeholder="Search application responses, applications, orders..." style="width: 400px; padding: 10px; margin-right: 10px; border: 1px solid #ddd; border-radius: 4px;">
     <button class="btn" onclick="performGlobalSearch()">Search</button>
     <button class="btn btn-secondary" onclick="clearSearch()">Clear</button>
 </div>
 
-<!-- Ventures Section -->
-<div id="ventures" class="card">
-    <h2>🏢 Business Ventures</h2>
+<!-- Application Responses Section -->
+<div id="application-responses" class="card">
+    <h2>📝 Application Responses</h2>
     <div style="margin-bottom: 15px;">
-        <a href="{% url 'core:catalog' %}" class="btn">Refresh</a>
-        <button class="btn" onclick="alert('Export functionality coming soon')">Export</button>
-        <a href="{% url 'core:venture_api' %}" class="btn btn-secondary">API</a>
-    </div>
-    
-    <table>
-        <thead>
-            <tr>
-                <th>Venture ID</th>
-                <th>Name</th>
-                <th>Location</th>
-                <th>Address</th>
-                <th>Status</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for venture in ventures %}
-            <tr>
-                <td>{{ venture.venture_id }}</td>
-                <td>
-                    <strong>{{ venture.venture_name|default:"Unnamed Venture" }}</strong>
-                </td>
-                <td>
-                    {% if venture.venture_city and venture.venture_state %}
-                        {{ venture.venture_city }}, {{ venture.venture_state }}
-                    {% else %}
-                        Not specified
-                    {% endif %}
-                </td>
-                <td>{{ venture.venture_address_1|truncatechars:30|default:"No address" }}</td>
-                <td>
-                    <span style="color: green;">✅ Active</span>
-                </td>
-                <td>
-                    <a href="#" onclick="alert('View venture {{ venture.venture_id }}')">View Details</a>
-                </td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="6">
-                    <p>No ventures found. Start by adding your first business venture.</p>
-                    <button class="btn">Add Venture</button>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</div>
-
-<!-- Products Section - SHOWING ALL PRODUCTS -->
-
-<!-- DEBUG Products Section - Add this ABOVE the existing Products section -->
-<div class="card" style="background: #ffeeee; border: 2px solid red;">
-    <h2>🔍 DEBUG: Products Information</h2>
-    <p><strong>Products variable exists:</strong> {% if products %}YES{% else %}NO{% endif %}</p>
-    <p><strong>Products count:</strong> {{ products|length }}</p>
-    <p><strong>Products type:</strong> {{ products|default:"None" }}</p>
-    
-    {% if products %}
-        <p><strong>First 3 products:</strong></p>
-        <ul>
-            {% for product in products|slice:":3" %}
-                <li>ID: {{ product.products_id }} - Name: {{ product.product_name|default:"No name" }}</li>
-            {% empty %}
-                <li>Products exist but loop is empty?</li>
-            {% endfor %}
-        </ul>
-    {% else %}
-        <p style="color: red;"><strong>Products variable is empty or None!</strong></p>
-    {% endif %}
-</div>
-
-<div id="products" class="card">
-    <h2>🛍️ Products Catalog</h2>
-    <div style="margin-bottom: 15px;">
-        <a href="{% url 'core:products_list' %}" class="btn">View All Products</a>
-        <button class="btn" onclick="alert('Add product functionality coming soon')">Add Product</button>
+        <a href="{% url 'core:application_response_list' %}" class="btn">View All Responses</a>
+        <button class="btn" onclick="alert('Add response functionality coming soon')">Add Response</button>
+        <button class="btn btn-secondary" onclick="alert('Export functionality coming soon')">Export</button>
     </div>
     
     <div style="max-height: 500px; overflow-y: auto;">
         <table>
             <thead>
                 <tr>
-                    <th>Product ID</th>
-                    <th>Product Name</th>
-                    <th>Code</th>
-                    <th>Venture</th>
-                    <th>Coverage</th>
+                    <th>Response ID</th>
+                    <th>Application</th>
+                    <th>Question</th>
+                    <th>Order</th>
+                    <th>Response</th>
                     <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
-                {% for product in products %}
+                {% for response in application_responses %}
                 <tr>
-                    <td>{{ product.products_id }}</td>
+                    <td>{{ response.application_response_id }}</td>
                     <td>
-                        <a href="{% url 'core:products_detail' product.products_id %}">
-                            <strong>{{ product.product_name|default:"Unnamed Product" }}</strong>
-                        </a>
-                    </td>
-                    <td>
-                        {% if product.product_code %}
-                            <code style="background: #f0f0f0; padding: 2px 4px; border-radius: 3px;">{{ product.product_code }}</code>
-                        {% else %}
-                            <span style="color: #999;">No code</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if product.venture %}
-                            {{ product.venture.venture_name|default:"Unnamed Venture"|truncatechars:20 }}
-                        {% else %}
-                            <span style="color: #999;">No venture</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if product.coverage %}
-                            {{ product.coverage.coverage_name|default:"Coverage"|truncatechars:15 }}
-                        {% else %}
-                            <span style="color: #999;">No coverage</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <a href="{% url 'core:products_detail' product.products_id %}">View Details</a>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="6">
-                        <p>No products found. Add products to your catalog.</p>
-                        <button class="btn">Add Product</button>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-    <p style="text-align: center; margin-top: 15px; color: #666;">
-        Total: {{ products|length }} products
-    </p>
-</div>
-
-<!-- Coverage Types Section - SHOWING ALL COVERAGE -->
-<div id="coverage-types" class="card">
-    <h2>🛡️ Coverage Types</h2>
-    <div style="margin-bottom: 15px;">
-        <a href="{% url 'core:cover_list' %}" class="btn">View All Coverage</a>
-        <button class="btn" onclick="alert('Add coverage functionality coming soon')">Add Coverage</button>
-    </div>
-    
-    <div style="max-height: 500px; overflow-y: auto;">
-        <table>
-            <thead>
-                <tr>
-                    <th>Cover ID</th>
-                    <th>Coverage Name</th>
-                    <th>Associated Product</th>
-                    <th>Product Code</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for cover in coverage_types %}
-                <tr>
-                    <td>{{ cover.cover_id }}</td>
-                    <td>
-                        <a href="{% url 'core:cover_detail' cover.cover_id %}">
-                            <strong>{{ cover.cover_name|default:"Unnamed Coverage" }}</strong>
-                        </a>
-                    </td>
-                    <td>
-                        {% if cover.product %}
-                            <a href="{% url 'core:products_detail' cover.product.products_id %}">
-                                {{ cover.product.product_name|default:"Unnamed Product"|truncatechars:25 }}
+                        {% if response.application %}
+                            <a href="{% url 'core:application_detail' response.application.application_id %}">
+                                <strong>{{ response.application.application_name|default:"Unnamed Application"|truncatechars:20 }}</strong>
                             </a>
                         {% else %}
-                            <span style="color: #999;">No product</span>
+                            <span style="color: #999;">No Application</span>
                         {% endif %}
                     </td>
                     <td>
-                        {% if cover.product and cover.product.product_code %}
-                            <code style="background: #f0f0f0; padding: 2px 4px; border-radius: 3px;">{{ cover.product.product_code }}</code>
+                        {% if response.application_question %}
+                            <span style="color: #666;" title="{{ response.application_question.custom_question }}">
+                                {{ response.application_question.custom_question|default:"No Question"|truncatechars:30 }}
+                            </span>
                         {% else %}
-                            <span style="color: #999;">No code</span>
+                            <span style="color: #999;">No Question</span>
                         {% endif %}
                     </td>
                     <td>
-                        <a href="{% url 'core:cover_detail' cover.cover_id %}">View Details</a>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="5">
-                        <p>No coverage types found. Add coverage types to your catalog.</p>
-                        <button class="btn">Add Coverage</button>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-    <p style="text-align: center; margin-top: 15px; color: #666;">
-        Total: {{ coverage_types|length }} coverage types
-    </p>
-</div>
-
-<!-- Employee Contacts Section - SHOWING ALL EMPLOYEES -->
-<div id="employee-contacts" class="card">
-    <h2>👥 Employee Directory</h2>
-    <div style="margin-bottom: 15px;">
-        <a href="{% url 'core:employee_contact_list' %}" class="btn">Full Directory</a>
-        <button class="btn" onclick="alert('Add employee functionality coming soon')">Add Employee</button>
-    </div>
-    
-    <div style="max-height: 500px; overflow-y: auto;">
-        <table>
-            <thead>
-                <tr>
-                    <th>Employee ID</th>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Location</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for employee in employee_contacts %}
-                <tr>
-                    <td>{{ employee.employee_id }}</td>
-                    <td>
-                        <a href="{% url 'core:employee_contact_detail' employee.employee_id %}">
-                            <strong>
-                                {% if employee.employee_name_first or employee.employee_name_last %}
-                                    {{ employee.employee_name_first|default:"" }} {{ employee.employee_name_last|default:"" }}
-                                {% else %}
-                                    Employee {{ employee.employee_id }}
-                                {% endif %}
-                            </strong>
-                        </a>
-                    </td>
-                    <td>
-                        {% if employee.employee_email %}
-                            <a href="mailto:{{ employee.employee_email }}">{{ employee.employee_email|truncatechars:30 }}</a>
+                        {% if response.order %}
+                            <a href="#" onclick="alert('Order details: {{ response.order.orders_id }}')">
+                                <span style="color: #7c3aed;">Order {{ response.order.orders_id }}</span>
+                            </a>
                         {% else %}
-                            <span style="color: #999;">No email</span>
+                            <span style="color: #999;">No Order</span>
                         {% endif %}
                     </td>
                     <td>
-                        {% if employee.employee_location %}
-                            {{ employee.employee_location.employee_location_name|default:"Location"|truncatechars:20 }}
-                        {% else %}
-                            <span style="color: #999;">No location</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <a href="{% url 'core:employee_contact_detail' employee.employee_id %}">View Profile</a>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="5">
-                        <p>No employee contacts found. Add employees to your directory.</p>
-                        <button class="btn">Add Employee</button>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-    <p style="text-align: center; margin-top: 15px; color: #666;">
-        Total: {{ employee_contacts|length }} employees
-    </p>
-</div>
-
-<!-- Employee Functions Section - SHOWING ALL FUNCTIONS -->
-<div id="employee-functions" class="card">
-    <h2>⚙️ Employee Functions</h2>
-    <div style="margin-bottom: 15px;">
-        <a href="{% url 'core:employee_function_list' %}" class="btn">View All Functions</a>
-        <button class="btn" onclick="alert('Add function functionality coming soon')">Add Function</button>
-    </div>
-    
-    <div style="max-height: 500px; overflow-y: auto;">
-        <table>
-            <thead>
-                <tr>
-                    <th>Function ID</th>
-                    <th>Function Name</th>
-                    <th>Description</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for function in employee_functions %}
-                <tr>
-                    <td>{{ function.employee_function_id }}</td>
-                    <td>
-                        <a href="{% url 'core:employee_function_detail' function.employee_function_id %}">
-                            <strong>{{ function.employee_function|default:"Unnamed Function" }}</strong>
-                        </a>
-                    </td>
-                    <td>
-                        <span style="color: #666; font-style: italic;">
-                            {% if function.employee_function %}
-                                {{ function.employee_function|truncatechars:50 }}
-                            {% else %}
-                                No description available
-                            {% endif %}
+                        <span style="color: #374151;" title="{{ response.response }}">
+                            {{ response.response|default:"No Response"|truncatechars:40 }}
                         </span>
                     </td>
                     <td>
-                        <a href="{% url 'core:employee_function_detail' function.employee_function_id %}">View Details</a>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="4">
-                        <p>No employee functions found. Add job functions to organize roles.</p>
-                        <button class="btn">Add Function</button>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-    <p style="text-align: center; margin-top: 15px; color: #666;">
-        Total: {{ employee_functions|length }} functions
-    </p>
-</div>
-
-<!-- Storage Drives Section -->
-<div id="drives" class="card">
-    <h2>💾 Storage Drives</h2>
-    <div style="margin-bottom: 15px;">
-        <button class="btn" onclick="alert('Storage analysis coming soon')">Analyze</button>
-        <button class="btn" onclick="alert('Add drive functionality coming soon')">Add Drive</button>
-    </div>
-    
-    <div style="max-height: 500px; overflow-y: auto;">
-        <table>
-            <thead>
-                <tr>
-                    <th>Drive ID</th>
-                    <th>Drive Name</th>
-                    <th>Associated Venture</th>
-                    <th>Type</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for drive in drives %}
-                <tr>
-                    <td>{{ drive.drive_id }}</td>
-                    <td>
-                        <strong>{{ drive.drive_name|default:"Unnamed Drive" }}</strong>
-                    </td>
-                    <td>
-                        {% if drive.venture %}
-                            <a href="#ventures">{{ drive.venture.venture_name|default:"Unnamed Venture" }}</a>
-                        {% else %}
-                            No venture assigned
-                        {% endif %}
-                    </td>
-                    <td>Storage</td>
-                    <td>
-                        <span style="color: green;">✅ Online</span>
-                    </td>
-                    <td>
-                        <a href="#" onclick="alert('Manage drive {{ drive.drive_id }}')">Manage</a>
+                        <a href="{% url 'core:application_response_detail' response.application_response_id %}">View Details</a>
                     </td>
                 </tr>
                 {% empty %}
                 <tr>
                     <td colspan="6">
-                        <p>No storage drives found. Add drives to organize your data.</p>
-                        <button class="btn">Add Drive</button>
+                        <p>No application responses found in the database.</p>
+                        <button class="btn">Add Response</button>
                     </td>
                 </tr>
                 {% endfor %}
@@ -563,1135 +143,37 @@
         </table>
     </div>
     <p style="text-align: center; margin-top: 15px; color: #666;">
-        Total: {{ drives|length }} drives
+        Total: {{ application_responses|length }} application responses
+        {% if application_responses|length > 20 %}
+            (showing first 20 - <a href="{% url 'core:application_response_list' %}">view all</a>)
+        {% endif %}
     </p>
 </div>
 
-<!-- Employee Locations Section -->
-<div id="employee-locations" class="card">
-    <h2>📍 Employee Locations</h2>
+<!-- Future Orders Section (Placeholder) -->
+<div id="orders" class="card">
+    <h2>📋 Orders</h2>
     <div style="margin-bottom: 15px;">
-        <button class="btn" onclick="alert('Map view coming soon')">View Map</button>
-        <button class="btn" onclick="alert('Add location functionality coming soon')">Add Location</button>
+        <button class="btn btn-secondary" disabled>Coming Soon</button>
     </div>
-    
-    <div style="max-height: 500px; overflow-y: auto;">
-        <table>
-            <thead>
-                <tr>
-                    <th>Location ID</th>
-                    <th>Location Name</th>
-                    <th>Venture</th>
-                    <th>City & State</th>
-                    <th>Address</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for location in employee_locations %}
-                <tr>
-                    <td>{{ location.employee_location_id }}</td>
-                    <td>
-                        <strong>{{ location.employee_location_name|default:"Unnamed Location" }}</strong>
-                    </td>
-                    <td>
-                        {% if location.venture %}
-                            <a href="#ventures">{{ location.venture.venture_name|default:"Unnamed Venture" }}</a>
-                        {% else %}
-                            No venture assigned
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if location.employee_location_city and location.employee_location_state %}
-                            {{ location.employee_location_city }}, {{ location.employee_location_state }}
-                        {% else %}
-                            Not specified
-                        {% endif %}
-                    </td>
-                    <td>{{ location.employee_location_address_1|truncatechars:30|default:"No address" }}</td>
-                    <td>
-                        <a href="#" onclick="alert('View location {{ location.employee_location_id }}')">View Details</a>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="6">
-                        <p>No employee locations found. Add locations to track workforce distribution.</p>
-                        <button class="btn">Add Location</button>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-    <p style="text-align: center; margin-top: 15px; color: #666;">
-        Total: {{ employee_locations|length }} locations
+    <p style="color: #666; text-align: center; padding: 40px;">
+        Orders management section will be added next. This will show order data from your PostgreSQL database.
     </p>
 </div>
 
-<!-- Papers Section -->
-<div id="papers" class="card">
-    <h2>📄 Papers</h2>
-    <div style="margin-bottom: 15px;">
-        <a href="{% url 'core:paper_list' %}" class="btn">View All Papers</a>
-        <button class="btn" onclick="alert('Add paper functionality coming soon')">Add Paper</button>
-    </div>
-    
-    <div style="max-height: 500px; overflow-y: auto;">
-        <table>
-            <thead>
-                <tr>
-                    <th>Paper ID</th>
-                    <th>Paper Name</th>
-                    <th>AM Best Rating</th>
-                    <th>Financial Size</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for paper in papers %}
-                <tr>
-                    <td>{{ paper.paper_id }}</td>
-                    <td>
-                        <a href="{% url 'core:paper_detail' paper.paper_id %}">
-                            <strong>{{ paper.paper_name|default:"Unnamed Paper" }}</strong>
-                        </a>
-                    </td>
-                    <td>
-                        {% if paper.am_best_rating %}
-                            <span style="color: #059669; font-weight: 500;">{{ paper.am_best_rating }}</span>
-                        {% else %}
-                            <span style="color: #999;">No rating</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if paper.am_best_financial_size %}
-                            <span style="color: #7c3aed;">{{ paper.am_best_financial_size }}</span>
-                        {% else %}
-                            <span style="color: #999;">No size</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <a href="{% url 'core:paper_detail' paper.paper_id %}">View Details</a>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="5">
-                        <p>No papers found. Add papers to your catalog.</p>
-                        <button class="btn">Add Paper</button>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-    <p style="text-align: center; margin-top: 15px; color: #666;">
-        Total: {{ papers|length }} papers
-    </p>
-</div>
-
-<!-- Paper Details Section -->
-<div id="paper-details" class="card">
-    <h2>📊 Paper Details</h2>
-    <div style="margin-bottom: 15px;">
-        <a href="{% url 'core:paper_detail_list' %}" class="btn">View All Paper Details</a>
-        <button class="btn" onclick="alert('Add paper detail functionality coming soon')">Add Paper Detail</button>
-    </div>
-    
-    <div style="max-height: 500px; overflow-y: auto;">
-        <table>
-            <thead>
-                <tr>
-                    <th>Detail ID</th>
-                    <th>Paper</th>
-                    <th>Product</th>
-                    <th>Percentage</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for detail in paper_details %}
-                <tr>
-                    <td>{{ detail.paper_detail_id }}</td>
-                    <td>
-                        {% if detail.paper %}
-                            <a href="{% url 'core:paper_detail' detail.paper.paper_id %}">
-                                {{ detail.paper.paper_name|default:"Unnamed Paper"|truncatechars:20 }}
-                            </a>
-                        {% else %}
-                            <span style="color: #999;">No paper</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if detail.products %}
-                            <a href="{% url 'core:products_detail' detail.products.products_id %}">
-                                {{ detail.products.product_name|default:"Unnamed Product"|truncatechars:20 }}
-                            </a>
-                        {% else %}
-                            <span style="color: #999;">No product</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if detail.paper_percentage %}
-                            <span style="color: #059669; font-weight: 500;">{{ detail.paper_percentage }}%</span>
-                        {% else %}
-                            <span style="color: #999;">No %</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <a href="{% url 'core:paper_detail_detail' detail.paper_detail_id %}">View Details</a>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="5">
-                        <p>No paper details found. Add paper details to your catalog.</p>
-                        <button class="btn">Add Paper Detail</button>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-    <p style="text-align: center; margin-top: 15px; color: #666;">
-        Total: {{ paper_details|length }} paper details
-    </p>
-</div>
-
-<!-- Applications Section -->
+<!-- Future Applications Section (Placeholder) -->
 <div id="applications" class="card">
     <h2>📱 Applications</h2>
     <div style="margin-bottom: 15px;">
-        <a href="{% url 'core:application_list' %}" class="btn">View All Applications</a>
-        <button class="btn" onclick="alert('Add application functionality coming soon')">Add Application</button>
+        <button class="btn btn-secondary" disabled>Coming Soon</button>
     </div>
-    
-    <div style="max-height: 500px; overflow-y: auto;">
-        <table>
-            <thead>
-                <tr>
-                    <th>App ID</th>
-                    <th>Application Name</th>
-                    <th>Associated Product</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for app in applications %}
-                <tr>
-                    <td>{{ app.application_id }}</td>
-                    <td>
-                        <a href="{% url 'core:application_detail' app.application_id %}">
-                            <strong>{{ app.application_name|default:"Unnamed Application" }}</strong>
-                        </a>
-                    </td>
-                    <td>
-                        {% if app.product %}
-                            <a href="#" onclick="alert('Legacy Product - no detail page')">
-                                {{ app.product.product_name|default:"Unnamed Product"|truncatechars:25 }}
-                            </a>
-                        {% else %}
-                            <span style="color: #999;">No product</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <a href="{% url 'core:application_detail' app.application_id %}">View Details</a>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="4">
-                        <p>No applications found. Add applications to your catalog.</p>
-                        <button class="btn">Add Application</button>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-    <p style="text-align: center; margin-top: 15px; color: #666;">
-        Total: {{ applications|length }} applications
-    </p>
-</div>
-
-<!-- Application Questions Section -->
-<div id="application-questions" class="card">
-    <h2>❓ Application Questions</h2>
-    <div style="margin-bottom: 15px;">
-        <a href="{% url 'core:application_question_list' %}" class="btn">View All Questions</a>
-        <button class="btn" onclick="alert('Add question functionality coming soon')">Add Question</button>
-    </div>
-    
-    <div style="max-height: 500px; overflow-y: auto;">
-        <table>
-            <thead>
-                <tr>
-                    <th>Question ID</th>
-                    <th>Application</th>
-                    <th>Custom Question</th>
-                    <th>Parameter</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for question in application_questions %}
-                <tr>
-                    <td>{{ question.application_question_id }}</td>
-                    <td>
-                        {% if question.application %}
-                            <a href="{% url 'core:application_detail' question.application.application_id %}">
-                                {{ question.application.application_name|default:"Unnamed App"|truncatechars:15 }}
-                            </a>
-                        {% else %}
-                            <span style="color: #999;">No app</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <span style="color: #374151;">
-                            {{ question.custom_question|default:"No question"|truncatechars:40 }}
-                        </span>
-                    </td>
-                    <td>
-                        {% if question.parameter %}
-                            <span style="color: #7c3aed;">{{ question.parameter.parameter_name|default:"Param"|truncatechars:15 }}</span>
-                        {% else %}
-                            <span style="color: #999;">No param</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <a href="{% url 'core:application_question_detail' question.application_question_id %}">View Details</a>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="5">
-                        <p>No application questions found. Add questions to your catalog.</p>
-                        <button class="btn">Add Question</button>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-    <p style="text-align: center; margin-top: 15px; color: #666;">
-        Total: {{ application_questions|length }} questions
-    </p>
-</div>
-
-<div id="parameters" class="card">
-    <h2>⚙️ Parameters</h2>
-    <div style="margin-bottom: 15px;">
-        <a href="{% url 'core:parameter_list' %}" class="btn">View All Parameters</a>
-        <button class="btn" onclick="alert('Add parameter functionality coming soon')">Add Parameter</button>
-    </div>
-    
-    <div style="max-height: 500px; overflow-y: auto;">
-        <table>
-            <thead>
-                <tr>
-                    <th>Parameter ID</th>
-                    <th>Parameter Name</th>
-                    <th>Type ID</th>
-                    <th>Quote</th>
-                    <th>Binder</th>
-                    <th>Policy</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for param in parameters %}
-                <tr>
-                    <td>{{ param.parameter_id }}</td>
-                    <td>
-                        <a href="{% url 'core:parameter_detail' param.parameter_id %}">
-                            <strong>{{ param.parameter_name|default:"Unnamed Parameter" }}</strong>
-                        </a>
-                    </td>
-                    <td>
-                        {% if param.parameter_type_id %}
-                            <span style="color: #7c3aed;">{{ param.parameter_type_id }}</span>
-                        {% else %}
-                            <span style="color: #999;">No type</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if param.parameter_quote %}
-                            <span style="color: #059669;">✓ Yes</span>
-                        {% else %}
-                            <span style="color: #999;">No</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if param.parameter_binder %}
-                            <span style="color: #059669;">✓ Yes</span>
-                        {% else %}
-                            <span style="color: #999;">No</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if param.parameter_policy %}
-                            <span style="color: #059669;">✓ Yes</span>
-                        {% else %}
-                            <span style="color: #999;">No</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <a href="{% url 'core:parameter_detail' param.parameter_id %}">View Details</a>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="7">
-                        <p>No parameters found. Add parameters to your catalog.</p>
-                        <button class="btn">Add Parameter</button>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-    <p style="text-align: center; margin-top: 15px; color: #666;">
-        Total: {{ parameters|length }} parameters
-    </p>
-</div>
-
-<!-- Parameter Maps Section -->
-<div id="parameter-maps" class="card">
-    <h2>🗺️ Parameter Maps</h2>
-    <div style="margin-bottom: 15px;">
-        <a href="{% url 'core:parameter_map_list' %}" class="btn">View All Parameter Maps</a>
-        <button class="btn" onclick="alert('Add parameter map functionality coming soon')">Add Parameter Map</button>
-    </div>
-    
-    <div style="max-height: 500px; overflow-y: auto;">
-        <table>
-            <thead>
-                <tr>
-                    <th>Map ID</th>
-                    <th>Product</th>
-                    <th>Parameter</th>
-                    <th>Console</th>
-                    <th>Quote</th>
-                    <th>Binder</th>
-                    <th>Policy</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for map in parameter_maps %}
-                <tr>
-                    <td>{{ map.parameter_map_id }}</td>
-                    <td>
-                        {% if map.products %}
-                            <a href="{% url 'core:products_detail' map.products.products_id %}">
-                                {{ map.products.product_name|default:"Unnamed Product"|truncatechars:15 }}
-                            </a>
-                        {% else %}
-                            <span style="color: #999;">No product</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if map.parameter %}
-                            <a href="{% url 'core:parameter_detail' map.parameter.parameter_id %}">
-                                {{ map.parameter.parameter_name|default:"Unnamed Parameter"|truncatechars:15 }}
-                            </a>
-                        {% else %}
-                            <span style="color: #999;">No param</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if map.console_element %}
-                            <span style="color: #059669;">✓</span>
-                        {% else %}
-                            <span style="color: #999;">-</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if map.quote_item %}
-                            <span style="color: #059669;">✓</span>
-                        {% else %}
-                            <span style="color: #999;">-</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if map.binder_item %}
-                            <span style="color: #059669;">✓</span>
-                        {% else %}
-                            <span style="color: #999;">-</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if map.policy_item %}
-                            <span style="color: #059669;">✓</span>
-                        {% else %}
-                            <span style="color: #999;">-</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <a href="{% url 'core:parameter_map_detail' map.parameter_map_id %}">View Details</a>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="8">
-                        <p>No parameter maps found. Add parameter maps to your catalog.</p>
-                        <button class="btn">Add Parameter Map</button>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-    <p style="text-align: center; margin-top: 15px; color: #666;">
-        Total: {{ parameter_maps|length }} parameter maps
-    </p>
-</div>
-
-<!-- Documents Section -->
-<div id="documents" class="card">
-    <h2>📄 Documents</h2>
-    <div style="margin-bottom: 15px;">
-        <a href="{% url 'core:document_list' %}" class="btn">View All Documents</a>
-        <button class="btn" onclick="alert('Add document functionality coming soon')">Add Document</button>
-    </div>
-    
-    <div style="max-height: 500px; overflow-y: auto;">
-        <table>
-            <thead>
-                <tr>
-                    <th>Document ID</th>
-                    <th>Document Name</th>
-                    <th>Product</th>
-                    <th>Document Number</th>
-                    <th>Code</th>
-                    <th>Default</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for doc in documents %}
-                <tr>
-                    <td>{{ doc.document_id }}</td>
-                    <td>
-                        <a href="{% url 'core:document_detail' doc.document_id %}">
-                            <strong>{{ doc.document_name|default:"Unnamed Document" }}</strong>
-                        </a>
-                    </td>
-                    <td>
-                        {% if doc.product %}
-                            <a href="{% url 'core:products_detail' doc.product.products_id %}">
-                                {{ doc.product.product_name|default:"Unnamed Product"|truncatechars:15 }}
-                            </a>
-                        {% else %}
-                            <span style="color: #999;">No product</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if doc.document_number %}
-                            <code style="background: #f0f0f0; padding: 2px 4px; border-radius: 3px;">{{ doc.document_number }}</code>
-                        {% else %}
-                            <span style="color: #999;">No number</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if doc.document_code %}
-                            <span style="color: #7c3aed;">{{ doc.document_code|truncatechars:10 }}</span>
-                        {% else %}
-                            <span style="color: #999;">No code</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if doc.default_document %}
-                            <span style="color: #059669;">✓ Default</span>
-                        {% else %}
-                            <span style="color: #999;">-</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <a href="{% url 'core:document_detail' doc.document_id %}">View Details</a>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="7">
-                        <p>No documents found. Add documents to your catalog.</p>
-                        <button class="btn">Add Document</button>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-    <p style="text-align: center; margin-top: 15px; color: #666;">
-        Total: {{ documents|length }} documents
-    </p>
-</div>
-
-<!-- Tasks Section -->
-<div id="tasks" class="card">
-    <h2>📋 Tasks</h2>
-    <div style="margin-bottom: 15px;">
-        <a href="{% url 'core:task_list' %}" class="btn">View All Tasks</a>
-        <button class="btn" onclick="alert('Add task functionality coming soon')">Add Task</button>
-    </div>
-    
-    <div style="max-height: 500px; overflow-y: auto;">
-        <table>
-            <thead>
-                <tr>
-                    <th>Task ID</th>
-                    <th>Task Name</th>
-                    <th>Description</th>
-                    <th>Display</th>
-                    <th>Subroutine</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for task in tasks %}
-                <tr>
-                    <td>{{ task.task_id }}</td>
-                    <td>
-                        <a href="{% url 'core:task_detail' task.task_id %}">
-                            <strong>{{ task.task_name|default:"Unnamed Task" }}</strong>
-                        </a>
-                    </td>
-                    <td>
-                        <span style="color: #666;">
-                            {{ task.task_description|default:"No description"|truncatechars:30 }}
-                        </span>
-                    </td>
-                    <td>
-                        {% if task.task_display %}
-                            <span style="color: #7c3aed;">{{ task.task_display|truncatechars:15 }}</span>
-                        {% else %}
-                            <span style="color: #999;">No display</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if task.subroutine_name %}
-                            <code style="background: #f0f0f0; padding: 2px 4px; border-radius: 3px;">{{ task.subroutine_name|truncatechars:12 }}</code>
-                        {% else %}
-                            <span style="color: #999;">No subroutine</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <a href="{% url 'core:task_detail' task.task_id %}">View Details</a>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="6">
-                        <p>No tasks found. Add tasks to your catalog.</p>
-                        <button class="btn">Add Task</button>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-    <p style="text-align: center; margin-top: 15px; color: #666;">
-        Total: {{ tasks|length }} tasks
-    </p>        
-</div>
-
-<!-- Workflows Section -->
-<div id="workflows" class="card">
-    <h2>⚡ Workflows</h2>
-    <div style="margin-bottom: 15px;">
-        <a href="{% url 'core:workflow_list' %}" class="btn">View All Workflows</a>
-        <button class="btn" onclick="alert('Add workflow functionality coming soon')">Add Workflow</button>
-    </div>
-    
-    <div style="max-height: 500px; overflow-y: auto;">
-        <table>
-            <thead>
-                <tr>
-                    <th>Workflow ID</th>
-                    <th>Workflow Name</th>
-                    <th>Workflow Type</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for workflow in workflows %}
-                <tr>
-                    <td>{{ workflow.workflow_id }}</td>
-                    <td>
-                        <a href="{% url 'core:workflow_detail' workflow.workflow_id %}">
-                            <strong>{{ workflow.workflow_name|default:"Unnamed Workflow" }}</strong>
-                        </a>
-                    </td>
-                    <td>
-                        {% if workflow.workflow_type %}
-                            <span style="color: #7c3aed;">{{ workflow.workflow_type }}</span>
-                        {% else %}
-                            <span style="color: #999;">No type</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <a href="{% url 'core:workflow_detail' workflow.workflow_id %}">View Details</a>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="4">
-                        <p>No workflows found. Add workflows to your catalog.</p>
-                        <button class="btn">Add Workflow</button>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-    <p style="text-align: center; margin-top: 15px; color: #666;">
-        Total: {{ workflows|length }} workflows
-    </p>
-</div>
-
-<!-- Workflow Details Section -->
-<div id="workflow-details" class="card">
-    <h2>📋 Workflow Details</h2>
-    <div style="margin-bottom: 15px;">
-        <a href="{% url 'core:workflow_detail_list' %}" class="btn">View All Workflow Details</a>
-        <button class="btn" onclick="alert('Add workflow detail functionality coming soon')">Add Workflow Detail</button>
-    </div>
-    
-    <div style="max-height: 500px; overflow-y: auto;">
-        <table>
-            <thead>
-                <tr>
-                    <th>Detail ID</th>
-                    <th>Workflow</th>
-                    <th>Task</th>
-                    <th>Sequence</th>
-                    <th>Manual/Auto</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for detail in workflow_details %}
-                <tr>
-                    <td>{{ detail.workflow_detail_id }}</td>
-                    <td>
-                        {% if detail.workflow %}
-                            <a href="{% url 'core:workflow_detail' detail.workflow.workflow_id %}">
-                                {{ detail.workflow.workflow_name|default:"Unnamed Workflow"|truncatechars:15 }}
-                            </a>
-                        {% else %}
-                            <span style="color: #999;">No workflow</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if detail.task %}
-                            <a href="{% url 'core:task_detail' detail.task.task_id %}">
-                                {{ detail.task.task_name|default:"Unnamed Task"|truncatechars:15 }}
-                            </a>
-                        {% else %}
-                            <span style="color: #999;">No task</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if detail.workflow_sequence %}
-                            <span style="color: #059669;">{{ detail.workflow_sequence }}</span>
-                        {% else %}
-                            <span style="color: #999;">-</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if detail.man_auto %}
-                            <span style="color: #059669;">Manual</span>
-                        {% else %}
-                            <span style="color: #7c3aed;">Auto</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <a href="{% url 'core:workflow_detail_detail' detail.workflow_detail_id %}">View Details</a>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="6">
-                        <p>No workflow details found. Add workflow details to your catalog.</p>
-                        <button class="btn">Add Workflow Detail</button>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-    <p style="text-align: center; margin-top: 15px; color: #666;">
-        Total: {{ workflow_details|length }} workflow details
-    </p>
-</div>
-
-<!-- Attachments Section -->
-<div id="attachments" class="card">
-    <h2>📎 Attachments</h2>
-    <div style="margin-bottom: 15px;">
-        <a href="{% url 'core:attachment_list' %}" class="btn">View All Attachments</a>
-        <button class="btn" onclick="alert('Add attachment functionality coming soon')">Add Attachment</button>
-    </div>
-    
-    <div style="max-height: 500px; overflow-y: auto;">
-        <table>
-            <thead>
-                <tr>
-                    <th>Attachment ID</th>
-                    <th>Attachment Name</th>
-                    <th>Description</th>
-                    <th>Type</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for attachment in attachments %}
-                <tr>
-                    <td>{{ attachment.attachment_id }}</td>
-                    <td>
-                        <a href="{% url 'core:attachment_detail' attachment.attachment_id %}">
-                            <strong>{{ attachment.attachment_name|default:"Unnamed Attachment" }}</strong>
-                        </a>
-                    </td>
-                    <td>
-                        <span style="color: #666;">
-                            {{ attachment.output_description|default:"No description"|truncatechars:30 }}
-                        </span>
-                    </td>
-                    <td>
-                        {% if attachment.attachment_type %}
-                            <span style="color: #7c3aed;">{{ attachment.attachment_type.attachment_type_name|default:"Type"|truncatechars:15 }}</span>
-                        {% else %}
-                            <span style="color: #999;">No type</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <a href="{% url 'core:attachment_detail' attachment.attachment_id %}">View Details</a>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="5">
-                        <p>No attachments found. Add attachments to your catalog.</p>
-                        <button class="btn">Add Attachment</button>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-    <p style="text-align: center; margin-top: 15px; color: #666;">
-        Total: {{ attachments|length }} attachments
-    </p>
-</div>
-
-<!-- Attachment Details Section -->
-<div id="attachment-details" class="card">
-    <h2>🔗 Attachment Details</h2>
-    <div style="margin-bottom: 15px;">
-        <a href="{% url 'core:attachment_detail_list' %}" class="btn">View All Attachment Details</a>
-        <button class="btn" onclick="alert('Add attachment detail functionality coming soon')">Add Attachment Detail</button>
-    </div>
-    
-    <div style="max-height: 500px; overflow-y: auto;">
-        <table>
-            <thead>
-                <tr>
-                    <th>Detail ID</th>
-                    <th>Attachment</th>
-                    <th>Product</th>
-                    <th>Task</th>
-                    <th>Type</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for detail in attachment_details %}
-                <tr>
-                    <td>{{ detail.attachment_detail_id }}</td>
-                    <td>
-                        {% if detail.attachment %}
-                            <a href="{% url 'core:attachment_detail' detail.attachment.attachment_id %}">
-                                {{ detail.attachment.attachment_name|default:"Unnamed Attachment"|truncatechars:15 }}
-                            </a>
-                        {% else %}
-                            <span style="color: #999;">No attachment</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if detail.product %}
-                            <a href="{% url 'core:products_detail' detail.product.products_id %}">
-                                {{ detail.product.product_name|default:"Unnamed Product"|truncatechars:15 }}
-                            </a>
-                        {% else %}
-                            <span style="color: #999;">No product</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if detail.task %}
-                            <a href="{% url 'core:task_detail' detail.task.task_id %}">
-                                {{ detail.task.task_name|default:"Unnamed Task"|truncatechars:15 }}
-                            </a>
-                        {% else %}
-                            <span style="color: #999;">No task</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if detail.attachment_type %}
-                            <span style="color: #7c3aed;">{{ detail.attachment_type.attachment_type_name|default:"Type"|truncatechars:10 }}</span>
-                        {% else %}
-                            <span style="color: #999;">No type</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <a href="{% url 'core:attachment_detail_detail' detail.attachment_detail_id %}">View Details</a>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="6">
-                        <p>No attachment details found. Add attachment details to your catalog.</p>
-                        <button class="btn">Add Attachment Detail</button>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-    <p style="text-align: center; margin-top: 15px; color: #666;">
-        Total: {{ attachment_details|length }} attachment details
-    </p>
-</div>
-
-<!-- Limits Section -->
-<div id="limits" class="card">
-    <h2>🚧 Limits</h2>
-    <div style="margin-bottom: 15px;">
-        <a href="{% url 'core:limits_list' %}" class="btn">View All Limits</a>
-        <button class="btn" onclick="alert('Add limits functionality coming soon')">Add Limits</button>
-    </div>
-    
-    <div style="max-height: 500px; overflow-y: auto;">
-        <table>
-            <thead>
-                <tr>
-                    <th>Limits ID</th>
-                    <th>Product</th>
-                    <th>Cover</th>
-                    <th>Limit Text</th>
-                    <th>PC Number</th>
-                    <th>AG Number</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for limit in limits %}
-                <tr>
-                    <td>{{ limit.limits_id }}</td>
-                    <td>
-                        {% if limit.product %}
-                            <a href="{% url 'core:products_detail' limit.product.products_id %}">
-                                {{ limit.product.product_name|default:"Unnamed Product"|truncatechars:15 }}
-                            </a>
-                        {% else %}
-                            <span style="color: #999;">No product</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if limit.cover %}
-                            <a href="{% url 'core:cover_detail' limit.cover.cover_id %}">
-                                {{ limit.cover.cover_name|default:"Unnamed Cover"|truncatechars:15 }}
-                            </a>
-                        {% else %}
-                            <span style="color: #999;">No cover</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <span style="color: #666;">
-                            {{ limit.limit_text|default:"No text"|truncatechars:25 }}
-                        </span>
-                    </td>
-                    <td>
-                        {% if limit.limit_pc_number %}
-                            <span style="color: #059669; font-weight: 500;">${{ limit.limit_pc_number|floatformat:0 }}</span>
-                        {% else %}
-                            <span style="color: #999;">-</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if limit.limit_ag_number %}
-                            <span style="color: #7c3aed; font-weight: 500;">${{ limit.limit_ag_number|floatformat:0 }}</span>
-                        {% else %}
-                            <span style="color: #999;">-</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <a href="{% url 'core:limits_detail' limit.limits_id %}">View Details</a>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="7">
-                        <p>No limits found. Add limits to your catalog.</p>
-                        <button class="btn">Add Limits</button>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-    <p style="text-align: center; margin-top: 15px; color: #666;">
-        Total: {{ limits|length }} limits
-    </p>
-</div>
-
-<!-- Retentions Section -->
-<div id="retentions" class="card">
-    <h2>💰 Retentions</h2>
-    <div style="margin-bottom: 15px;">
-        <a href="{% url 'core:retention_list' %}" class="btn">View All Retentions</a>
-        <button class="btn" onclick="alert('Add retention functionality coming soon')">Add Retention</button>
-    </div>
-    
-    <div style="max-height: 500px; overflow-y: auto;">
-        <table>
-            <thead>
-                <tr>
-                    <th>Retention ID</th>
-                    <th>Product</th>
-                    <th>Retention Text</th>
-                    <th>PC Number</th>
-                    <th>AG Number</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for retention in retentions %}
-                <tr>
-                    <td>{{ retention.retention_id }}</td>
-                    <td>
-                        {% if retention.products %}
-                            <a href="{% url 'core:products_detail' retention.products.products_id %}">
-                                {{ retention.products.product_name|default:"Unnamed Product"|truncatechars:15 }}
-                            </a>
-                        {% else %}
-                            <span style="color: #999;">No product</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <span style="color: #666;">
-                            {{ retention.retention_text|default:"No text"|truncatechars:25 }}
-                        </span>
-                    </td>
-                    <td>
-                        {% if retention.retention_pc_number %}
-                            <span style="color: #059669; font-weight: 500;">${{ retention.retention_pc_number|floatformat:0 }}</span>
-                        {% else %}
-                            <span style="color: #999;">-</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if retention.retention_ag_number %}
-                            <span style="color: #7c3aed; font-weight: 500;">${{ retention.retention_ag_number|floatformat:0 }}</span>
-                        {% else %}
-                            <span style="color: #999;">-</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <a href="{% url 'core:retention_detail' retention.retention_id %}">View Details</a>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="6">
-                        <p>No retentions found. Add retentions to your catalog.</p>
-                        <button class="btn">Add Retention</button>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-    <p style="text-align: center; margin-top: 15px; color: #666;">
-        Total: {{ retentions|length }} retentions
-    </p>
-</div>
-
-<!-- Sublimits Section -->
-<div id="sublimits" class="card">
-    <h2>📊 Sublimits</h2>
-    <div style="margin-bottom: 15px;">
-        <a href="{% url 'core:sublimit_list' %}" class="btn">View All Sublimits</a>
-        <button class="btn" onclick="alert('Add sublimit functionality coming soon')">Add Sublimit</button>
-    </div>
-    
-    <div style="max-height: 500px; overflow-y: auto;">
-        <table>
-            <thead>
-                <tr>
-                    <th>Sublimit ID</th>
-                    <th>Sublimit Name</th>
-                    <th>Product</th>
-                    <th>Order</th>
-                    <th>Amount</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for sublimit in sublimits %}
-                <tr>
-                    <td>{{ sublimit.sublimit_id }}</td>
-                    <td>
-                        <a href="{% url 'core:sublimit_detail' sublimit.sublimit_id %}">
-                            <strong>{{ sublimit.sublimit_name|default:"Unnamed Sublimit" }}</strong>
-                        </a>
-                    </td>
-                    <td>
-                        {% if sublimit.products %}
-                            <a href="{% url 'core:products_detail' sublimit.products.products_id %}">
-                                {{ sublimit.products.product_name|default:"Unnamed Product"|truncatechars:15 }}
-                            </a>
-                        {% else %}
-                            <span style="color: #999;">No product</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if sublimit.orders %}
-                            <span style="color: #7c3aed;">Order {{ sublimit.orders.orders_id }}</span>
-                        {% else %}
-                            <span style="color: #999;">No order</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if sublimit.sublimit_amount %}
-                            <span style="color: #059669; font-weight: 500;">${{ sublimit.sublimit_amount|floatformat:0 }}</span>
-                        {% else %}
-                            <span style="color: #999;">No amount</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <a href="{% url 'core:sublimit_detail' sublimit.sublimit_id %}">View Details</a>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="6">
-                        <p>No sublimits found. Add sublimits to your catalog.</p>
-                        <button class="btn">Add Sublimit</button>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-    <p style="text-align: center; margin-top: 15px; color: #666;">
-        Total: {{ sublimits|length }} sublimits
+    <p style="color: #666; text-align: center; padding: 40px;">
+        Applications management section will be added next. This will show application data from your PostgreSQL database.
     </p>
 </div>
 
 <script>
-// Enhanced search functionality
+// Enhanced search functionality (same as catalog)
 function performGlobalSearch() {
     const query = document.getElementById('globalSearch').value.toLowerCase();
     if (!query) {
@@ -1744,7 +226,7 @@ document.getElementById('globalSearch').addEventListener('keypress', function(e)
     }
 });
 
-// Simple smooth scrolling for anchor links
+// Simple smooth scrolling for anchor links (same as catalog)
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function (e) {
         e.preventDefault();
@@ -1760,8 +242,6 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     });
 });
 
-
-console.log('Enhanced Catalog loaded with {{ products|length }} products, {{ employee_contacts|length }} employees, {{ coverage_types|length }} coverage types');
-
+console.log('Workstation loaded with {{ application_responses|length }} application responses');
 </script>
 {% endblock %}
