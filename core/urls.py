@@ -61,4 +61,21 @@ urlpatterns = [
 # Employee Function URLs
     path('functions/', views.employee_function_list, name='employee_function_list'),
     path('functions/<int:pk>/', views.employee_function_detail, name='employee_function_detail'),
+
+# Paper URLs
+path('papers/', views.paper_list, name='paper_list'),
+path('papers/<int:pk>/', views.paper_detail, name='paper_detail'),
+
+# Paper Detail URLs  
+path('paper-details/', views.paper_detail_list, name='paper_detail_list'),
+path('paper-details/<int:pk>/', views.paper_detail_detail, name='paper_detail_detail'),
+
+# Applications URLs
+path('applications/', views.application_list, name='application_list'),
+path('applications/<int:pk>/', views.application_detail, name='application_detail'),
+
+# Application Question URLs
+path('application-questions/', views.application_question_list, name='application_question_list'),
+path('application-questions/<int:pk>/', views.application_question_detail, name='application_question_detail'),
+
 ]

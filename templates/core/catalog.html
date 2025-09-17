@@ -25,11 +25,22 @@
     <li><a href="#employee-functions">⚙️ Employee Functions <span class="badge">{{ employee_functions|length }}</span></a></li>
 </ul>
 
+
 <h4>Management</h4>
 <ul>
     <li><a href="{% url 'core:machine_learning' %}">🤖 Machine Learning</a></li>
     <li><a href="#" onclick="alert('Coming soon')">📊 Reports</a></li>
     <li><a href="#" onclick="alert('Coming soon')">⭐ Analytics</a></li>
+</ul>
+
+<h4>Paper & Applications</h4>
+<ul>
+    <li><a href="#papers">📄 Papers <span class="badge">{{ papers|length }}</span></a></li>
+    <li><a href="#paper-details">📊 Paper Details <span class="badge">{{ paper_details|length }}</span></a></li>
+    <li><a href="#applications">📱 Applications <span class="badge">{{ applications|length }}</span></a></li>
+    <li><a href="#application-questions">❓ Application Questions <span class="badge">{{ application_questions|length }}</span></a></li>
+    <li><a href="{% url 'core:paper_list' %}">View All Papers</a></li>
+    <li><a href="{% url 'core:application_list' %}">View All Applications</a></li>
 </ul>
 
 <h4>Quick Actions</h4>
@@ -71,6 +82,22 @@
     <div class="stat-card">
         <div class="stat-number">{{ employee_functions|length }}</div>
         <div>Job Functions</div>
+    </div>
+    <div class="stat-card">
+    <div class="stat-number">{{ papers|length }}</div>
+    <div>Papers</div>
+    </div>
+    <div class="stat-card">
+    <div class="stat-number">{{ paper_details|length }}</div>
+    <div>Paper Details</div>
+    </div>
+    <div class="stat-card">
+    <div class="stat-number">{{ applications|length }}</div>
+    <div>Applications</div>
+    </div>
+    <div class="stat-card">
+    <div class="stat-number">{{ application_questions|length }}</div>
+    <div>App Questions</div>
     </div>
 </div>
 
@@ -536,6 +563,256 @@
     </p>
 </div>
 
+<!-- Papers Section -->
+<div id="papers" class="card">
+    <h2>📄 Papers</h2>
+    <div style="margin-bottom: 15px;">
+        <a href="{% url 'core:paper_list' %}" class="btn">View All Papers</a>
+        <button class="btn" onclick="alert('Add paper functionality coming soon')">Add Paper</button>
+    </div>
+    
+    <div style="max-height: 500px; overflow-y: auto;">
+        <table>
+            <thead>
+                <tr>
+                    <th>Paper ID</th>
+                    <th>Paper Name</th>
+                    <th>AM Best Rating</th>
+                    <th>Financial Size</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for paper in papers %}
+                <tr>
+                    <td>{{ paper.paper_id }}</td>
+                    <td>
+                        <a href="{% url 'core:paper_detail' paper.paper_id %}">
+                            <strong>{{ paper.paper_name|default:"Unnamed Paper" }}</strong>
+                        </a>
+                    </td>
+                    <td>
+                        {% if paper.am_best_rating %}
+                            <span style="color: #059669; font-weight: 500;">{{ paper.am_best_rating }}</span>
+                        {% else %}
+                            <span style="color: #999;">No rating</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if paper.am_best_financial_size %}
+                            <span style="color: #7c3aed;">{{ paper.am_best_financial_size }}</span>
+                        {% else %}
+                            <span style="color: #999;">No size</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'core:paper_detail' paper.paper_id %}">View Details</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5">
+                        <p>No papers found. Add papers to your catalog.</p>
+                        <button class="btn">Add Paper</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <p style="text-align: center; margin-top: 15px; color: #666;">
+        Total: {{ papers|length }} papers
+    </p>
+</div>
+
+<!-- Paper Details Section -->
+<div id="paper-details" class="card">
+    <h2>📊 Paper Details</h2>
+    <div style="margin-bottom: 15px;">
+        <a href="{% url 'core:paper_detail_list' %}" class="btn">View All Paper Details</a>
+        <button class="btn" onclick="alert('Add paper detail functionality coming soon')">Add Paper Detail</button>
+    </div>
+    
+    <div style="max-height: 500px; overflow-y: auto;">
+        <table>
+            <thead>
+                <tr>
+                    <th>Detail ID</th>
+                    <th>Paper</th>
+                    <th>Product</th>
+                    <th>Percentage</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for detail in paper_details %}
+                <tr>
+                    <td>{{ detail.paper_detail_id }}</td>
+                    <td>
+                        {% if detail.paper %}
+                            <a href="{% url 'core:paper_detail' detail.paper.paper_id %}">
+                                {{ detail.paper.paper_name|default:"Unnamed Paper"|truncatechars:20 }}
+                            </a>
+                        {% else %}
+                            <span style="color: #999;">No paper</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if detail.products %}
+                            <a href="{% url 'core:products_detail' detail.products.products_id %}">
+                                {{ detail.products.product_name|default:"Unnamed Product"|truncatechars:20 }}
+                            </a>
+                        {% else %}
+                            <span style="color: #999;">No product</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if detail.paper_percentage %}
+                            <span style="color: #059669; font-weight: 500;">{{ detail.paper_percentage }}%</span>
+                        {% else %}
+                            <span style="color: #999;">No %</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'core:paper_detail_detail' detail.paper_detail_id %}">View Details</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5">
+                        <p>No paper details found. Add paper details to your catalog.</p>
+                        <button class="btn">Add Paper Detail</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <p style="text-align: center; margin-top: 15px; color: #666;">
+        Total: {{ paper_details|length }} paper details
+    </p>
+</div>
+
+<!-- Applications Section -->
+<div id="applications" class="card">
+    <h2>📱 Applications</h2>
+    <div style="margin-bottom: 15px;">
+        <a href="{% url 'core:application_list' %}" class="btn">View All Applications</a>
+        <button class="btn" onclick="alert('Add application functionality coming soon')">Add Application</button>
+    </div>
+    
+    <div style="max-height: 500px; overflow-y: auto;">
+        <table>
+            <thead>
+                <tr>
+                    <th>App ID</th>
+                    <th>Application Name</th>
+                    <th>Associated Product</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for app in applications %}
+                <tr>
+                    <td>{{ app.application_id }}</td>
+                    <td>
+                        <a href="{% url 'core:application_detail' app.application_id %}">
+                            <strong>{{ app.application_name|default:"Unnamed Application" }}</strong>
+                        </a>
+                    </td>
+                    <td>
+                        {% if app.product %}
+                            <a href="#" onclick="alert('Legacy Product - no detail page')">
+                                {{ app.product.product_name|default:"Unnamed Product"|truncatechars:25 }}
+                            </a>
+                        {% else %}
+                            <span style="color: #999;">No product</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'core:application_detail' app.application_id %}">View Details</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4">
+                        <p>No applications found. Add applications to your catalog.</p>
+                        <button class="btn">Add Application</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <p style="text-align: center; margin-top: 15px; color: #666;">
+        Total: {{ applications|length }} applications
+    </p>
+</div>
+
+<!-- Application Questions Section -->
+<div id="application-questions" class="card">
+    <h2>❓ Application Questions</h2>
+    <div style="margin-bottom: 15px;">
+        <a href="{% url 'core:application_question_list' %}" class="btn">View All Questions</a>
+        <button class="btn" onclick="alert('Add question functionality coming soon')">Add Question</button>
+    </div>
+    
+    <div style="max-height: 500px; overflow-y: auto;">
+        <table>
+            <thead>
+                <tr>
+                    <th>Question ID</th>
+                    <th>Application</th>
+                    <th>Custom Question</th>
+                    <th>Parameter</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for question in application_questions %}
+                <tr>
+                    <td>{{ question.application_question_id }}</td>
+                    <td>
+                        {% if question.application %}
+                            <a href="{% url 'core:application_detail' question.application.application_id %}">
+                                {{ question.application.application_name|default:"Unnamed App"|truncatechars:15 }}
+                            </a>
+                        {% else %}
+                            <span style="color: #999;">No app</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span style="color: #374151;">
+                            {{ question.custom_question|default:"No question"|truncatechars:40 }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if question.parameter %}
+                            <span style="color: #7c3aed;">{{ question.parameter.parameter_name|default:"Param"|truncatechars:15 }}</span>
+                        {% else %}
+                            <span style="color: #999;">No param</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'core:application_question_detail' question.application_question_id %}">View Details</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5">
+                        <p>No application questions found. Add questions to your catalog.</p>
+                        <button class="btn">Add Question</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <p style="text-align: center; margin-top: 15px; color: #666;">
+        Total: {{ application_questions|length }} questions
+    </p>
+</div>
+
 <script>
 // Enhanced search functionality
 function performGlobalSearch() {
@@ -606,6 +883,8 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     });
 });
 
+
 console.log('Enhanced Catalog loaded with {{ products|length }} products, {{ employee_contacts|length }} employees, {{ coverage_types|length }} coverage types');
+
 </script>
 {% endblock %}

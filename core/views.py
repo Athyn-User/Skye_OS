@@ -10,7 +10,7 @@ from .models import (
     Venture, Drive, EmployeeLocation, GenerationJob, Parameter,
     DataSeed, GenerationLog, ModelParameter, TrainingJob, Products,
     GenerationModel, TrainingModel, InputOutput, EmployeeContact,
-    Cover, EmployeeFunction
+    Cover, EmployeeFunction, Paper, PaperDetail, Applications, ApplicationQuestion
 )
 
 # =============================================================================
@@ -24,21 +24,31 @@ def catalog_view(request):
     drives = Drive.objects.select_related('venture').all()
     employee_locations = EmployeeLocation.objects.select_related('venture').all()
     
-    # NEW sections (these were missing!)
+    # Existing new sections
     products = Products.objects.select_related('venture', 'coverage').all()
     coverage_types = Cover.objects.select_related('product').all()
     employee_contacts = EmployeeContact.objects.select_related('employee_location').all()
     employee_functions = EmployeeFunction.objects.all()
     
+    # BRAND NEW sections - Paper, PaperDetail, Applications, ApplicationQuestion
+    papers = Paper.objects.all()
+    paper_details = PaperDetail.objects.select_related('products', 'paper').all()
+    applications = Applications.objects.select_related('product').all()
+    application_questions = ApplicationQuestion.objects.select_related('application', 'parameter').all()
+    
     context = {
         'ventures': ventures,
         'drives': drives,
         'employee_locations': employee_locations,
-        # Add the missing data
         'products': products,
         'coverage_types': coverage_types,
         'employee_contacts': employee_contacts,
         'employee_functions': employee_functions,
+        # Add the 4 new data sets
+        'papers': papers,
+        'paper_details': paper_details,
+        'applications': applications,
+        'application_questions': application_questions,
     }
     return render(request, 'core/catalog.html', context)
 
@@ -482,3 +492,163 @@ def venture_api(request):
             venture_zip=data.get('venture_zip'),
         )
         return JsonResponse({'success': True, 'venture_id': venture.venture_id})
+
+def paper_list(request):
+    """List all papers"""
+    search_query = request.GET.get('search', '')
+    
+    papers = Paper.objects.all()
+    
+    if search_query:
+        papers = papers.filter(
+            paper_name__icontains=search_query
+        )
+    
+    paginator = Paginator(papers, 25)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'page_obj': page_obj,
+        'search_query': search_query,
+        'title': 'Papers',
+        'total_count': papers.count(),
+    }
+    return render(request, 'core/paper_list.html', context)
+
+def paper_detail(request, pk):
+    """View individual paper"""
+    paper = get_object_or_404(Paper, pk=pk)
+    
+    # Get related paper details for this paper
+    related_paper_details = PaperDetail.objects.filter(paper=paper).select_related('products')
+    
+    context = {
+        'object': paper,
+        'related_paper_details': related_paper_details,
+        'title': f'Paper: {paper.paper_name or f"Paper {paper.paper_id}"}',
+        'list_url': 'core:paper_list',
+    }
+    return render(request, 'core/paper_detail.html', context)
+
+# =============================================================================
+# NEW PAPER DETAIL SECTION
+# =============================================================================
+
+def paper_detail_list(request):
+    """List all paper details"""
+    search_query = request.GET.get('search', '')
+    
+    paper_details = PaperDetail.objects.select_related('products', 'paper').all()
+    
+    if search_query:
+        paper_details = paper_details.filter(
+            paper__paper_name__icontains=search_query
+        ) | paper_details.filter(
+            products__product_name__icontains=search_query
+        )
+    
+    paginator = Paginator(paper_details, 25)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'page_obj': page_obj,
+        'search_query': search_query,
+        'title': 'Paper Details',
+        'total_count': paper_details.count(),
+    }
+    return render(request, 'core/paper_detail_list.html', context)
+
+def paper_detail_detail(request, pk):
+    """View individual paper detail"""
+    paper_detail = get_object_or_404(PaperDetail, pk=pk)
+    
+    context = {
+        'object': paper_detail,
+        'title': f'Paper Detail: {paper_detail.paper_detail_id}',
+        'list_url': 'core:paper_detail_list',
+    }
+    return render(request, 'core/paper_detail_detail.html', context)
+
+# =============================================================================
+# NEW APPLICATIONS SECTION
+# =============================================================================
+
+def application_list(request):
+    """List all applications"""
+    search_query = request.GET.get('search', '')
+    
+    applications = Applications.objects.select_related('product').all()
+    
+    if search_query:
+        applications = applications.filter(
+            application_name__icontains=search_query
+        )
+    
+    paginator = Paginator(applications, 25)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'page_obj': page_obj,
+        'search_query': search_query,
+        'title': 'Applications',
+        'total_count': applications.count(),
+    }
+    return render(request, 'core/application_list.html', context)
+
+def application_detail(request, pk):
+    """View individual application"""
+    application = get_object_or_404(Applications, pk=pk)
+    
+    # Get related application questions
+    related_questions = ApplicationQuestion.objects.filter(application=application).select_related('parameter')
+    
+    context = {
+        'object': application,
+        'related_questions': related_questions,
+        'title': f'Application: {application.application_name or f"Application {application.application_id}"}',
+        'list_url': 'core:application_list',
+    }
+    return render(request, 'core/application_detail.html', context)
+
+# =============================================================================
+# NEW APPLICATION QUESTION SECTION
+# =============================================================================
+
+def application_question_list(request):
+    """List all application questions"""
+    search_query = request.GET.get('search', '')
+    
+    questions = ApplicationQuestion.objects.select_related('application', 'parameter').all()
+    
+    if search_query:
+        questions = questions.filter(
+            custom_question__icontains=search_query
+        ) | questions.filter(
+            application__application_name__icontains=search_query
+        )
+    
+    paginator = Paginator(questions, 25)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'page_obj': page_obj,
+        'search_query': search_query,
+        'title': 'Application Questions',
+        'total_count': questions.count(),
+    }
+    return render(request, 'core/application_question_list.html', context)
+
+def application_question_detail(request, pk):
+    """View individual application question"""
+    question = get_object_or_404(ApplicationQuestion, pk=pk)
+    
+    context = {
+        'object': question,
+        'title': f'Application Question: {question.application_question_id}',
+        'list_url': 'core:application_question_list',
+    }
+    return render(request, 'core/application_question_detail.html', context)
