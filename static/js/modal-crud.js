@@ -58,7 +58,11 @@ class ModalCRUD {
         this.showLoading(button);
 
         // Build AJAX URL
-        const url = `/ajax/${modelName}/${objectId}/edit/`;
+           if (objectId === 'add') {
+                url = `/ajax/${modelName}/add/`;
+            } else {
+                url = `/ajax/${modelName}/${objectId}/edit/`;
+            }
 
         fetch(url, {
             method: 'GET',

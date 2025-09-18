@@ -496,61 +496,6 @@
     </p>
 </div>
 
-<!-- Replace the Order Data Verts Section in your workstation.html -->
-<!-- Order Data Verts Section -->
-<div id="order-data-verts" class="card">
-    <h2>📊 Order Data Verts</h2>
-    <div style="margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
-        <div>
-            <a href="{% url 'core:order_data_vert_list' %}" class="btn">View All Order Data Verts</a>
-        </div>
-        <div style="display: flex; gap: 10px;">
-            <button class="btn-edit-modal btn" data-model="order-data-vert" data-id="add">
-                Add New Order Data Vert
-            </button>
-            <button class="btn btn-secondary" onclick="alert('Export functionality coming soon')">Export</button>
-        </div>
-    </div>
-    
-    <div style="max-height: 500px; overflow-y: auto;">
-        <table>
-            <thead>
-                <tr>
-                    <th>Vert ID</th>
-                    <th>Order</th>
-                    <th>Parameter</th>
-                    <th>Vert Value</th>
-                    <th>Parameter Map</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for order_data_vert in order_data_verts %}
-                <tr>
-                    {% include "core/partials/order_data_vert_row.html" %}
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="6">
-                        <div style="text-align: center; padding: 20px;">
-                            <p>No order data verts found in the database.</p>
-                            <button class="btn-edit-modal btn" data-model="order-data-vert" data-id="add">
-                                Add First Order Data Vert
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-    <p style="text-align: center; margin-top: 15px; color: #666;">
-        Total: {{ total_order_data_verts }} order data verts
-        {% if order_data_verts|length >= 20 %}
-            (showing first 20 - <a href="{% url 'core:order_data_vert_list' %}">view all</a>)
-        {% endif %}
-    </p>
-</div>
 
 <!-- Order Data Verts Section -->
 <div id="order-data-verts" class="card">
