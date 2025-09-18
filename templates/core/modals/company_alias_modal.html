@@ -1,0 +1,48 @@
+<!-- templates/core/modals/company_alias_modal.html -->
+{% extends "core/modals/base_modal.html" %}
+
+{% block modal_title %}
+    {% if object %}Edit Company Alias: {{ object.company_alias_name }}{% else %}Add New Company Alias{% endif %}
+{% endblock %}
+
+{% block form_action %}/ajax/company-alias/{% if object %}{{ object.company_alias_id }}/edit/{% else %}add/{% endif %}{% endblock %}
+
+{% block form_fields %}
+    <div class="form-group">
+        {{ form.company.label_tag }}
+        {{ form.company }}
+        {% if form.company.errors %}{% for error in form.company.errors %}<span class="error-message">{{ error }}</span>{% endfor %}{% endif %}
+    </div>
+    
+    <div class="form-group">
+        {{ form.company_alias_name.label_tag }}
+        {{ form.company_alias_name }}
+        {% if form.company_alias_name.errors %}{% for error in form.company_alias_name.errors %}<span class="error-message">{{ error }}</span>{% endfor %}{% endif %}
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+        <div class="form-group">
+            {{ form.company_alias_eff_dte.label_tag }}
+            {{ form.company_alias_eff_dte }}
+            {% if form.company_alias_eff_dte.errors %}{% for error in form.company_alias_eff_dte.errors %}<span class="error-message">{{ error }}</span>{% endfor %}{% endif %}
+        </div>
+        <div class="form-group">
+            {{ form.company_alias_exp_dte.label_tag }}
+            {{ form.company_alias_exp_dte }}
+            {% if form.company_alias_exp_dte.errors %}{% for error in form.company_alias_exp_dte.errors %}<span class="error-message">{{ error }}</span>{% endfor %}{% endif %}
+        </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+        <div class="form-group">
+            {{ form.company_alias_retro_start.label_tag }}
+            {{ form.company_alias_retro_start }}
+            {% if form.company_alias_retro_start.errors %}{% for error in form.company_alias_retro_start.errors %}<span class="error-message">{{ error }}</span>{% endfor %}{% endif %}
+        </div>
+        <div class="form-group">
+            {{ form.company_alias_retro_end.label_tag }}
+            {{ form.company_alias_retro_end }}
+            {% if form.company_alias_retro_end.errors %}{% for error in form.company_alias_retro_end.errors %}<span class="error-message">{{ error }}</span>{% endfor %}{% endif %}
+        </div>
+    </div>
+{% endblock %}

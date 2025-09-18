@@ -6,6 +6,10 @@ from django.contrib import messages
 from django.core.paginator import Paginator
 from rest_framework import viewsets
 from rest_framework.decorators import api_view
+from django.template.loader import render_to_string
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
+from .forms import CompanyContactForm 
 from .models import (
     Venture, Drive, EmployeeLocation, GenerationJob, Parameter,
     DataSeed, GenerationLog, ModelParameter, TrainingJob, Products,
@@ -15,6 +19,12 @@ from .models import (
     AttachmentDetail, Limits, Retention, Sublimit, ApplicationResponse,
     Options, Company, CompanyLocation, CompanyContact, CompanyAlias,
     OrderOption, OrderDataVert, DocumentDetail
+)
+
+from .forms import (
+    CompanyContactForm, CompanyForm, OptionsForm, CompanyLocationForm, 
+    CompanyAliasForm, ApplicationResponseForm, OrderOptionForm, 
+    OrderDataVertForm, DocumentDetailForm
 )
 
 # =============================================================================
@@ -1759,3 +1769,807 @@ def company_contact_modal_add(request):
                 'html': modal_html,
                 'errors': form.errors
             })
+
+# =============================================================================
+# AJAX MODAL VIEWS - Add these to your core/views.py file
+# =============================================================================
+
+@csrf_exempt  # Temporarily disable CSRF for testing
+@require_http_methods(["GET", "POST"])
+def company_contact_modal_edit(request, pk):
+    """AJAX view for editing CompanyContact in modal"""
+    if not request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({'success': False, 'error': 'AJAX request required'})
+    
+    try:
+        contact = get_object_or_404(CompanyContact, pk=pk)
+    except CompanyContact.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'error': 'Contact not found'
+        })
+
+    if request.method == 'GET':
+        # Return the modal form HTML
+        form = CompanyContactForm(instance=contact)
+        
+        modal_html = render_to_string('core/modals/company_contact_modal.html', {
+            'form': form,
+            'object': contact
+        }, request=request)
+        
+        return JsonResponse({
+            'success': True,
+            'html': modal_html
+        })
+    
+    elif request.method == 'POST':
+        # Process the form submission
+        form = CompanyContactForm(request.POST, instance=contact)
+        
+        if form.is_valid():
+            updated_contact = form.save()
+            
+            # Generate updated table row HTML
+            row_html = render_to_string('core/partials/company_contact_row.html', {
+                'contact': updated_contact
+            }, request=request)
+            
+            return JsonResponse({
+                'success': True,
+                'message': f'Contact {updated_contact.company_contact_first} {updated_contact.company_contact_last} updated successfully!',
+                'object_id': updated_contact.company_contact_id,
+                'row_html': row_html
+            })
+        else:
+            # Return form with errors
+            modal_html = render_to_string('core/modals/company_contact_modal.html', {
+                'form': form,
+                'object': contact
+            }, request=request)
+            
+            return JsonResponse({
+                'success': False,
+                'html': modal_html,
+                'errors': form.errors
+            })
+
+@csrf_exempt  # Temporarily disable CSRF for testing
+@require_http_methods(["GET", "POST"])
+def company_contact_modal_add(request):
+    """AJAX view for adding new CompanyContact in modal"""
+    if not request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({'success': False, 'error': 'AJAX request required'})
+    
+    if request.method == 'GET':
+        # Return the modal form HTML for new contact
+        form = CompanyContactForm()
+        
+        modal_html = render_to_string('core/modals/company_contact_modal.html', {
+            'form': form,
+            'object': None
+        }, request=request)
+        
+        return JsonResponse({
+            'success': True,
+            'html': modal_html
+        })
+    
+    elif request.method == 'POST':
+        # Process the form submission
+        form = CompanyContactForm(request.POST)
+        
+        if form.is_valid():
+            new_contact = form.save()
+            
+            # Generate new table row HTML
+            row_html = render_to_string('core/partials/company_contact_row.html', {
+                'contact': new_contact
+            }, request=request)
+            
+            return JsonResponse({
+                'success': True,
+                'message': f'Contact {new_contact.company_contact_first} {new_contact.company_contact_last} added successfully!',
+                'object_id': new_contact.company_contact_id,
+                'row_html': row_html,
+                'action': 'add'
+            })
+        else:
+            # Return form with errors
+            modal_html = render_to_string('core/modals/company_contact_modal.html', {
+                'form': form,
+                'object': None
+            }, request=request)
+            
+            return JsonResponse({
+                'success': False,
+                'html': modal_html,
+                'errors': form.errors
+            })
+
+# Fix the pagination warning in your existing company_contact_list view
+def company_contact_list(request):
+    """List all company contacts with pagination and search"""
+    search_query = request.GET.get('search', '')
+    
+    # Add ordering to fix the pagination warning
+    contacts = CompanyContact.objects.select_related('company').order_by('company_contact_id')
+    
+    if search_query:
+        contacts = contacts.filter(
+            company_contact_first__icontains=search_query
+        ) | contacts.filter(
+            company_contact_last__icontains=search_query
+        ) | contacts.filter(
+            company_contact_email__icontains=search_query
+        ) | contacts.filter(
+            company__company_name__icontains=search_query
+        )
+    
+    paginator = Paginator(contacts, 25)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'page_obj': page_obj,
+        'search_query': search_query,
+        'title': 'Company Contacts',
+        'total_count': contacts.count(),
+    }
+    return render(request, 'core/company_contact_list.html', context)
+# =============================================================================
+# ADDITIONAL AJAX MODAL VIEWS - Add these to your core/views.py file
+# =============================================================================
+
+# Add these imports to the top of your file (if not already there)
+from .forms import CompanyContactForm, CompanyForm, OptionsForm
+
+# Company AJAX Views
+@csrf_exempt
+@require_http_methods(["GET", "POST"])
+def company_modal_edit(request, pk):
+    """AJAX view for editing Company in modal"""
+    if not request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({'success': False, 'error': 'AJAX request required'})
+    
+    try:
+        company = get_object_or_404(Company, pk=pk)
+    except Company.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'error': 'Company not found'
+        })
+
+    if request.method == 'GET':
+        form = CompanyForm(instance=company)
+        
+        modal_html = render_to_string('core/modals/company_modal.html', {
+            'form': form,
+            'object': company
+        }, request=request)
+        
+        return JsonResponse({
+            'success': True,
+            'html': modal_html
+        })
+    
+    elif request.method == 'POST':
+        form = CompanyForm(request.POST, instance=company)
+        
+        if form.is_valid():
+            updated_company = form.save()
+            
+            row_html = render_to_string('core/partials/company_row.html', {
+                'company': updated_company
+            }, request=request)
+            
+            return JsonResponse({
+                'success': True,
+                'message': f'Company "{updated_company.company_name}" updated successfully!',
+                'object_id': updated_company.company_id,
+                'row_html': row_html
+            })
+        else:
+            modal_html = render_to_string('core/modals/company_modal.html', {
+                'form': form,
+                'object': company
+            }, request=request)
+            
+            return JsonResponse({
+                'success': False,
+                'html': modal_html,
+                'errors': form.errors
+            })
+
+@csrf_exempt
+@require_http_methods(["GET", "POST"])
+def company_modal_add(request):
+    """AJAX view for adding new Company in modal"""
+    if not request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({'success': False, 'error': 'AJAX request required'})
+    
+    if request.method == 'GET':
+        form = CompanyForm()
+        
+        modal_html = render_to_string('core/modals/company_modal.html', {
+            'form': form,
+            'object': None
+        }, request=request)
+        
+        return JsonResponse({
+            'success': True,
+            'html': modal_html
+        })
+    
+    elif request.method == 'POST':
+        form = CompanyForm(request.POST)
+        
+        if form.is_valid():
+            new_company = form.save()
+            
+            row_html = render_to_string('core/partials/company_row.html', {
+                'company': new_company
+            }, request=request)
+            
+            return JsonResponse({
+                'success': True,
+                'message': f'Company "{new_company.company_name}" added successfully!',
+                'object_id': new_company.company_id,
+                'row_html': row_html,
+                'action': 'add'
+            })
+        else:
+            modal_html = render_to_string('core/modals/company_modal.html', {
+                'form': form,
+                'object': None
+            }, request=request)
+            
+            return JsonResponse({
+                'success': False,
+                'html': modal_html,
+                'errors': form.errors
+            })
+
+# Options AJAX Views
+@csrf_exempt
+@require_http_methods(["GET", "POST"])
+def options_modal_edit(request, pk):
+    """AJAX view for editing Options in modal"""
+    if not request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({'success': False, 'error': 'AJAX request required'})
+    
+    try:
+        option = get_object_or_404(Options, pk=pk)
+    except Options.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'error': 'Option not found'
+        })
+
+    if request.method == 'GET':
+        form = OptionsForm(instance=option)
+        
+        modal_html = render_to_string('core/modals/options_modal.html', {
+            'form': form,
+            'object': option
+        }, request=request)
+        
+        return JsonResponse({
+            'success': True,
+            'html': modal_html
+        })
+    
+    elif request.method == 'POST':
+        form = OptionsForm(request.POST, instance=option)
+        
+        if form.is_valid():
+            updated_option = form.save()
+            
+            row_html = render_to_string('core/partials/options_row.html', {
+                'option': updated_option
+            }, request=request)
+            
+            return JsonResponse({
+                'success': True,
+                'message': f'Option "{updated_option.option_name}" updated successfully!',
+                'object_id': updated_option.options_id,
+                'row_html': row_html
+            })
+        else:
+            modal_html = render_to_string('core/modals/options_modal.html', {
+                'form': form,
+                'object': option
+            }, request=request)
+            
+            return JsonResponse({
+                'success': False,
+                'html': modal_html,
+                'errors': form.errors
+            })
+
+@csrf_exempt
+@require_http_methods(["GET", "POST"])
+def options_modal_add(request):
+    """AJAX view for adding new Options in modal"""
+    if not request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({'success': False, 'error': 'AJAX request required'})
+    
+    if request.method == 'GET':
+        form = OptionsForm()
+        
+        modal_html = render_to_string('core/modals/options_modal.html', {
+            'form': form,
+            'object': None
+        }, request=request)
+        
+        return JsonResponse({
+            'success': True,
+            'html': modal_html
+        })
+    
+    elif request.method == 'POST':
+        form = OptionsForm(request.POST)
+        
+        if form.is_valid():
+            new_option = form.save()
+            
+            row_html = render_to_string('core/partials/options_row.html', {
+                'option': new_option
+            }, request=request)
+            
+            return JsonResponse({
+                'success': True,
+                'message': f'Option "{new_option.option_name}" added successfully!',
+                'object_id': new_option.options_id,
+                'row_html': row_html,
+                'action': 'add'
+            })
+        else:
+            modal_html = render_to_string('core/modals/options_modal.html', {
+                'form': form,
+                'object': None
+            }, request=request)
+            
+            return JsonResponse({
+                'success': False,
+                'html': modal_html,
+                'errors': form.errors
+            })
+
+# Company Location AJAX Views
+@csrf_exempt
+@require_http_methods(["GET", "POST"])
+def company_location_modal_edit(request, pk):
+    """AJAX view for editing CompanyLocation in modal"""
+    if not request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({'success': False, 'error': 'AJAX request required'})
+    
+    try:
+        location = get_object_or_404(CompanyLocation, pk=pk)
+    except CompanyLocation.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Location not found'})
+
+    if request.method == 'GET':
+        form = CompanyLocationForm(instance=location)
+        modal_html = render_to_string('core/modals/company_location_modal.html', {
+            'form': form, 'object': location
+        }, request=request)
+        return JsonResponse({'success': True, 'html': modal_html})
+    
+    elif request.method == 'POST':
+        form = CompanyLocationForm(request.POST, instance=location)
+        if form.is_valid():
+            updated_location = form.save()
+            row_html = render_to_string('core/partials/company_location_row.html', {
+                'location': updated_location
+            }, request=request)
+            return JsonResponse({
+                'success': True,
+                'message': f'Location updated successfully!',
+                'object_id': updated_location.company_location_id,
+                'row_html': row_html
+            })
+        else:
+            modal_html = render_to_string('core/modals/company_location_modal.html', {
+                'form': form, 'object': location
+            }, request=request)
+            return JsonResponse({'success': False, 'html': modal_html, 'errors': form.errors})
+
+@csrf_exempt
+@require_http_methods(["GET", "POST"])
+def company_location_modal_add(request):
+    """AJAX view for adding new CompanyLocation in modal"""
+    if not request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({'success': False, 'error': 'AJAX request required'})
+    
+    if request.method == 'GET':
+        form = CompanyLocationForm()
+        modal_html = render_to_string('core/modals/company_location_modal.html', {
+            'form': form, 'object': None
+        }, request=request)
+        return JsonResponse({'success': True, 'html': modal_html})
+    
+    elif request.method == 'POST':
+        form = CompanyLocationForm(request.POST)
+        if form.is_valid():
+            new_location = form.save()
+            row_html = render_to_string('core/partials/company_location_row.html', {
+                'location': new_location
+            }, request=request)
+            return JsonResponse({
+                'success': True,
+                'message': f'Location added successfully!',
+                'object_id': new_location.company_location_id,
+                'row_html': row_html,
+                'action': 'add'
+            })
+        else:
+            modal_html = render_to_string('core/modals/company_location_modal.html', {
+                'form': form, 'object': None
+            }, request=request)
+            return JsonResponse({'success': False, 'html': modal_html, 'errors': form.errors})
+
+# Company Alias AJAX Views
+@csrf_exempt
+@require_http_methods(["GET", "POST"])
+def company_alias_modal_edit(request, pk):
+    """AJAX view for editing CompanyAlias in modal"""
+    if not request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({'success': False, 'error': 'AJAX request required'})
+    
+    try:
+        alias = get_object_or_404(CompanyAlias, pk=pk)
+    except CompanyAlias.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Alias not found'})
+
+    if request.method == 'GET':
+        form = CompanyAliasForm(instance=alias)
+        modal_html = render_to_string('core/modals/company_alias_modal.html', {
+            'form': form, 'object': alias
+        }, request=request)
+        return JsonResponse({'success': True, 'html': modal_html})
+    
+    elif request.method == 'POST':
+        form = CompanyAliasForm(request.POST, instance=alias)
+        if form.is_valid():
+            updated_alias = form.save()
+            row_html = render_to_string('core/partials/company_alias_row.html', {
+                'alias': updated_alias
+            }, request=request)
+            return JsonResponse({
+                'success': True,
+                'message': f'Alias "{updated_alias.company_alias_name}" updated successfully!',
+                'object_id': updated_alias.company_alias_id,
+                'row_html': row_html
+            })
+        else:
+            modal_html = render_to_string('core/modals/company_alias_modal.html', {
+                'form': form, 'object': alias
+            }, request=request)
+            return JsonResponse({'success': False, 'html': modal_html, 'errors': form.errors})
+
+@csrf_exempt
+@require_http_methods(["GET", "POST"])
+def company_alias_modal_add(request):
+    """AJAX view for adding new CompanyAlias in modal"""
+    if not request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({'success': False, 'error': 'AJAX request required'})
+    
+    if request.method == 'GET':
+        form = CompanyAliasForm()
+        modal_html = render_to_string('core/modals/company_alias_modal.html', {
+            'form': form, 'object': None
+        }, request=request)
+        return JsonResponse({'success': True, 'html': modal_html})
+    
+    elif request.method == 'POST':
+        form = CompanyAliasForm(request.POST)
+        if form.is_valid():
+            new_alias = form.save()
+            row_html = render_to_string('core/partials/company_alias_row.html', {
+                'alias': new_alias
+            }, request=request)
+            return JsonResponse({
+                'success': True,
+                'message': f'Alias "{new_alias.company_alias_name}" added successfully!',
+                'object_id': new_alias.company_alias_id,
+                'row_html': row_html,
+                'action': 'add'
+            })
+        else:
+            modal_html = render_to_string('core/modals/company_alias_modal.html', {
+                'form': form, 'object': None
+            }, request=request)
+            return JsonResponse({'success': False, 'html': modal_html, 'errors': form.errors})
+
+# Application Response AJAX Views
+@csrf_exempt
+@require_http_methods(["GET", "POST"])
+def application_response_modal_edit(request, pk):
+    """AJAX view for editing ApplicationResponse in modal"""
+    if not request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({'success': False, 'error': 'AJAX request required'})
+    
+    try:
+        response = get_object_or_404(ApplicationResponse, pk=pk)
+    except ApplicationResponse.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Response not found'})
+
+    if request.method == 'GET':
+        form = ApplicationResponseForm(instance=response)
+        modal_html = render_to_string('core/modals/application_response_modal.html', {
+            'form': form, 'object': response
+        }, request=request)
+        return JsonResponse({'success': True, 'html': modal_html})
+    
+    elif request.method == 'POST':
+        form = ApplicationResponseForm(request.POST, instance=response)
+        if form.is_valid():
+            updated_response = form.save()
+            row_html = render_to_string('core/partials/application_response_row.html', {
+                'response': updated_response
+            }, request=request)
+            return JsonResponse({
+                'success': True,
+                'message': f'Application response updated successfully!',
+                'object_id': updated_response.application_response_id,
+                'row_html': row_html
+            })
+        else:
+            modal_html = render_to_string('core/modals/application_response_modal.html', {
+                'form': form, 'object': response
+            }, request=request)
+            return JsonResponse({'success': False, 'html': modal_html, 'errors': form.errors})
+
+@csrf_exempt
+@require_http_methods(["GET", "POST"])
+def application_response_modal_add(request):
+    """AJAX view for adding new ApplicationResponse in modal"""
+    if not request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({'success': False, 'error': 'AJAX request required'})
+    
+    if request.method == 'GET':
+        form = ApplicationResponseForm()
+        modal_html = render_to_string('core/modals/application_response_modal.html', {
+            'form': form, 'object': None
+        }, request=request)
+        return JsonResponse({'success': True, 'html': modal_html})
+    
+    elif request.method == 'POST':
+        form = ApplicationResponseForm(request.POST)
+        if form.is_valid():
+            new_response = form.save()
+            row_html = render_to_string('core/partials/application_response_row.html', {
+                'response': new_response
+            }, request=request)
+            return JsonResponse({
+                'success': True,
+                'message': f'Application response added successfully!',
+                'object_id': new_response.application_response_id,
+                'row_html': row_html,
+                'action': 'add'
+            })
+        else:
+            modal_html = render_to_string('core/modals/application_response_modal.html', {
+                'form': form, 'object': None
+            }, request=request)
+            return JsonResponse({'success': False, 'html': modal_html, 'errors': form.errors})
+
+# Order Option AJAX Views  
+@csrf_exempt
+@require_http_methods(["GET", "POST"])
+def order_option_modal_edit(request, pk):
+    """AJAX view for editing OrderOption in modal"""
+    if not request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({'success': False, 'error': 'AJAX request required'})
+    
+    try:
+        order_option = get_object_or_404(OrderOption, pk=pk)
+    except OrderOption.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Order option not found'})
+
+    if request.method == 'GET':
+        form = OrderOptionForm(instance=order_option)
+        modal_html = render_to_string('core/modals/order_option_modal.html', {
+            'form': form, 'object': order_option
+        }, request=request)
+        return JsonResponse({'success': True, 'html': modal_html})
+    
+    elif request.method == 'POST':
+        form = OrderOptionForm(request.POST, instance=order_option)
+        if form.is_valid():
+            updated_order_option = form.save()
+            row_html = render_to_string('core/partials/order_option_row.html', {
+                'order_option': updated_order_option
+            }, request=request)
+            return JsonResponse({
+                'success': True,
+                'message': f'Order option updated successfully!',
+                'object_id': updated_order_option.order_option_id,
+                'row_html': row_html
+            })
+        else:
+            modal_html = render_to_string('core/modals/order_option_modal.html', {
+                'form': form, 'object': order_option
+            }, request=request)
+            return JsonResponse({'success': False, 'html': modal_html, 'errors': form.errors})
+
+@csrf_exempt
+@require_http_methods(["GET", "POST"])
+def order_option_modal_add(request):
+    """AJAX view for adding new OrderOption in modal"""
+    if not request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({'success': False, 'error': 'AJAX request required'})
+    
+    if request.method == 'GET':
+        form = OrderOptionForm()
+        modal_html = render_to_string('core/modals/order_option_modal.html', {
+            'form': form, 'object': None
+        }, request=request)
+        return JsonResponse({'success': True, 'html': modal_html})
+    
+    elif request.method == 'POST':
+        form = OrderOptionForm(request.POST)
+        if form.is_valid():
+            new_order_option = form.save()
+            row_html = render_to_string('core/partials/order_option_row.html', {
+                'order_option': new_order_option
+            }, request=request)
+            return JsonResponse({
+                'success': True,
+                'message': f'Order option added successfully!',
+                'object_id': new_order_option.order_option_id,
+                'row_html': row_html,
+                'action': 'add'
+            })
+        else:
+            modal_html = render_to_string('core/modals/order_option_modal.html', {
+                'form': form, 'object': None
+            }, request=request)
+            return JsonResponse({'success': False, 'html': modal_html, 'errors': form.errors})
+
+# Order Data Vert AJAX Views
+@csrf_exempt
+@require_http_methods(["GET", "POST"])
+def order_data_vert_modal_edit(request, pk):
+    """AJAX view for editing OrderDataVert in modal"""
+    if not request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({'success': False, 'error': 'AJAX request required'})
+    
+    try:
+        order_data_vert = get_object_or_404(OrderDataVert, pk=pk)
+    except OrderDataVert.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Order data vert not found'})
+
+    if request.method == 'GET':
+        form = OrderDataVertForm(instance=order_data_vert)
+        modal_html = render_to_string('core/modals/order_data_vert_modal.html', {
+            'form': form, 'object': order_data_vert
+        }, request=request)
+        return JsonResponse({'success': True, 'html': modal_html})
+    
+    elif request.method == 'POST':
+        form = OrderDataVertForm(request.POST, instance=order_data_vert)
+        if form.is_valid():
+            updated_order_data_vert = form.save()
+            row_html = render_to_string('core/partials/order_data_vert_row.html', {
+                'order_data_vert': updated_order_data_vert
+            }, request=request)
+            return JsonResponse({
+                'success': True,
+                'message': f'Order data vert updated successfully!',
+                'object_id': updated_order_data_vert.order_date_vert_id,
+                'row_html': row_html
+            })
+        else:
+            modal_html = render_to_string('core/modals/order_data_vert_modal.html', {
+                'form': form, 'object': order_data_vert
+            }, request=request)
+            return JsonResponse({'success': False, 'html': modal_html, 'errors': form.errors})
+
+@csrf_exempt
+@require_http_methods(["GET", "POST"])
+def order_data_vert_modal_add(request):
+    """AJAX view for adding new OrderDataVert in modal"""
+    if not request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({'success': False, 'error': 'AJAX request required'})
+    
+    if request.method == 'GET':
+        form = OrderDataVertForm()
+        modal_html = render_to_string('core/modals/order_data_vert_modal.html', {
+            'form': form, 'object': None
+        }, request=request)
+        return JsonResponse({'success': True, 'html': modal_html})
+    
+    elif request.method == 'POST':
+        form = OrderDataVertForm(request.POST)
+        if form.is_valid():
+            new_order_data_vert = form.save()
+            row_html = render_to_string('core/partials/order_data_vert_row.html', {
+                'order_data_vert': new_order_data_vert
+            }, request=request)
+            return JsonResponse({
+                'success': True,
+                'message': f'Order data vert added successfully!',
+                'object_id': new_order_data_vert.order_date_vert_id,
+                'row_html': row_html,
+                'action': 'add'
+            })
+        else:
+            modal_html = render_to_string('core/modals/order_data_vert_modal.html', {
+                'form': form, 'object': None
+            }, request=request)
+            return JsonResponse({'success': False, 'html': modal_html, 'errors': form.errors})
+
+# Document Detail AJAX Views
+@csrf_exempt
+@require_http_methods(["GET", "POST"])
+def document_detail_modal_edit(request, pk):
+    """AJAX view for editing DocumentDetail in modal"""
+    if not request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({'success': False, 'error': 'AJAX request required'})
+    
+    try:
+        document_detail = get_object_or_404(DocumentDetail, pk=pk)
+    except DocumentDetail.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Document detail not found'})
+
+    if request.method == 'GET':
+        form = DocumentDetailForm(instance=document_detail)
+        modal_html = render_to_string('core/modals/document_detail_modal.html', {
+            'form': form, 'object': document_detail
+        }, request=request)
+        return JsonResponse({'success': True, 'html': modal_html})
+    
+    elif request.method == 'POST':
+        form = DocumentDetailForm(request.POST, instance=document_detail)
+        if form.is_valid():
+            updated_document_detail = form.save()
+            row_html = render_to_string('core/partials/document_detail_row.html', {
+                'document_detail': updated_document_detail
+            }, request=request)
+            return JsonResponse({
+                'success': True,
+                'message': f'Document detail updated successfully!',
+                'object_id': updated_document_detail.document_detail_id,
+                'row_html': row_html
+            })
+        else:
+            modal_html = render_to_string('core/modals/document_detail_modal.html', {
+                'form': form, 'object': document_detail
+            }, request=request)
+            return JsonResponse({'success': False, 'html': modal_html, 'errors': form.errors})
+
+@csrf_exempt
+@require_http_methods(["GET", "POST"])
+def document_detail_modal_add(request):
+    """AJAX view for adding new DocumentDetail in modal"""
+    if not request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({'success': False, 'error': 'AJAX request required'})
+    
+    if request.method == 'GET':
+        form = DocumentDetailForm()
+        modal_html = render_to_string('core/modals/document_detail_modal.html', {
+            'form': form, 'object': None
+        }, request=request)
+        return JsonResponse({'success': True, 'html': modal_html})
+    
+    elif request.method == 'POST':
+        form = DocumentDetailForm(request.POST)
+        if form.is_valid():
+            new_document_detail = form.save()
+            row_html = render_to_string('core/partials/document_detail_row.html', {
+                'document_detail': new_document_detail
+            }, request=request)
+            return JsonResponse({
+                'success': True,
+                'message': f'Document detail added successfully!',
+                'object_id': new_document_detail.document_detail_id,
+                'row_html': row_html,
+                'action': 'add'
+            })
+        else:
+            modal_html = render_to_string('core/modals/document_detail_modal.html', {
+                'form': form, 'object': None
+            }, request=request)
+            return JsonResponse({'success': False, 'html': modal_html, 'errors': form.errors})

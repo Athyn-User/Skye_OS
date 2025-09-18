@@ -1,0 +1,33 @@
+<!-- templates/core/partials/document_detail_row.html -->
+<td>{{ document_detail.document_detail_id }}</td>
+<td>
+    {% if document_detail.order_option %}
+        <a href="{% url 'core:order_option_detail' document_detail.order_option.order_option_id %}">
+            Option {{ document_detail.order_option.order_option_id }}
+        </a>
+    {% else %}
+        <span style="color: #999;">No Order Option</span>
+    {% endif %}
+</td>
+<td>
+    {% if document_detail.document %}
+        <a href="{% url 'core:document_detail' document_detail.document.document_id %}">
+            <strong>{{ document_detail.document.document_name|default:"Unnamed Document"|truncatechars:25 }}</strong>
+        </a>
+    {% else %}
+        <span style="color: #999;">No Document</span>
+    {% endif %}
+</td>
+<td>
+    {% if document_detail.document and document_detail.document.document_code %}
+        <code style="background: #f0f0f0; padding: 2px 4px; border-radius: 3px;">{{ document_detail.document.document_code }}</code>
+    {% else %}
+        <span style="color: #999;">No Code</span>
+    {% endif %}
+</td>
+<td>
+    <div class="action-buttons">
+        <button class="btn-edit-modal" data-model="document-detail" data-id="{{ document_detail.document_detail_id }}">Edit</button>
+        <a href="{% url 'core:document_detail_detail' document_detail.document_detail_id %}">View Details</a>
+    </div>
+</td>

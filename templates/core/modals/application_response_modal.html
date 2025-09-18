@@ -1,0 +1,34 @@
+<!-- templates/core/modals/application_response_modal.html -->
+{% extends "core/modals/base_modal.html" %}
+
+{% block modal_title %}
+    {% if object %}Edit Application Response{% else %}Add New Application Response{% endif %}
+{% endblock %}
+
+{% block form_action %}/ajax/application-response/{% if object %}{{ object.application_response_id }}/edit/{% else %}add/{% endif %}{% endblock %}
+
+{% block form_fields %}
+    <div class="form-group">
+        {{ form.application.label_tag }}
+        {{ form.application }}
+        {% if form.application.errors %}{% for error in form.application.errors %}<span class="error-message">{{ error }}</span>{% endfor %}{% endif %}
+    </div>
+
+    <div class="form-group">
+        {{ form.application_question.label_tag }}
+        {{ form.application_question }}
+        {% if form.application_question.errors %}{% for error in form.application_question.errors %}<span class="error-message">{{ error }}</span>{% endfor %}{% endif %}
+    </div>
+
+    <div class="form-group">
+        {{ form.order.label_tag }}
+        {{ form.order }}
+        {% if form.order.errors %}{% for error in form.order.errors %}<span class="error-message">{{ error }}</span>{% endfor %}{% endif %}
+    </div>
+
+    <div class="form-group">
+        {{ form.response.label_tag }}
+        {{ form.response }}
+        {% if form.response.errors %}{% for error in form.response.errors %}<span class="error-message">{{ error }}</span>{% endfor %}{% endif %}
+    </div>
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends "core/modals/base_modal.html" %}
+
+{% block modal_title %}
+    {% if object %}
+        Edit Option: {{ object.option_name }}
+    {% else %}
+        Add New Option
+    {% endif %}
+{% endblock %}
+
+{% block form_action %}/ajax/options/{% if object %}{{ object.options_id }}/edit/{% else %}add/{% endif %}{% endblock %}
+
+{% block form_fields %}
+    <div class="form-group">
+        {{ form.option_name.label_tag }}
+        {{ form.option_name }}
+        {% if form.option_name.errors %}
+            {% for error in form.option_name.errors %}
+                <span class="error-message">{{ error }}</span>
+            {% endfor %}
+        {% endif %}
+        <small class="form-help" style="color: #666; font-size: 0.9rem;">
+            Enter a descriptive name for this option
+        </small>
+    </div>
+{% endblock %}

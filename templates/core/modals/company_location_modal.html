@@ -1,0 +1,83 @@
+{% extends "core/modals/base_modal.html" %}
+
+{% block modal_title %}
+    {% if object %}
+        Edit Company Location: {{ object.company_location_city }}
+    {% else %}
+        Add New Company Location
+    {% endif %}
+{% endblock %}
+
+{% block form_action %}/ajax/company-location/{% if object %}{{ object.company_location_id }}/edit/{% else %}add/{% endif %}{% endblock %}
+
+{% block form_fields %}
+    <div class="form-group">
+        {{ form.company.label_tag }}
+        {{ form.company }}
+        {% if form.company.errors %}
+            {% for error in form.company.errors %}
+                <span class="error-message">{{ error }}</span>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    <div class="form-group">
+        {{ form.company_location_address_1.label_tag }}
+        {{ form.company_location_address_1 }}
+        {% if form.company_location_address_1.errors %}
+            {% for error in form.company_location_address_1.errors %}
+                <span class="error-message">{{ error }}</span>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    <div class="form-group">
+        {{ form.company_location_address_2.label_tag }}
+        {{ form.company_location_address_2 }}
+        {% if form.company_location_address_2.errors %}
+            {% for error in form.company_location_address_2.errors %}
+                <span class="error-message">{{ error }}</span>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 16px;">
+        <div class="form-group">
+            {{ form.company_location_city.label_tag }}
+            {{ form.company_location_city }}
+            {% if form.company_location_city.errors %}
+                {% for error in form.company_location_city.errors %}
+                    <span class="error-message">{{ error }}</span>
+                {% endfor %}
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            {{ form.company_location_state.label_tag }}
+            {{ form.company_location_state }}
+            {% if form.company_location_state.errors %}
+                {% for error in form.company_location_state.errors %}
+                    <span class="error-message">{{ error }}</span>
+                {% endfor %}
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            {{ form.company_location_zip.label_tag }}
+            {{ form.company_location_zip }}
+            {% if form.company_location_zip.errors %}
+                {% for error in form.company_location_zip.errors %}
+                    <span class="error-message">{{ error }}</span>
+                {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="form-group" style="display: flex; align-items: center; gap: 8px;">
+        {{ form.company_mailing }}
+        {{ form.company_mailing.label_tag }}
+        {% if form.company_mailing.errors %}
+            <span class="error-message" style="margin-left: 12px;">{{ form.company_mailing.errors.0 }}</span>
+        {% endif %}
+    </div>
+{% endblock %}

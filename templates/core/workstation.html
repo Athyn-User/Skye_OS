@@ -106,10 +106,16 @@
 <!-- Application Responses Section -->
 <div id="application-responses" class="card">
     <h2>📝 Application Responses</h2>
-    <div style="margin-bottom: 15px;">
-        <a href="{% url 'core:application_response_list' %}" class="btn">View All Responses</a>
-        <button class="btn" onclick="alert('Add response functionality coming soon')">Add Response</button>
-        <button class="btn btn-secondary" onclick="alert('Export functionality coming soon')">Export</button>
+    <div style="margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <a href="{% url 'core:application_response_list' %}" class="btn">View All Responses</a>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <button class="btn-edit-modal btn" data-model="application-response" data-id="add">
+                Add New Response
+            </button>
+            <button class="btn btn-secondary" onclick="alert('Export functionality coming soon')">Export</button>
+        </div>
     </div>
     
     <div style="max-height: 500px; overflow-y: auto;">
@@ -127,48 +133,17 @@
             <tbody>
                 {% for response in application_responses %}
                 <tr>
-                    <td>{{ response.application_response_id }}</td>
-                    <td>
-                        {% if response.application %}
-                            <a href="{% url 'core:application_detail' response.application.application_id %}">
-                                <strong>{{ response.application.application_name|default:"Unnamed Application"|truncatechars:20 }}</strong>
-                            </a>
-                        {% else %}
-                            <span style="color: #999;">No Application</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if response.application_question %}
-                            <span style="color: #666;" title="{{ response.application_question.custom_question }}">
-                                {{ response.application_question.custom_question|default:"No Question"|truncatechars:30 }}
-                            </span>
-                        {% else %}
-                            <span style="color: #999;">No Question</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if response.order %}
-                            <a href="#" onclick="alert('Order details: {{ response.order.orders_id }}')">
-                                <span style="color: #7c3aed;">Order {{ response.order.orders_id }}</span>
-                            </a>
-                        {% else %}
-                            <span style="color: #999;">No Order</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <span style="color: #374151;" title="{{ response.response }}">
-                            {{ response.response|default:"No Response"|truncatechars:40 }}
-                        </span>
-                    </td>
-                    <td>
-                        <a href="{% url 'core:application_response_detail' response.application_response_id %}">View Details</a>
-                    </td>
+                    {% include "core/partials/application_response_row.html" %}
                 </tr>
                 {% empty %}
                 <tr>
                     <td colspan="6">
-                        <p>No application responses found in the database.</p>
-                        <button class="btn">Add Response</button>
+                        <div style="text-align: center; padding: 20px;">
+                            <p>No application responses found in the database.</p>
+                            <button class="btn-edit-modal btn" data-model="application-response" data-id="add">
+                                Add First Response
+                            </button>
+                        </div>
                     </td>
                 </tr>
                 {% endfor %}
@@ -186,10 +161,18 @@
 <!-- Options Section -->
 <div id="options" class="card">
     <h2>⚙️ Options</h2>
-    <div style="margin-bottom: 15px;">
-        <a href="{% url 'core:options_list' %}" class="btn">View All Options</a>
-        <button class="btn" onclick="alert('Add option functionality coming soon')">Add Option</button>
-        <button class="btn btn-secondary" onclick="alert('Export functionality coming soon')">Export</button>
+    <div style="margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <a href="{% url 'core:options_list' %}" class="btn">View All Options</a>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <button class="btn-edit-modal btn" 
+                    data-model="options" 
+                    data-id="add">
+                Add New Option
+            </button>
+            <button class="btn btn-secondary" onclick="alert('Export functionality coming soon')">Export</button>
+        </div>
     </div>
     
     <div style="max-height: 500px; overflow-y: auto;">
@@ -204,21 +187,19 @@
             <tbody>
                 {% for option in options %}
                 <tr>
-                    <td>{{ option.options_id }}</td>
-                    <td>
-                        <a href="{% url 'core:options_detail' option.options_id %}">
-                            <strong>{{ option.option_name|default:"Unnamed Option" }}</strong>
-                        </a>
-                    </td>
-                    <td>
-                        <a href="{% url 'core:options_detail' option.options_id %}">View Details</a>
-                    </td>
+                    {% include "core/partials/options_row.html" %}
                 </tr>
                 {% empty %}
                 <tr>
                     <td colspan="3">
-                        <p>No options found in the database.</p>
-                        <button class="btn">Add Option</button>
+                        <div style="text-align: center; padding: 20px;">
+                            <p>No options found in the database.</p>
+                            <button class="btn-edit-modal btn" 
+                                    data-model="options" 
+                                    data-id="add">
+                                Add First Option
+                            </button>
+                        </div>
                     </td>
                 </tr>
                 {% endfor %}
@@ -236,10 +217,18 @@
 <!-- Companies Section -->
 <div id="companies" class="card">
     <h2>🏢 Companies</h2>
-    <div style="margin-bottom: 15px;">
-        <a href="{% url 'core:company_list' %}" class="btn">View All Companies</a>
-        <button class="btn" onclick="alert('Add company functionality coming soon')">Add Company</button>
-        <button class="btn btn-secondary" onclick="alert('Export functionality coming soon')">Export</button>
+    <div style="margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <a href="{% url 'core:company_list' %}" class="btn">View All Companies</a>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <button class="btn-edit-modal btn" 
+                    data-model="company" 
+                    data-id="add">
+                Add New Company
+            </button>
+            <button class="btn btn-secondary" onclick="alert('Export functionality coming soon')">Export</button>
+        </div>
     </div>
     
     <div style="max-height: 500px; overflow-y: auto;">
@@ -254,21 +243,19 @@
             <tbody>
                 {% for company in companies %}
                 <tr>
-                    <td>{{ company.company_id }}</td>
-                    <td>
-                        <a href="{% url 'core:company_detail' company.company_id %}">
-                            <strong>{{ company.company_name|default:"Unnamed Company" }}</strong>
-                        </a>
-                    </td>
-                    <td>
-                        <a href="{% url 'core:company_detail' company.company_id %}">View Details</a>
-                    </td>
+                    {% include "core/partials/company_row.html" %}
                 </tr>
                 {% empty %}
                 <tr>
                     <td colspan="3">
-                        <p>No companies found in the database.</p>
-                        <button class="btn">Add Company</button>
+                        <div style="text-align: center; padding: 20px;">
+                            <p>No companies found in the database.</p>
+                            <button class="btn-edit-modal btn" 
+                                    data-model="company" 
+                                    data-id="add">
+                                Add First Company
+                            </button>
+                        </div>
                     </td>
                 </tr>
                 {% endfor %}
@@ -286,10 +273,16 @@
 <!-- Company Locations Section -->
 <div id="company-locations" class="card">
     <h2>📍 Company Locations</h2>
-    <div style="margin-bottom: 15px;">
-        <a href="{% url 'core:company_location_list' %}" class="btn">View All Locations</a>
-        <button class="btn" onclick="alert('Add location functionality coming soon')">Add Location</button>
-        <button class="btn btn-secondary" onclick="alert('Export functionality coming soon')">Export</button>
+    <div style="margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <a href="{% url 'core:company_location_list' %}" class="btn">View All Locations</a>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <button class="btn-edit-modal btn" data-model="company-location" data-id="add">
+                Add New Location
+            </button>
+            <button class="btn btn-secondary" onclick="alert('Export functionality coming soon')">Export</button>
+        </div>
     </div>
     
     <div style="max-height: 500px; overflow-y: auto;">
@@ -307,40 +300,17 @@
             <tbody>
                 {% for location in company_locations %}
                 <tr>
-                    <td>{{ location.company_location_id }}</td>
-                    <td>
-                        {% if location.company %}
-                            <a href="{% url 'core:company_detail' location.company.company_id %}">
-                                {{ location.company.company_name|default:"Unnamed Company"|truncatechars:20 }}
-                            </a>
-                        {% else %}
-                            <span style="color: #999;">No Company</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if location.company_location_city and location.company_location_state %}
-                            {{ location.company_location_city }}, {{ location.company_location_state }}
-                        {% else %}
-                            <span style="color: #999;">Not specified</span>
-                        {% endif %}
-                    </td>
-                    <td>{{ location.company_location_address_1|truncatechars:30|default:"No address" }}</td>
-                    <td>
-                        {% if location.company_mailing %}
-                            <span style="color: #059669;">✓ Mailing</span>
-                        {% else %}
-                            <span style="color: #999;">-</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <a href="{% url 'core:company_location_detail' location.company_location_id %}">View Details</a>
-                    </td>
+                    {% include "core/partials/company_location_row.html" %}
                 </tr>
                 {% empty %}
                 <tr>
                     <td colspan="6">
-                        <p>No company locations found in the database.</p>
-                        <button class="btn">Add Location</button>
+                        <div style="text-align: center; padding: 20px;">
+                            <p>No company locations found in the database.</p>
+                            <button class="btn-edit-modal btn" data-model="company-location" data-id="add">
+                                Add First Location
+                            </button>
+                        </div>
                     </td>
                 </tr>
                 {% endfor %}
@@ -358,10 +328,18 @@
 <!-- Company Contacts Section -->
 <div id="company-contacts" class="card">
     <h2>👥 Company Contacts</h2>
-    <div style="margin-bottom: 15px;">
-        <a href="{% url 'core:company_contact_list' %}" class="btn">View All Contacts</a>
-        <button class="btn" onclick="alert('Add contact functionality coming soon')">Add Contact</button>
-        <button class="btn btn-secondary" onclick="alert('Export functionality coming soon')">Export</button>
+    <div style="margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <a href="{% url 'core:company_contact_list' %}" class="btn">View All Contacts</a>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <button class="btn-edit-modal btn" 
+                    data-model="company-contact" 
+                    data-id="add">
+                Add New Contact
+            </button>
+            <button class="btn btn-secondary" onclick="alert('Export functionality coming soon')">Export</button>
+        </div>
     </div>
     
     <div style="max-height: 500px; overflow-y: auto;">
@@ -380,45 +358,19 @@
             <tbody>
                 {% for contact in company_contacts %}
                 <tr>
-                    <td>{{ contact.company_contact_id }}</td>
-                    <td>
-                        {% if contact.company %}
-                            <a href="{% url 'core:company_detail' contact.company.company_id %}">
-                                {{ contact.company.company_name|default:"Unnamed Company"|truncatechars:15 }}
-                            </a>
-                        {% else %}
-                            <span style="color: #999;">No Company</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <a href="{% url 'core:company_contact_detail' contact.company_contact_id %}">
-                            <strong>
-                                {% if contact.company_contact_first or contact.company_contact_last %}
-                                    {{ contact.company_contact_first|default:"" }} {{ contact.company_contact_last|default:"" }}
-                                {% else %}
-                                    Contact {{ contact.company_contact_id }}
-                                {% endif %}
-                            </strong>
-                        </a>
-                    </td>
-                    <td>{{ contact.company_contact_title|default:"No title"|truncatechars:20 }}</td>
-                    <td>
-                        {% if contact.company_contact_email %}
-                            <a href="mailto:{{ contact.company_contact_email }}">{{ contact.company_contact_email|truncatechars:25 }}</a>
-                        {% else %}
-                            <span style="color: #999;">No email</span>
-                        {% endif %}
-                    </td>
-                    <td>{{ contact.company_contact_phone|default:"No phone" }}</td>
-                    <td>
-                        <a href="{% url 'core:company_contact_detail' contact.company_contact_id %}">View Details</a>
-                    </td>
+                    {% include "core/partials/company_contact_row.html" %}
                 </tr>
                 {% empty %}
                 <tr>
                     <td colspan="7">
-                        <p>No company contacts found in the database.</p>
-                        <button class="btn">Add Contact</button>
+                        <div style="text-align: center; padding: 20px;">
+                            <p>No company contacts found in the database.</p>
+                            <button class="btn-edit-modal btn" 
+                                    data-model="company-contact" 
+                                    data-id="add">
+                                Add First Contact
+                            </button>
+                        </div>
                     </td>
                 </tr>
                 {% endfor %}
@@ -436,10 +388,16 @@
 <!-- Company Aliases Section -->
 <div id="company-aliases" class="card">
     <h2>🏷️ Company Aliases</h2>
-    <div style="margin-bottom: 15px;">
-        <a href="{% url 'core:company_alias_list' %}" class="btn">View All Aliases</a>
-        <button class="btn" onclick="alert('Add alias functionality coming soon')">Add Alias</button>
-        <button class="btn btn-secondary" onclick="alert('Export functionality coming soon')">Export</button>
+    <div style="margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <a href="{% url 'core:company_alias_list' %}" class="btn">View All Aliases</a>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <button class="btn-edit-modal btn" data-model="company-alias" data-id="add">
+                Add New Alias
+            </button>
+            <button class="btn btn-secondary" onclick="alert('Export functionality coming soon')">Export</button>
+        </div>
     </div>
     
     <div style="max-height: 500px; overflow-y: auto;">
@@ -457,44 +415,17 @@
             <tbody>
                 {% for alias in company_aliases %}
                 <tr>
-                    <td>{{ alias.company_alias_id }}</td>
-                    <td>
-                        {% if alias.company %}
-                            <a href="{% url 'core:company_detail' alias.company.company_id %}">
-                                {{ alias.company.company_name|default:"Unnamed Company"|truncatechars:20 }}
-                            </a>
-                        {% else %}
-                            <span style="color: #999;">No Company</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <a href="{% url 'core:company_alias_detail' alias.company_alias_id %}">
-                            <strong>{{ alias.company_alias_name|default:"Unnamed Alias" }}</strong>
-                        </a>
-                    </td>
-                    <td>
-                        {% if alias.company_alias_eff_dte %}
-                            {{ alias.company_alias_eff_dte|date:"M d, Y" }}
-                        {% else %}
-                            <span style="color: #999;">No date</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if alias.company_alias_exp_dte %}
-                            {{ alias.company_alias_exp_dte|date:"M d, Y" }}
-                        {% else %}
-                            <span style="color: #999;">No expiration</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <a href="{% url 'core:company_alias_detail' alias.company_alias_id %}">View Details</a>
-                    </td>
+                    {% include "core/partials/company_alias_row.html" %}
                 </tr>
                 {% empty %}
                 <tr>
                     <td colspan="6">
-                        <p>No company aliases found in the database.</p>
-                        <button class="btn">Add Alias</button>
+                        <div style="text-align: center; padding: 20px;">
+                            <p>No company aliases found in the database.</p>
+                            <button class="btn-edit-modal btn" data-model="company-alias" data-id="add">
+                                Add First Alias
+                            </button>
+                        </div>
                     </td>
                 </tr>
                 {% endfor %}
@@ -512,10 +443,16 @@
 <!-- Order Options Section -->
 <div id="order-options" class="card">
     <h2>📋 Order Options</h2>
-    <div style="margin-bottom: 15px;">
-        <a href="{% url 'core:order_option_list' %}" class="btn">View All Order Options</a>
-        <button class="btn" onclick="alert('Add order option functionality coming soon')">Add Order Option</button>
-        <button class="btn btn-secondary" onclick="alert('Export functionality coming soon')">Export</button>
+    <div style="margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <a href="{% url 'core:order_option_list' %}" class="btn">View All Order Options</a>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <button class="btn-edit-modal btn" data-model="order-option" data-id="add">
+                Add New Order Option
+            </button>
+            <button class="btn btn-secondary" onclick="alert('Export functionality coming soon')">Export</button>
+        </div>
     </div>
     
     <div style="max-height: 500px; overflow-y: auto;">
@@ -534,57 +471,17 @@
             <tbody>
                 {% for order_option in order_options %}
                 <tr>
-                    <td>{{ order_option.order_option_id }}</td>
-                    <td>
-                        {% if order_option.orders %}
-                            <a href="#" onclick="alert('Order details: {{ order_option.orders.orders_id }}')">
-                                <span style="color: #7c3aed;">Order {{ order_option.orders.orders_id }}</span>
-                            </a>
-                        {% else %}
-                            <span style="color: #999;">No Order</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if order_option.options %}
-                            <a href="{% url 'core:options_detail' order_option.options.options_id %}">
-                                {{ order_option.options.option_name|default:"Unnamed Option"|truncatechars:20 }}
-                            </a>
-                        {% else %}
-                            <span style="color: #999;">No Option</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if order_option.cover %}
-                            <a href="{% url 'core:cover_detail' order_option.cover.cover_id %}">
-                                {{ order_option.cover.cover_name|default:"Unnamed Cover"|truncatechars:15 }}
-                            </a>
-                        {% else %}
-                            <span style="color: #999;">No Cover</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if order_option.premium %}
-                            <span style="color: #059669; font-weight: 500;">${{ order_option.premium|floatformat:2 }}</span>
-                        {% else %}
-                            <span style="color: #999;">No Premium</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if order_option.bound %}
-                            <span style="color: #059669;">✓ Bound</span>
-                        {% else %}
-                            <span style="color: #999;">Not Bound</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <a href="{% url 'core:order_option_detail' order_option.order_option_id %}">View Details</a>
-                    </td>
+                    {% include "core/partials/order_option_row.html" %}
                 </tr>
                 {% empty %}
                 <tr>
                     <td colspan="7">
-                        <p>No order options found in the database.</p>
-                        <button class="btn">Add Order Option</button>
+                        <div style="text-align: center; padding: 20px;">
+                            <p>No order options found in the database.</p>
+                            <button class="btn-edit-modal btn" data-model="order-option" data-id="add">
+                                Add First Order Option
+                            </button>
+                        </div>
                     </td>
                 </tr>
                 {% endfor %}
@@ -595,6 +492,62 @@
         Total: {{ total_order_options }} order options
         {% if order_options|length >= 20 %}
             (showing first 20 - <a href="{% url 'core:order_option_list' %}">view all</a>)
+        {% endif %}
+    </p>
+</div>
+
+<!-- Replace the Order Data Verts Section in your workstation.html -->
+<!-- Order Data Verts Section -->
+<div id="order-data-verts" class="card">
+    <h2>📊 Order Data Verts</h2>
+    <div style="margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <a href="{% url 'core:order_data_vert_list' %}" class="btn">View All Order Data Verts</a>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <button class="btn-edit-modal btn" data-model="order-data-vert" data-id="add">
+                Add New Order Data Vert
+            </button>
+            <button class="btn btn-secondary" onclick="alert('Export functionality coming soon')">Export</button>
+        </div>
+    </div>
+    
+    <div style="max-height: 500px; overflow-y: auto;">
+        <table>
+            <thead>
+                <tr>
+                    <th>Vert ID</th>
+                    <th>Order</th>
+                    <th>Parameter</th>
+                    <th>Vert Value</th>
+                    <th>Parameter Map</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order_data_vert in order_data_verts %}
+                <tr>
+                    {% include "core/partials/order_data_vert_row.html" %}
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6">
+                        <div style="text-align: center; padding: 20px;">
+                            <p>No order data verts found in the database.</p>
+                            <button class="btn-edit-modal btn" data-model="order-data-vert" data-id="add">
+                                Add First Order Data Vert
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <p style="text-align: center; margin-top: 15px; color: #666;">
+        Total: {{ total_order_data_verts }} order data verts
+        {% if order_data_verts|length >= 20 %}
+            (showing first 20 - <a href="{% url 'core:order_data_vert_list' %}">view all</a>)
         {% endif %}
     </p>
 </div>
@@ -682,10 +635,16 @@
 <!-- Document Details Section -->
 <div id="document-details" class="card">
     <h2>📄 Document Details</h2>
-    <div style="margin-bottom: 15px;">
-        <a href="{% url 'core:document_detail_list' %}" class="btn">View All Document Details</a>
-        <button class="btn" onclick="alert('Add document detail functionality coming soon')">Add Document Detail</button>
-        <button class="btn btn-secondary" onclick="alert('Export functionality coming soon')">Export</button>
+    <div style="margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <a href="{% url 'core:document_detail_list' %}" class="btn">View All Document Details</a>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <button class="btn-edit-modal btn" data-model="document-detail" data-id="add">
+                Add New Document Detail
+            </button>
+            <button class="btn btn-secondary" onclick="alert('Export functionality coming soon')">Export</button>
+        </div>
     </div>
     
     <div style="max-height: 500px; overflow-y: auto;">
@@ -702,41 +661,17 @@
             <tbody>
                 {% for document_detail in document_details %}
                 <tr>
-                    <td>{{ document_detail.document_detail_id }}</td>
-                    <td>
-                        {% if document_detail.order_option %}
-                            <a href="{% url 'core:order_option_detail' document_detail.order_option.order_option_id %}">
-                                Option {{ document_detail.order_option.order_option_id }}
-                            </a>
-                        {% else %}
-                            <span style="color: #999;">No Order Option</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if document_detail.document %}
-                            <a href="{% url 'core:document_detail' document_detail.document.document_id %}">
-                                <strong>{{ document_detail.document.document_name|default:"Unnamed Document"|truncatechars:25 }}</strong>
-                            </a>
-                        {% else %}
-                            <span style="color: #999;">No Document</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if document_detail.document and document_detail.document.document_code %}
-                            <code style="background: #f0f0f0; padding: 2px 4px; border-radius: 3px;">{{ document_detail.document.document_code }}</code>
-                        {% else %}
-                            <span style="color: #999;">No Code</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <a href="{% url 'core:document_detail_detail' document_detail.document_detail_id %}">View Details</a>
-                    </td>
+                    {% include "core/partials/document_detail_row.html" %}
                 </tr>
                 {% empty %}
                 <tr>
                     <td colspan="5">
-                        <p>No document details found in the database.</p>
-                        <button class="btn">Add Document Detail</button>
+                        <div style="text-align: center; padding: 20px;">
+                            <p>No document details found in the database.</p>
+                            <button class="btn-edit-modal btn" data-model="document-detail" data-id="add">
+                                Add First Document Detail
+                            </button>
+                        </div>
                     </td>
                 </tr>
                 {% endfor %}

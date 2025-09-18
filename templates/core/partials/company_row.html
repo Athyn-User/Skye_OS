@@ -1,0 +1,17 @@
+<!-- Company Table Row Partial -->
+<td>{{ company.company_id }}</td>
+<td>
+    <a href="{% url 'core:company_detail' company.company_id %}">
+        <strong>{{ company.company_name|default:"Unnamed Company" }}</strong>
+    </a>
+</td>
+<td>
+    <div class="action-buttons">
+        <button class="btn-edit-modal" 
+                data-model="company" 
+                data-id="{{ company.company_id }}">
+            Edit
+        </button>
+        <a href="{% url 'core:company_detail' company.company_id %}">View Details</a>
+    </div>
+</td>

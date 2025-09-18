@@ -156,6 +156,39 @@ path('workstation/document-details/', views.document_detail_list, name='document
 path('workstation/document-details/<int:pk>/', views.document_detail_detail, name='document_detail_detail'),
 
 # AJAX Modal endpoints (add these to your existing urlpatterns)
-    path('ajax/company-contact/<int:pk>/edit/', views.company_contact_modal_edit, name='company_contact_modal_edit'),
-    path('ajax/company-contact/add/', views.company_contact_modal_add, name='company_contact_modal_add'),
+path('ajax/company-contact/<int:pk>/edit/', views.company_contact_modal_edit, name='company_contact_modal_edit'),
+path('ajax/company-contact/add/', views.company_contact_modal_add, name='company_contact_modal_add'),
+
+# Company AJAX endpoints
+path('ajax/company/<int:pk>/edit/', views.company_modal_edit, name='company_modal_edit'),
+path('ajax/company/add/', views.company_modal_add, name='company_modal_add'),
+    
+# Options AJAX endpoints  
+path('ajax/options/<int:pk>/edit/', views.options_modal_edit, name='options_modal_edit'),
+path('ajax/options/add/', views.options_modal_add, name='options_modal_add'),
+# Company Location AJAX endpoints
+path('ajax/company-location/<int:pk>/edit/', views.company_location_modal_edit, name='company_location_modal_edit'),
+path('ajax/company-location/add/', views.company_location_modal_add, name='company_location_modal_add'),
+    
+# Company Alias AJAX endpoints
+path('ajax/company-alias/<int:pk>/edit/', views.company_alias_modal_edit, name='company_alias_modal_edit'),
+path('ajax/company-alias/add/', views.company_alias_modal_add, name='company_alias_modal_add'),
+    
+# Application Response AJAX endpoints
+path('ajax/application-response/<int:pk>/edit/', views.application_response_modal_edit, name='application_response_modal_edit'),
+path('ajax/application-response/add/', views.application_response_modal_add, name='application_response_modal_add'),
+    
+# Order Option AJAX endpoints
+path('ajax/order-option/<int:pk>/edit/', views.order_option_modal_edit, name='order_option_modal_edit'),
+path('ajax/order-option/add/', views.order_option_modal_add, name='order_option_modal_add'),
+    
+# Order Data Vert AJAX endpoints
+path('ajax/order-data-vert/<int:pk>/edit/', views.order_data_vert_modal_edit, name='order_data_vert_modal_edit'),
+path('ajax/order-data-vert/add/', views.order_data_vert_modal_add, name='order_data_vert_modal_add'),
+    
+# Document Detail AJAX endpoints
+path('ajax/document-detail/<int:pk>/edit/', views.document_detail_modal_edit, name='document_detail_modal_edit'),
+path('ajax/document-detail/add/', views.document_detail_modal_add, name='document_detail_modal_add'),
+
+    
 ]

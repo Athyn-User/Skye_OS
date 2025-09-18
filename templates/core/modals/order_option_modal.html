@@ -1,0 +1,60 @@
+<!-- templates/core/modals/order_option_modal.html -->
+{% extends "core/modals/base_modal.html" %}
+
+{% block modal_title %}
+    {% if object %}Edit Order Option{% else %}Add New Order Option{% endif %}
+{% endblock %}
+
+{% block form_action %}/ajax/order-option/{% if object %}{{ object.order_option_id }}/edit/{% else %}add/{% endif %}{% endblock %}
+
+{% block form_fields %}
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+        <div class="form-group">
+            {{ form.orders.label_tag }}
+            {{ form.orders }}
+            {% if form.orders.errors %}{% for error in form.orders.errors %}<span class="error-message">{{ error }}</span>{% endfor %}{% endif %}
+        </div>
+        <div class="form-group">
+            {{ form.options.label_tag }}
+            {{ form.options }}
+            {% if form.options.errors %}{% for error in form.options.errors %}<span class="error-message">{{ error }}</span>{% endfor %}{% endif %}
+        </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+        <div class="form-group">
+            {{ form.cover.label_tag }}
+            {{ form.cover }}
+            {% if form.cover.errors %}{% for error in form.cover.errors %}<span class="error-message">{{ error }}</span>{% endfor %}{% endif %}
+        </div>
+        <div class="form-group">
+            {{ form.premium.label_tag }}
+            {{ form.premium }}
+            {% if form.premium.errors %}{% for error in form.premium.errors %}<span class="error-message">{{ error }}</span>{% endfor %}{% endif %}
+        </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+        <div class="form-group">
+            {{ form.retention.label_tag }}
+            {{ form.retention }}
+            {% if form.retention.errors %}{% for error in form.retention.errors %}<span class="error-message">{{ error }}</span>{% endfor %}{% endif %}
+        </div>
+        <div class="form-group">
+            {{ form.limits.label_tag }}
+            {{ form.limits }}
+            {% if form.limits.errors %}{% for error in form.limits.errors %}<span class="error-message">{{ error }}</span>{% endfor %}{% endif %}
+        </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+        <div class="form-group" style="display: flex; align-items: center; gap: 8px;">
+            {{ form.order_option_include }}
+            {{ form.order_option_include.label_tag }}
+        </div>
+        <div class="form-group" style="display: flex; align-items: center; gap: 8px;">
+            {{ form.bound }}
+            {{ form.bound.label_tag }}
+        </div>
+    </div>
+{% endblock %}

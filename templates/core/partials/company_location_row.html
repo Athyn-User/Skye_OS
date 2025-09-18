@@ -1,0 +1,32 @@
+<!-- templates/core/partials/company_location_row.html -->
+<td>{{ location.company_location_id }}</td>
+<td>
+    {% if location.company %}
+        <a href="{% url 'core:company_detail' location.company.company_id %}">
+            {{ location.company.company_name|default:"Unnamed Company"|truncatechars:20 }}
+        </a>
+    {% else %}
+        <span style="color: #999;">No Company</span>
+    {% endif %}
+</td>
+<td>
+    {% if location.company_location_city and location.company_location_state %}
+        {{ location.company_location_city }}, {{ location.company_location_state }}
+    {% else %}
+        <span style="color: #999;">Not specified</span>
+    {% endif %}
+</td>
+<td>{{ location.company_location_address_1|truncatechars:30|default:"No address" }}</td>
+<td>
+    {% if location.company_mailing %}
+        <span style="color: #059669;">✓ Mailing</span>
+    {% else %}
+        <span style="color: #999;">-</span>
+    {% endif %}
+</td>
+<td>
+    <div class="action-buttons">
+        <button class="btn-edit-modal" data-model="company-location" data-id="{{ location.company_location_id }}">Edit</button>
+        <a href="{% url 'core:company_location_detail' location.company_location_id %}">View Details</a>
+    </div>
+</td>

@@ -1,0 +1,40 @@
+<!-- templates/core/partials/order_data_vert_row.html -->
+<td>{{ order_data_vert.order_date_vert_id }}</td>
+<td>
+    {% if order_data_vert.order %}
+        <a href="#" onclick="alert('Order details: {{ order_data_vert.order.orders_id }}')">
+            <span style="color: #7c3aed;">Order {{ order_data_vert.order.orders_id }}</span>
+        </a>
+    {% else %}
+        <span style="color: #999;">No Order</span>
+    {% endif %}
+</td>
+<td>
+    {% if order_data_vert.parameter %}
+        <a href="{% url 'core:parameter_detail' order_data_vert.parameter.parameter_id %}">
+            {{ order_data_vert.parameter.parameter_name|default:"Unnamed Parameter"|truncatechars:20 }}
+        </a>
+    {% else %}
+        <span style="color: #999;">No Parameter</span>
+    {% endif %}
+</td>
+<td>
+    <span style="color: #374151;" title="{{ order_data_vert.vert_value }}">
+        {{ order_data_vert.vert_value|default:"No Value"|truncatechars:30 }}
+    </span>
+</td>
+<td>
+    {% if order_data_vert.parameter_map %}
+        <a href="{% url 'core:parameter_map_detail' order_data_vert.parameter_map.parameter_map_id %}">
+            Map {{ order_data_vert.parameter_map.parameter_map_id }}
+        </a>
+    {% else %}
+        <span style="color: #999;">No Map</span>
+    {% endif %}
+</td>
+<td>
+    <div class="action-buttons">
+        <button class="btn-edit-modal" data-model="order-data-vert" data-id="{{ order_data_vert.order_date_vert_id }}">Edit</button>
+        <a href="{% url 'core:order_data_vert_detail' order_data_vert.order_date_vert_id %}">View Details</a>
+    </div>
+</td>
