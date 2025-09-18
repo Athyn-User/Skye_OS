@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Skye OS{% endblock %}</title>
     
+    <meta name="csrf-token" content="{{ csrf_token }}">
+
     <!-- Include our modal styles -->
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/modal-styles.css' %}">
