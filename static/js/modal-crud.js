@@ -57,12 +57,15 @@ class ModalCRUD {
         // Show loading state
         this.showLoading(button);
 
-        // Build AJAX URL
-           if (objectId === 'add') {
-                url = `/ajax/${modelName}/add/`;
-            } else {
-                url = `/ajax/${modelName}/${objectId}/edit/`;
-            }
+        // Build AJAX URL - FIXED: Declare url variable
+        let url;
+        if (objectId === 'add') {
+            url = `/ajax/${modelName}/add/`;
+        } else {
+            url = `/ajax/${modelName}/${objectId}/edit/`;
+        }
+
+        console.log('Opening modal for:', modelName, 'ID:', objectId, 'URL:', url);
 
         fetch(url, {
             method: 'GET',
@@ -71,7 +74,12 @@ class ModalCRUD {
                 'X-CSRFToken': this.getCSRFToken()
             }
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            return response.json();
+        })
         .then(data => {
             this.hideLoading(button);
             
@@ -84,7 +92,7 @@ class ModalCRUD {
         .catch(error => {
             this.hideLoading(button);
             console.error('Error loading modal:', error);
-            this.showError('Failed to load edit form. Please try again.');
+            this.showError('Failed to load edit form: ' + error.message);
         });
     }
 
@@ -104,7 +112,12 @@ class ModalCRUD {
                 'X-CSRFToken': this.getCSRFToken()
             }
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            return response.json();
+        })
         .then(data => {
             this.hideLoading(submitBtn);
             
@@ -117,7 +130,7 @@ class ModalCRUD {
         .catch(error => {
             this.hideLoading(submitBtn);
             console.error('Error submitting form:', error);
-            this.showError('Failed to save changes. Please try again.');
+            this.showError('Failed to save changes: ' + error.message);
         });
     }
 
@@ -125,8 +138,10 @@ class ModalCRUD {
         // Show success message
         this.showSuccess(data.message || 'Changes saved successfully!');
         
-        // Update the table row if new HTML is provided
-        if (data.row_html && data.object_id) {
+        // Handle adding new rows vs updating existing rows
+        if (data.action === 'add' && data.row_html && data.object_id) {
+            this.addTableRow(data.row_html);
+        } else if (data.row_html && data.object_id) {
             this.updateTableRow(data.object_id, data.row_html);
         }
         
@@ -134,6 +149,29 @@ class ModalCRUD {
         setTimeout(() => {
             this.closeModal();
         }, 1500);
+    }
+
+    addTableRow(newRowHtml) {
+        // Find the first table body and add the new row
+        const tableBody = document.querySelector('tbody');
+        if (tableBody) {
+            // Remove "no data" row if it exists
+            const noDataRow = tableBody.querySelector('tr td[colspan]');
+            if (noDataRow) {
+                noDataRow.closest('tr').remove();
+            }
+            
+            // Create new row and add it
+            const newRow = document.createElement('tr');
+            newRow.innerHTML = newRowHtml;
+            tableBody.appendChild(newRow);
+            
+            // Add highlight effect
+            newRow.style.backgroundColor = '#f0f8ff';
+            setTimeout(() => {
+                newRow.style.backgroundColor = '';
+            }, 2000);
+        }
     }
 
     handleFormErrors(errors, newFormHtml) {
