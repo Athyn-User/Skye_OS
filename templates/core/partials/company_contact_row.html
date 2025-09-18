@@ -1,0 +1,41 @@
+<!-- Company Contact Table Row Partial -->
+<td>{{ contact.company_contact_id }}</td>
+<td>
+    {% if contact.company %}
+        <a href="{% url 'core:company_detail' contact.company.company_id %}">
+            {{ contact.company.company_name|default:"Unnamed Company"|truncatechars:15 }}
+        </a>
+    {% else %}
+        <span style="color: #999;">No Company</span>
+    {% endif %}
+</td>
+<td>
+    <a href="{% url 'core:company_contact_detail' contact.company_contact_id %}">
+        <strong>
+            {% if contact.company_contact_first or contact.company_contact_last %}
+                {{ contact.company_contact_first|default:"" }} {{ contact.company_contact_last|default:"" }}
+            {% else %}
+                Contact {{ contact.company_contact_id }}
+            {% endif %}
+        </strong>
+    </a>
+</td>
+<td>{{ contact.company_contact_title|default:"No title"|truncatechars:20 }}</td>
+<td>
+    {% if contact.company_contact_email %}
+        <a href="mailto:{{ contact.company_contact_email }}">{{ contact.company_contact_email|truncatechars:25 }}</a>
+    {% else %}
+        <span style="color: #999;">No email</span>
+    {% endif %}
+</td>
+<td>{{ contact.company_contact_phone|default:"No phone" }}</td>
+<td>
+    <div class="action-buttons">
+        <button class="btn-edit-modal" 
+                data-model="company-contact" 
+                data-id="{{ contact.company_contact_id }}">
+            Edit
+        </button>
+        <a href="{% url 'core:company_contact_detail' contact.company_contact_id %}">View Details</a>
+    </div>
+</td>

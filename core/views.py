@@ -1645,3 +1645,117 @@ def document_detail_detail(request, pk):
         'list_url': 'core:document_detail_list',
     }
     return render(request, 'core/document_detail_detail.html', context)
+
+# =============================================================================
+# AJAX MODAL VIEWS - Add these to your existing core/views.py file
+# =============================================================================
+
+from django.http import JsonResponse
+from django.template.loader import render_to_string
+from .forms import CompanyContactForm
+
+@api_view(['GET', 'POST'])
+def company_contact_modal_edit(request, pk):
+    """AJAX view for editing CompanyContact in modal"""
+    try:
+        contact = get_object_or_404(CompanyContact, pk=pk)
+    except CompanyContact.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'error': 'Contact not found'
+        })
+
+    if request.method == 'GET':
+        # Return the modal form HTML
+        form = CompanyContactForm(instance=contact)
+        
+        modal_html = render_to_string('core/modals/company_contact_modal.html', {
+            'form': form,
+            'object': contact
+        }, request=request)
+        
+        return JsonResponse({
+            'success': True,
+            'html': modal_html
+        })
+    
+    elif request.method == 'POST':
+        # Process the form submission
+        form = CompanyContactForm(request.POST, instance=contact)
+        
+        if form.is_valid():
+            updated_contact = form.save()
+            
+            # Generate updated table row HTML
+            row_html = render_to_string('core/partials/company_contact_row.html', {
+                'contact': updated_contact
+            }, request=request)
+            
+            return JsonResponse({
+                'success': True,
+                'message': f'Contact {updated_contact.company_contact_first} {updated_contact.company_contact_last} updated successfully!',
+                'object_id': updated_contact.company_contact_id,
+                'row_html': row_html
+            })
+        else:
+            # Return form with errors
+            modal_html = render_to_string('core/modals/company_contact_modal.html', {
+                'form': form,
+                'object': contact
+            }, request=request)
+            
+            return JsonResponse({
+                'success': False,
+                'html': modal_html,
+                'errors': form.errors
+            })
+
+@api_view(['GET', 'POST'])  
+def company_contact_modal_add(request):
+    """AJAX view for adding new CompanyContact in modal"""
+    
+    if request.method == 'GET':
+        # Return the modal form HTML for new contact
+        form = CompanyContactForm()
+        
+        modal_html = render_to_string('core/modals/company_contact_modal.html', {
+            'form': form,
+            'object': None
+        }, request=request)
+        
+        return JsonResponse({
+            'success': True,
+            'html': modal_html
+        })
+    
+    elif request.method == 'POST':
+        # Process the form submission
+        form = CompanyContactForm(request.POST)
+        
+        if form.is_valid():
+            new_contact = form.save()
+            
+            # Generate new table row HTML
+            row_html = render_to_string('core/partials/company_contact_row.html', {
+                'contact': new_contact
+            }, request=request)
+            
+            return JsonResponse({
+                'success': True,
+                'message': f'Contact {new_contact.company_contact_first} {new_contact.company_contact_last} added successfully!',
+                'object_id': new_contact.company_contact_id,
+                'row_html': row_html,
+                'action': 'add'  # This tells JS to add a new row instead of updating
+            })
+        else:
+            # Return form with errors
+            modal_html = render_to_string('core/modals/company_contact_modal.html', {
+                'form': form,
+                'object': None
+            }, request=request)
+            
+            return JsonResponse({
+                'success': False,
+                'html': modal_html,
+                'errors': form.errors
+            })

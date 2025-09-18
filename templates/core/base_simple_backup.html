@@ -4,11 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Skye OS{% endblock %}</title>
-    
-    <!-- Include our modal styles -->
-    {% load static %}
-    <link rel="stylesheet" href="{% static 'css/modal-styles.css' %}">
-    
     <style>
         body { 
             margin: 0; 
@@ -117,7 +112,6 @@
             border-radius: 4px; 
             border: none; 
             cursor: pointer; 
-            display: inline-block;
         }
         .btn-secondary { 
             background: #666; 
@@ -128,34 +122,6 @@
             padding: 2px 6px; 
             border-radius: 10px; 
             font-size: 12px; 
-        }
-        
-        /* Enhanced table styles for better modal integration */
-        .action-buttons {
-            display: flex;
-            gap: 6px;
-            align-items: center;
-        }
-        
-        .btn-edit-modal {
-            padding: 4px 8px;
-            font-size: 0.8rem;
-            background: #1976d2;
-            color: white;
-            text-decoration: none;
-            border-radius: 3px;
-            border: none;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-        
-        .btn-edit-modal:hover {
-            background: #1565c0;
-        }
-        
-        .btn-edit-modal:disabled {
-            background: #9ca3af;
-            cursor: not-allowed;
         }
     </style>
 </head>
@@ -192,8 +158,5 @@
             {% endblock %}
         </main>
     </div>
-
-    <!-- Include our modal JavaScript -->
-    <script src="{% static 'js/modal-crud.js' %}"></script>
 </body>
 </html>

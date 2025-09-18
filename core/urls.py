@@ -155,4 +155,7 @@ path('workstation/order-data-verts/<int:pk>/', views.order_data_vert_detail, nam
 path('workstation/document-details/', views.document_detail_list, name='document_detail_list'),
 path('workstation/document-details/<int:pk>/', views.document_detail_detail, name='document_detail_detail'),
 
+# AJAX Modal endpoints (add these to your existing urlpatterns)
+    path('ajax/company-contact/<int:pk>/edit/', views.company_contact_modal_edit, name='company_contact_modal_edit'),
+    path('ajax/company-contact/add/', views.company_contact_modal_add, name='company_contact_modal_add'),
 ]

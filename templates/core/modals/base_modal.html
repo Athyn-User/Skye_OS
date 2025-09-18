@@ -1,0 +1,46 @@
+<div class="modal-container">
+    <div class="modal-header">
+        <h3 class="modal-title">{% block modal_title %}Edit Record{% endblock %}</h3>
+        <button type="button" class="modal-close">&times;</button>
+    </div>
+
+    <form class="modal-form" method="post" action="{% block form_action %}{% endblock %}">
+        <div class="modal-body">
+            {% csrf_token %}
+            
+            {% if form.non_field_errors %}
+                <div class="form-errors">
+                    <ul>
+                        {% for error in form.non_field_errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+
+            {% block form_fields %}
+                {% for field in form %}
+                    <div class="form-group">
+                        {{ field.label_tag }}
+                        {{ field }}
+                        {% if field.errors %}
+                            {% for error in field.errors %}
+                                <span class="error-message">{{ error }}</span>
+                            {% endfor %}
+                        {% endif %}
+                        {% if field.help_text %}
+                            <small class="form-help">{{ field.help_text }}</small>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            {% endblock %}
+        </div>
+
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary btn-cancel">Cancel</button>
+            <button type="submit" class="btn btn-primary btn-submit">
+                {% block submit_text %}Save Changes{% endblock %}
+            </button>
+        </div>
+    </form>
+</div>

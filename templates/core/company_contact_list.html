@@ -1,0 +1,123 @@
+{% extends "core/base_simple.html" %}
+
+{% block title %}Company Contacts - Skye OS{% endblock %}
+
+{% block page_title %}Company Contacts{% endblock %}
+{% block page_subtitle %}Manage company contact information{% endblock %}
+
+{% block content %}
+{{ block.super }}
+
+<!-- Action Bar -->
+<div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <div>
+            <h3 style="margin: 0;">Contact Directory</h3>
+            <p style="margin: 5px 0 0 0; color: #666;">Total: {{ total_count }} contacts</p>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <button class="btn-edit-modal btn" 
+                    data-model="company-contact" 
+                    data-id="add">
+                Add New Contact
+            </button>
+            <button class="btn btn-secondary" onclick="alert('Export functionality coming soon')">
+                Export
+            </button>
+        </div>
+    </div>
+
+    <!-- Search Bar -->
+    <div style="margin-bottom: 20px;">
+        <form method="get" style="display: flex; gap: 10px; align-items: center;">
+            <input type="text" 
+                   name="search" 
+                   value="{{ search_query }}" 
+                   placeholder="Search contacts by name, email, or company..." 
+                   style="flex: 1; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px;">
+            <button type="submit" class="btn">Search</button>
+            {% if search_query %}
+                <a href="{% url 'core:company_contact_list' %}" class="btn btn-secondary">Clear</a>
+            {% endif %}
+        </form>
+    </div>
+</div>
+
+<!-- Contacts Table -->
+<div class="card">
+    {% if page_obj %}
+        <div style="overflow-x: auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Contact ID</th>
+                        <th>Company</th>
+                        <th>Name</th>
+                        <th>Title</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for contact in page_obj %}
+                    <tr>
+                        {% include "core/partials/company_contact_row.html" %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+            <div style="margin-top: 20px; display: flex; justify-content: center; gap: 10px; align-items: center;">
+                {% if page_obj.has_previous %}
+                    <a href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}" class="btn btn-secondary">First</a>
+                    <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}" class="btn btn-secondary">Previous</a>
+                {% endif %}
+
+                <span style="padding: 8px 16px; background: #f8f9fa; border-radius: 4px;">
+                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                </span>
+
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}" class="btn btn-secondary">Next</a>
+                    <a href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}" class="btn btn-secondary">Last</a>
+                {% endif %}
+            </div>
+        {% endif %}
+    {% else %}
+        <div style="text-align: center; padding: 40px; color: #666;">
+            <h3>No company contacts found</h3>
+            {% if search_query %}
+                <p>No contacts match your search for "{{ search_query }}"</p>
+                <a href="{% url 'core:company_contact_list' %}" class="btn btn-secondary">View All Contacts</a>
+            {% else %}
+                <p>Start by adding your first company contact</p>
+                <button class="btn-edit-modal btn" 
+                        data-model="company-contact" 
+                        data-id="add">
+                    Add First Contact
+                </button>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+
+<script>
+// Optional: Add some page-specific JavaScript
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Company Contact List loaded with {{ page_obj|length }} contacts on this page');
+    
+    // Handle "Add New Contact" button
+    document.addEventListener('click', function(e) {
+        if (e.target.dataset.id === 'add' && e.target.dataset.model === 'company-contact') {
+            e.preventDefault();
+            // The modal system will handle this automatically
+            // You could add custom logic here if needed
+        }
+    });
+});
+</script>
+{% endblock %}
