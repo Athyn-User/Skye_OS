@@ -1,0 +1,33 @@
+<!-- templates/core/partials/employee_contact_catalog_row.html -->
+<td>{{ employee.employee_id }}</td>
+<td>
+    <a href="{% url 'core:employee_contact_detail' employee.employee_id %}">
+        <strong>
+            {% if employee.employee_name_first or employee.employee_name_last %}
+                {{ employee.employee_name_first|default:"" }} {{ employee.employee_name_last|default:"" }}
+            {% else %}
+                Employee {{ employee.employee_id }}
+            {% endif %}
+        </strong>
+    </a>
+</td>
+<td>
+    {% if employee.employee_email %}
+        <a href="mailto:{{ employee.employee_email }}">{{ employee.employee_email|truncatechars:30 }}</a>
+    {% else %}
+        <span style="color: #999;">No email</span>
+    {% endif %}
+</td>
+<td>
+    {% if employee.employee_location %}
+        {{ employee.employee_location.employee_location_name|default:"Location"|truncatechars:20 }}
+    {% else %}
+        <span style="color: #999;">No location</span>
+    {% endif %}
+</td>
+<td>
+    <div class="action-buttons">
+        <button class="btn-edit-modal" data-model="employee-contact" data-id="{{ employee.employee_id }}">Edit</button>
+        <a href="{% url 'core:employee_contact_detail' employee.employee_id %}">View Profile</a>
+    </div>
+</td>

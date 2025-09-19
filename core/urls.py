@@ -190,5 +190,11 @@ path('ajax/order-data-vert/add/', views.order_data_vert_modal_add, name='order_d
 path('ajax/document-detail/<int:pk>/edit/', views.document_detail_modal_edit, name='document_detail_modal_edit'),
 path('ajax/document-detail/add/', views.document_detail_modal_add, name='document_detail_modal_add'),
 
+# Products AJAX endpoints
+    path('ajax/products/<int:pk>/edit/', views.products_modal_edit, name='products_modal_edit'),
+    path('ajax/products/add/', views.products_modal_add, name='products_modal_add'),
     
+    # Employee Function AJAX endpoints
+    path('ajax/employee-function/<int:pk>/edit/', views.employee_function_modal_edit, name='employee_function_modal_edit'),
+    path('ajax/employee-function/add/', views.employee_function_modal_add, name='employee_function_modal_add'),
 ]

@@ -2573,3 +2573,161 @@ def document_detail_modal_add(request):
                 'form': form, 'object': None
             }, request=request)
             return JsonResponse({'success': False, 'html': modal_html, 'errors': form.errors})
+
+# =============================================================================
+# CATALOG AJAX MODAL VIEWS - Add these to your core/views.py file
+# =============================================================================
+
+# Add these imports to your existing imports section
+from .forms import (
+    # ... your existing imports ...
+    ProductsForm, EmployeeFunctionForm
+)
+
+# Products AJAX Views
+@csrf_exempt
+@require_http_methods(["GET", "POST"])
+def products_modal_edit(request, pk):
+    """AJAX view for editing Products in modal"""
+    if not request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({'success': False, 'error': 'AJAX request required'})
+    
+    try:
+        product = get_object_or_404(Products, pk=pk)
+    except Products.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Product not found'})
+
+    if request.method == 'GET':
+        form = ProductsForm(instance=product)
+        modal_html = render_to_string('core/modals/products_modal.html', {
+            'form': form, 'object': product
+        }, request=request)
+        return JsonResponse({'success': True, 'html': modal_html})
+    
+    elif request.method == 'POST':
+        form = ProductsForm(request.POST, instance=product)
+        if form.is_valid():
+            updated_product = form.save()
+            row_html = render_to_string('core/partials/products_row.html', {
+                'product': updated_product
+            }, request=request)
+            return JsonResponse({
+                'success': True,
+                'message': f'Product "{updated_product.product_name}" updated successfully!',
+                'object_id': updated_product.products_id,
+                'row_html': row_html
+            })
+        else:
+            modal_html = render_to_string('core/modals/products_modal.html', {
+                'form': form, 'object': product
+            }, request=request)
+            return JsonResponse({'success': False, 'html': modal_html, 'errors': form.errors})
+
+@csrf_exempt
+@require_http_methods(["GET", "POST"])
+def products_modal_add(request):
+    """AJAX view for adding new Products in modal"""
+    if not request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({'success': False, 'error': 'AJAX request required'})
+    
+    if request.method == 'GET':
+        form = ProductsForm()
+        modal_html = render_to_string('core/modals/products_modal.html', {
+            'form': form, 'object': None
+        }, request=request)
+        return JsonResponse({'success': True, 'html': modal_html})
+    
+    elif request.method == 'POST':
+        form = ProductsForm(request.POST)
+        if form.is_valid():
+            new_product = form.save()
+            row_html = render_to_string('core/partials/products_row.html', {
+                'product': new_product
+            }, request=request)
+            return JsonResponse({
+                'success': True,
+                'message': f'Product "{new_product.product_name}" added successfully!',
+                'object_id': new_product.products_id,
+                'row_html': row_html,
+                'action': 'add'
+            })
+        else:
+            modal_html = render_to_string('core/modals/products_modal.html', {
+                'form': form, 'object': None
+            }, request=request)
+            return JsonResponse({'success': False, 'html': modal_html, 'errors': form.errors})
+
+# Employee Function AJAX Views
+@csrf_exempt
+@require_http_methods(["GET", "POST"])
+def employee_function_modal_edit(request, pk):
+    """AJAX view for editing EmployeeFunction in modal"""
+    if not request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({'success': False, 'error': 'AJAX request required'})
+    
+    try:
+        function = get_object_or_404(EmployeeFunction, pk=pk)
+    except EmployeeFunction.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Function not found'})
+
+    if request.method == 'GET':
+        form = EmployeeFunctionForm(instance=function)
+        modal_html = render_to_string('core/modals/employee_function_modal.html', {
+            'form': form, 'object': function
+        }, request=request)
+        return JsonResponse({'success': True, 'html': modal_html})
+    
+    elif request.method == 'POST':
+        form = EmployeeFunctionForm(request.POST, instance=function)
+        if form.is_valid():
+            updated_function = form.save()
+            row_html = render_to_string('core/partials/employee_function_row.html', {
+                'function': updated_function
+            }, request=request)
+            return JsonResponse({
+                'success': True,
+                'message': f'Function "{updated_function.employee_function}" updated successfully!',
+                'object_id': updated_function.employee_function_id,
+                'row_html': row_html
+            })
+        else:
+            modal_html = render_to_string('core/modals/employee_function_modal.html', {
+                'form': form, 'object': function
+            }, request=request)
+            return JsonResponse({'success': False, 'html': modal_html, 'errors': form.errors})
+
+@csrf_exempt
+@require_http_methods(["GET", "POST"])
+def employee_function_modal_add(request):
+    """AJAX view for adding new EmployeeFunction in modal"""
+    if not request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({'success': False, 'error': 'AJAX request required'})
+    
+    if request.method == 'GET':
+        form = EmployeeFunctionForm()
+        modal_html = render_to_string('core/modals/employee_function_modal.html', {
+            'form': form, 'object': None
+        }, request=request)
+        return JsonResponse({'success': True, 'html': modal_html})
+    
+    elif request.method == 'POST':
+        form = EmployeeFunctionForm(request.POST)
+        if form.is_valid():
+            new_function = form.save()
+            row_html = render_to_string('core/partials/employee_function_row.html', {
+                'function': new_function
+            }, request=request)
+            return JsonResponse({
+                'success': True,
+                'message': f'Function "{new_function.employee_function}" added successfully!',
+                'object_id': new_function.employee_function_id,
+                'row_html': row_html,
+                'action': 'add'
+            })
+        else:
+            modal_html = render_to_string('core/modals/employee_function_modal.html', {
+                'form': form, 'object': None
+            }, request=request)
+            return JsonResponse({'success': False, 'html': modal_html, 'errors': form.errors})
+
+# Note: Employee Contact already has AJAX views from workstation implementation

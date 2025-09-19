@@ -4,7 +4,7 @@ from .models import (
     CompanyContact, Company, Options, CompanyLocation, CompanyAlias,
     ApplicationResponse, OrderOption, OrderDataVert, DocumentDetail,
     Applications, ApplicationQuestion, Orders, Cover, Retention, 
-    Limits, Document, Parameter, ParameterMap
+    Limits, Document, Parameter, ParameterMap, Products, EmployeeFunction
 )
 
 class CompanyContactForm(forms.ModelForm):
@@ -324,3 +324,119 @@ class DocumentDetailForm(forms.ModelForm):
         self.fields['order_option'].empty_label = "Select an Order Option"
         self.fields['document'].queryset = Document.objects.all().order_by('document_name')
         self.fields['document'].empty_label = "Select a Document"
+
+class ProductsForm(forms.ModelForm):
+    """Form for editing Products records"""
+    
+    class Meta:
+        model = Products
+        fields = [
+            'product_name', 'venture', 'coverage', 'product_code', 
+            'product_prefix', 'documents_name'
+        ]
+        
+        widgets = {
+            'product_name': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Enter product name',
+                'maxlength': 200,
+                'required': True
+            }),
+            'venture': forms.Select(attrs={
+                'class': 'form-control'
+            }),
+            'coverage': forms.Select(attrs={
+                'class': 'form-control'
+            }),
+            'product_code': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Product code (e.g. PROD001)',
+                'maxlength': 50
+            }),
+            'product_prefix': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Prefix (e.g. P)',
+                'maxlength': 10
+            }),
+            'documents_name': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Documents name',
+                'maxlength': 200
+            })
+        }
+        
+        labels = {
+            'product_name': 'Product Name',
+            'venture': 'Associated Venture',
+            'coverage': 'Coverage Type',
+            'product_code': 'Product Code',
+            'product_prefix': 'Product Prefix',
+            'documents_name': 'Documents Name'
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        # Populate dropdowns
+        self.fields['venture'].queryset = Venture.objects.all().order_by('venture_name')
+        self.fields['venture'].empty_label = "Select a Venture (optional)"
+        
+        self.fields['coverage'].queryset = Coverage.objects.all().order_by('coverage_name')
+        self.fields['coverage'].empty_label = "Select Coverage Type (optional)"
+        
+        # Make some fields optional
+        for field in ['venture', 'coverage', 'product_code', 'product_prefix', 'documents_name']:
+            self.fields[field].required = False
+        
+        # Product name is required
+        self.fields['product_name'].required = True
+
+    def clean_product_name(self):
+        """Validate product name"""
+        name = self.cleaned_data.get('product_name')
+        if name:
+            name = name.strip()
+            if len(name) < 2:
+                raise forms.ValidationError("Product name must be at least 2 characters long.")
+        return name
+
+    def clean_product_code(self):
+        """Clean and validate product code"""
+        code = self.cleaned_data.get('product_code')
+        if code:
+            code = code.strip().upper()
+        return code
+
+
+class EmployeeFunctionForm(forms.ModelForm):
+    """Form for editing EmployeeFunction records"""
+    
+    class Meta:
+        model = EmployeeFunction
+        fields = ['employee_function']
+        
+        widgets = {
+            'employee_function': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Enter function name (e.g. Software Engineer)',
+                'maxlength': 200,
+                'required': True
+            })
+        }
+        
+        labels = {
+            'employee_function': 'Function Name'
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['employee_function'].required = True
+
+    def clean_employee_function(self):
+        """Validate employee function name"""
+        function = self.cleaned_data.get('employee_function')
+        if function:
+            function = function.strip()
+            if len(function) < 2:
+                raise forms.ValidationError("Function name must be at least 2 characters long.")
+        return function

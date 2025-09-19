@@ -232,9 +232,16 @@
 <!-- Products Section -->
 <div id="products" class="card">
     <h2>🛍️ Products Catalog</h2>
-    <div style="margin-bottom: 15px;">
-        <a href="{% url 'core:products_list' %}" class="btn">View All Products</a>
-        <button class="btn" onclick="alert('Add product functionality coming soon')">Add Product</button>
+    <div style="margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <a href="{% url 'core:products_list' %}" class="btn">View All Products</a>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <button class="btn-edit-modal btn" data-model="products" data-id="add">
+                Add New Product
+            </button>
+            <button class="btn btn-secondary" onclick="alert('Export functionality coming soon')">Export</button>
+        </div>
     </div>
     
     <div style="max-height: 500px; overflow-y: auto;">
@@ -250,44 +257,19 @@
                 </tr>
             </thead>
             <tbody>
-                {% for product in products %}
+                {% for product in products|slice:":20" %}
                 <tr>
-                    <td>{{ product.products_id }}</td>
-                    <td>
-                        <a href="{% url 'core:products_detail' product.products_id %}">
-                            <strong>{{ product.product_name|default:"Unnamed Product" }}</strong>
-                        </a>
-                    </td>
-                    <td>
-                        {% if product.product_code %}
-                            <code style="background: #f0f0f0; padding: 2px 4px; border-radius: 3px;">{{ product.product_code }}</code>
-                        {% else %}
-                            <span style="color: #999;">No code</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if product.venture %}
-                            {{ product.venture.venture_name|default:"Unnamed Venture"|truncatechars:20 }}
-                        {% else %}
-                            <span style="color: #999;">No venture</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if product.coverage %}
-                            {{ product.coverage.coverage_name|default:"Coverage"|truncatechars:15 }}
-                        {% else %}
-                            <span style="color: #999;">No coverage</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <a href="{% url 'core:products_detail' product.products_id %}">View Details</a>
-                    </td>
+                    {% include "core/partials/products_row.html" %}
                 </tr>
                 {% empty %}
                 <tr>
                     <td colspan="6">
-                        <p>No products found. Add products to your catalog.</p>
-                        <button class="btn">Add Product</button>
+                        <div style="text-align: center; padding: 20px;">
+                            <p>No products found. Add products to your catalog.</p>
+                            <button class="btn-edit-modal btn" data-model="products" data-id="add">
+                                Add First Product
+                            </button>
+                        </div>
                     </td>
                 </tr>
                 {% endfor %}
@@ -295,7 +277,10 @@
         </table>
     </div>
     <p style="text-align: center; margin-top: 15px; color: #666;">
-        Total: {{ products|length }} products
+        Showing: {{ products|slice:":20"|length }} of {{ products|length }} products
+        {% if products|length > 20 %}
+            - <a href="{% url 'core:products_list' %}">View All {{ products|length }}</a>
+        {% endif %}
     </p>
 </div>
 
@@ -366,9 +351,16 @@
 <!-- Employee Contacts Section -->
 <div id="employee-contacts" class="card">
     <h2>👥 Employee Directory</h2>
-    <div style="margin-bottom: 15px;">
-        <a href="{% url 'core:employee_contact_list' %}" class="btn">Full Directory</a>
-        <button class="btn" onclick="alert('Add employee functionality coming soon')">Add Employee</button>
+    <div style="margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <a href="{% url 'core:employee_contact_list' %}" class="btn">Full Directory</a>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <button class="btn-edit-modal btn" data-model="employee-contact" data-id="add">
+                Add New Employee
+            </button>
+            <button class="btn btn-secondary" onclick="alert('Export functionality coming soon')">Export</button>
+        </div>
     </div>
     
     <div style="max-height: 500px; overflow-y: auto;">
@@ -383,43 +375,19 @@
                 </tr>
             </thead>
             <tbody>
-                {% for employee in employee_contacts %}
+                {% for employee in employee_contacts|slice:":20" %}
                 <tr>
-                    <td>{{ employee.employee_id }}</td>
-                    <td>
-                        <a href="{% url 'core:employee_contact_detail' employee.employee_id %}">
-                            <strong>
-                                {% if employee.employee_name_first or employee.employee_name_last %}
-                                    {{ employee.employee_name_first|default:"" }} {{ employee.employee_name_last|default:"" }}
-                                {% else %}
-                                    Employee {{ employee.employee_id }}
-                                {% endif %}
-                            </strong>
-                        </a>
-                    </td>
-                    <td>
-                        {% if employee.employee_email %}
-                            <a href="mailto:{{ employee.employee_email }}">{{ employee.employee_email|truncatechars:30 }}</a>
-                        {% else %}
-                            <span style="color: #999;">No email</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if employee.employee_location %}
-                            {{ employee.employee_location.employee_location_name|default:"Location"|truncatechars:20 }}
-                        {% else %}
-                            <span style="color: #999;">No location</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <a href="{% url 'core:employee_contact_detail' employee.employee_id %}">View Profile</a>
-                    </td>
+                    {% include "core/partials/employee_contact_catalog_row.html" %}
                 </tr>
                 {% empty %}
                 <tr>
                     <td colspan="5">
-                        <p>No employee contacts found. Add employees to your directory.</p>
-                        <button class="btn">Add Employee</button>
+                        <div style="text-align: center; padding: 20px;">
+                            <p>No employee contacts found. Add employees to your directory.</p>
+                            <button class="btn-edit-modal btn" data-model="employee-contact" data-id="add">
+                                Add First Employee
+                            </button>
+                        </div>
                     </td>
                 </tr>
                 {% endfor %}
@@ -427,16 +395,26 @@
         </table>
     </div>
     <p style="text-align: center; margin-top: 15px; color: #666;">
-        Total: {{ employee_contacts|length }} employees
+        Showing: {{ employee_contacts|slice:":20"|length }} of {{ employee_contacts|length }} employees
+        {% if employee_contacts|length > 20 %}
+            - <a href="{% url 'core:employee_contact_list' %}">View All {{ employee_contacts|length }}</a>
+        {% endif %}
     </p>
 </div>
 
 <!-- Employee Functions Section -->
 <div id="employee-functions" class="card">
     <h2>⚙️ Employee Functions</h2>
-    <div style="margin-bottom: 15px;">
-        <a href="{% url 'core:employee_function_list' %}" class="btn">View All Functions</a>
-        <button class="btn" onclick="alert('Add function functionality coming soon')">Add Function</button>
+    <div style="margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <a href="{% url 'core:employee_function_list' %}" class="btn">View All Functions</a>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <button class="btn-edit-modal btn" data-model="employee-function" data-id="add">
+                Add New Function
+            </button>
+            <button class="btn btn-secondary" onclick="alert('Export functionality coming soon')">Export</button>
+        </div>
     </div>
     
     <div style="max-height: 500px; overflow-y: auto;">
@@ -450,32 +428,19 @@
                 </tr>
             </thead>
             <tbody>
-                {% for function in employee_functions %}
+                {% for function in employee_functions|slice:":20" %}
                 <tr>
-                    <td>{{ function.employee_function_id }}</td>
-                    <td>
-                        <a href="{% url 'core:employee_function_detail' function.employee_function_id %}">
-                            <strong>{{ function.employee_function|default:"Unnamed Function" }}</strong>
-                        </a>
-                    </td>
-                    <td>
-                        <span style="color: #666; font-style: italic;">
-                            {% if function.employee_function %}
-                                {{ function.employee_function|truncatechars:50 }}
-                            {% else %}
-                                No description available
-                            {% endif %}
-                        </span>
-                    </td>
-                    <td>
-                        <a href="{% url 'core:employee_function_detail' function.employee_function_id %}">View Details</a>
-                    </td>
+                    {% include "core/partials/employee_function_row.html" %}
                 </tr>
                 {% empty %}
                 <tr>
                     <td colspan="4">
-                        <p>No employee functions found. Add job functions to organize roles.</p>
-                        <button class="btn">Add Function</button>
+                        <div style="text-align: center; padding: 20px;">
+                            <p>No employee functions found. Add job functions to organize roles.</p>
+                            <button class="btn-edit-modal btn" data-model="employee-function" data-id="add">
+                                Add First Function
+                            </button>
+                        </div>
                     </td>
                 </tr>
                 {% endfor %}
@@ -483,7 +448,10 @@
         </table>
     </div>
     <p style="text-align: center; margin-top: 15px; color: #666;">
-        Total: {{ employee_functions|length }} functions
+        Showing: {{ employee_functions|slice:":20"|length }} of {{ employee_functions|length }} functions
+        {% if employee_functions|length > 20 %}
+            - <a href="{% url 'core:employee_function_list' %}">View All {{ employee_functions|length }}</a>
+        {% endif %}
     </p>
 </div>
 
