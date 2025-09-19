@@ -1,0 +1,25 @@
+<td>{{ venture.venture_id }}</td>
+<td>
+    <strong>{{ venture.venture_name|default:"Unnamed Venture" }}</strong>
+</td>
+<td>
+    {% if venture.venture_city and venture.venture_state %}
+        {{ venture.venture_city }}, {{ venture.venture_state }}
+    {% else %}
+        Not specified
+    {% endif %}
+</td>
+<td>{{ venture.venture_address_1|truncatechars:30|default:"No address" }}</td>
+<td>
+    <span style="color: green;">✅ Active</span>
+</td>
+<td>
+    <div class="action-buttons">
+        <button class="btn-edit-modal" 
+                data-model="venture" 
+                data-id="{{ venture.venture_id }}">
+            Edit
+        </button>
+        <a href="#" onclick="alert('View venture {{ venture.venture_id }}')">View Details</a>
+    </div>
+</td>

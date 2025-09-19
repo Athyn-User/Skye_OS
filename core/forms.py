@@ -4,7 +4,8 @@ from .models import (
     CompanyContact, Company, Options, CompanyLocation, CompanyAlias,
     ApplicationResponse, OrderOption, OrderDataVert, DocumentDetail,
     Applications, ApplicationQuestion, Orders, Cover, Retention, 
-    Limits, Document, Parameter, ParameterMap, Products, EmployeeFunction
+    Limits, Document, Parameter, ParameterMap, Products, EmployeeFunction,
+    Venture, Coverage, Drive, EmployeeLocation
 )
 
 class CompanyContactForm(forms.ModelForm):
@@ -440,3 +441,215 @@ class EmployeeFunctionForm(forms.ModelForm):
             if len(function) < 2:
                 raise forms.ValidationError("Function name must be at least 2 characters long.")
         return function
+
+class VentureForm(forms.ModelForm):
+    """Form for editing Venture records"""
+    
+    class Meta:
+        model = Venture
+        fields = [
+            'venture_name', 'venture_address_1', 'venture_address_2',
+            'venture_city', 'venture_state', 'venture_zip'
+        ]
+        
+        widgets = {
+            'venture_name': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Enter venture name',
+                'maxlength': 200,
+                'required': True
+            }),
+            'venture_address_1': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Street Address'
+            }),
+            'venture_address_2': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Suite, Unit, etc. (optional)'
+            }),
+            'venture_city': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'City'
+            }),
+            'venture_state': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'State'
+            }),
+            'venture_zip': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'ZIP Code'
+            })
+        }
+        
+        labels = {
+            'venture_name': 'Venture Name',
+            'venture_address_1': 'Address Line 1',
+            'venture_address_2': 'Address Line 2',
+            'venture_city': 'City',
+            'venture_state': 'State',
+            'venture_zip': 'ZIP Code'
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['venture_name'].required = True
+        # Make optional fields
+        for field in ['venture_address_1', 'venture_address_2', 'venture_city', 'venture_state', 'venture_zip']:
+            self.fields[field].required = False
+
+    def clean_venture_name(self):
+        """Validate venture name"""
+        name = self.cleaned_data.get('venture_name')
+        if name:
+            name = name.strip()
+            if len(name) < 2:
+                raise forms.ValidationError("Venture name must be at least 2 characters long.")
+        return name
+
+
+class CoverageForm(forms.ModelForm):
+    """Form for editing Coverage records"""
+    
+    class Meta:
+        model = Coverage
+        fields = ['coverage_name']
+        
+        widgets = {
+            'coverage_name': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Enter coverage type name',
+                'maxlength': 200,
+                'required': True
+            })
+        }
+        
+        labels = {
+            'coverage_name': 'Coverage Type Name'
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['coverage_name'].required = True
+
+    def clean_coverage_name(self):
+        """Validate coverage name"""
+        name = self.cleaned_data.get('coverage_name')
+        if name:
+            name = name.strip()
+            if len(name) < 2:
+                raise forms.ValidationError("Coverage name must be at least 2 characters long.")
+        return name
+
+
+class DriveForm(forms.ModelForm):
+    """Form for editing Drive records"""
+    
+    class Meta:
+        model = Drive
+        fields = ['drive_name', 'venture']
+        
+        widgets = {
+            'drive_name': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Enter drive name',
+                'maxlength': 200,
+                'required': True
+            }),
+            'venture': forms.Select(attrs={
+                'class': 'form-control'
+            })
+        }
+        
+        labels = {
+            'drive_name': 'Drive Name',
+            'venture': 'Associated Venture'
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['drive_name'].required = True
+        self.fields['venture'].queryset = Venture.objects.all().order_by('venture_name')
+        self.fields['venture'].empty_label = "Select a Venture (optional)"
+        self.fields['venture'].required = False
+
+    def clean_drive_name(self):
+        """Validate drive name"""
+        name = self.cleaned_data.get('drive_name')
+        if name:
+            name = name.strip()
+            if len(name) < 2:
+                raise forms.ValidationError("Drive name must be at least 2 characters long.")
+        return name
+
+
+class EmployeeLocationForm(forms.ModelForm):
+    """Form for editing EmployeeLocation records"""
+    
+    class Meta:
+        model = EmployeeLocation
+        fields = [
+            'employee_location_name', 'venture', 'employee_location_address_1', 
+            'employee_location_address_2', 'employee_location_city', 
+            'employee_location_state', 'employee_location_zip'
+        ]
+        
+        widgets = {
+            'employee_location_name': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Enter location name',
+                'maxlength': 200,
+                'required': True
+            }),
+            'venture': forms.Select(attrs={
+                'class': 'form-control'
+            }),
+            'employee_location_address_1': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Street Address'
+            }),
+            'employee_location_address_2': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Suite, Unit, etc. (optional)'
+            }),
+            'employee_location_city': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'City'
+            }),
+            'employee_location_state': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'State'
+            }),
+            'employee_location_zip': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'ZIP Code'
+            })
+        }
+        
+        labels = {
+            'employee_location_name': 'Location Name',
+            'venture': 'Associated Venture',
+            'employee_location_address_1': 'Address Line 1',
+            'employee_location_address_2': 'Address Line 2',
+            'employee_location_city': 'City',
+            'employee_location_state': 'State',
+            'employee_location_zip': 'ZIP Code'
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['employee_location_name'].required = True
+        self.fields['venture'].queryset = Venture.objects.all().order_by('venture_name')
+        self.fields['venture'].empty_label = "Select a Venture (optional)"
+        # Make optional fields
+        for field in ['venture', 'employee_location_address_1', 'employee_location_address_2', 
+                      'employee_location_city', 'employee_location_state', 'employee_location_zip']:
+            self.fields[field].required = False
+
+    def clean_employee_location_name(self):
+        """Validate location name"""
+        name = self.cleaned_data.get('employee_location_name')
+        if name:
+            name = name.strip()
+            if len(name) < 2:
+                raise forms.ValidationError("Location name must be at least 2 characters long.")
+        return name

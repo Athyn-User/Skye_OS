@@ -1,0 +1,20 @@
+<td>{{ coverage.coverage_id }}</td>
+<td>
+    <strong>{{ coverage.coverage_name|default:"Unnamed Coverage" }}</strong>
+</td>
+<td>
+    <span style="color: #999;">System Coverage</span>
+</td>
+<td>
+    <span style="color: #999;">N/A</span>
+</td>
+<td>
+    <div class="action-buttons">
+        <button class="btn-edit-modal" 
+                data-model="coverage" 
+                data-id="{{ coverage.coverage_id }}">
+            Edit
+        </button>
+        <a href="#" onclick="alert('View coverage {{ coverage.coverage_id }}')">View Details</a>
+    </div>
+</td>

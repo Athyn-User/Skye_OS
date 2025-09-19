@@ -9,7 +9,6 @@ from rest_framework.decorators import api_view
 from django.template.loader import render_to_string
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
-from .forms import CompanyContactForm 
 from .models import (
     Venture, Drive, EmployeeLocation, GenerationJob, Parameter,
     DataSeed, GenerationLog, ModelParameter, TrainingJob, Products,
@@ -18,13 +17,13 @@ from .models import (
     ParameterMap, Document, Task, Workflow, WorkflowDetail, Attachment, 
     AttachmentDetail, Limits, Retention, Sublimit, ApplicationResponse,
     Options, Company, CompanyLocation, CompanyContact, CompanyAlias,
-    OrderOption, OrderDataVert, DocumentDetail
+    OrderOption, OrderDataVert, DocumentDetail, Coverage
 )
-
 from .forms import (
     CompanyContactForm, CompanyForm, OptionsForm, CompanyLocationForm, 
     CompanyAliasForm, ApplicationResponseForm, OrderOptionForm, 
-    OrderDataVertForm, DocumentDetailForm
+    OrderDataVertForm, DocumentDetailForm,  VentureForm, CoverageForm, DriveForm, EmployeeLocationForm,
+    ProductsForm, EmployeeFunctionForm
 )
 
 # =============================================================================
@@ -2731,3 +2730,462 @@ def employee_function_modal_add(request):
             return JsonResponse({'success': False, 'html': modal_html, 'errors': form.errors})
 
 # Note: Employee Contact already has AJAX views from workstation implementation
+
+@csrf_exempt
+@require_http_methods(["GET", "POST"])
+def products_modal_add(request):
+    """AJAX view for adding products via modal"""
+    if request.method == 'GET':
+        form = ProductsForm()
+        context = {
+            'form': form,
+            'title': 'Add New Product',
+            'action_url': '/ajax/products/add/',
+            'model_name': 'Product'
+        }
+        return render(request, 'core/ajax/modal_form.html', context)
+    
+    elif request.method == 'POST':
+        form = ProductsForm(request.POST)
+        if form.is_valid():
+            product = form.save()
+            return JsonResponse({
+                'success': True,
+                'message': 'Product added successfully!',
+                'redirect': '/catalog/#products'
+            })
+        else:
+            return JsonResponse({
+                'success': False,
+                'errors': form.errors
+            })
+
+@csrf_exempt
+@require_http_methods(["GET", "POST"])
+def products_modal_edit(request, pk):
+    """AJAX view for editing products via modal"""
+    product = get_object_or_404(Products, pk=pk)
+    
+    if request.method == 'GET':
+        form = ProductsForm(instance=product)
+        context = {
+            'form': form,
+            'title': f'Edit Product: {product.product_name or f"Product {pk}"}',
+            'action_url': f'/ajax/products/edit/{pk}/',
+            'model_name': 'Product'
+        }
+        return render(request, 'core/ajax/modal_form.html', context)
+    
+    elif request.method == 'POST':
+        form = ProductsForm(request.POST, instance=product)
+        if form.is_valid():
+            form.save()
+            return JsonResponse({
+                'success': True,
+                'message': 'Product updated successfully!',
+                'redirect': '/catalog/#products'
+            })
+        else:
+            return JsonResponse({
+                'success': False,
+                'errors': form.errors
+            })
+@csrf_exempt
+@api_view(['GET', 'POST'])
+def venture_modal_edit(request, pk):
+    """AJAX view for editing Venture in modal"""
+    try:
+        venture = get_object_or_404(Venture, pk=pk)
+    except Venture.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'error': 'Venture not found'
+        })
+
+    if request.method == 'GET':
+        form = VentureForm(instance=venture)
+        
+        modal_html = render_to_string('core/modals/venture_modal.html', {
+            'form': form,
+            'object': venture
+        }, request=request)
+        
+        return JsonResponse({
+            'success': True,
+            'html': modal_html
+        })
+    
+    elif request.method == 'POST':
+        form = VentureForm(request.POST, instance=venture)
+        
+        if form.is_valid():
+            updated_venture = form.save()
+            
+            row_html = render_to_string('core/partials/venture_row.html', {
+                'venture': updated_venture
+            }, request=request)
+            
+            return JsonResponse({
+                'success': True,
+                'message': f'Venture "{updated_venture.venture_name}" updated successfully!',
+                'object_id': updated_venture.venture_id,
+                'row_html': row_html
+            })
+        else:
+            modal_html = render_to_string('core/modals/venture_modal.html', {
+                'form': form,
+                'object': venture
+            }, request=request)
+            
+            return JsonResponse({
+                'success': False,
+                'html': modal_html,
+                'errors': form.errors
+            })
+
+@csrf_exempt
+@api_view(['GET', 'POST'])  
+def venture_modal_add(request):
+    """AJAX view for adding new Venture in modal"""
+    
+    if request.method == 'GET':
+        form = VentureForm()
+        
+        modal_html = render_to_string('core/modals/venture_modal.html', {
+            'form': form,
+            'object': None
+        }, request=request)
+        
+        return JsonResponse({
+            'success': True,
+            'html': modal_html
+        })
+    
+    elif request.method == 'POST':
+        form = VentureForm(request.POST)
+        
+        if form.is_valid():
+            new_venture = form.save()
+            
+            row_html = render_to_string('core/partials/venture_row.html', {
+                'venture': new_venture
+            }, request=request)
+            
+            return JsonResponse({
+                'success': True,
+                'message': f'Venture "{new_venture.venture_name}" added successfully!',
+                'object_id': new_venture.venture_id,
+                'row_html': row_html,
+                'action': 'add'
+            })
+        else:
+            modal_html = render_to_string('core/modals/venture_modal.html', {
+                'form': form,
+                'object': None
+            }, request=request)
+            
+            return JsonResponse({
+                'success': False,
+                'html': modal_html,
+                'errors': form.errors
+            })
+
+@csrf_exempt
+@api_view(['GET', 'POST'])
+def coverage_modal_edit(request, pk):
+    """AJAX view for editing Coverage in modal"""
+    try:
+        coverage = get_object_or_404(Coverage, pk=pk)
+    except Coverage.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'error': 'Coverage not found'
+        })
+
+    if request.method == 'GET':
+        form = CoverageForm(instance=coverage)
+        
+        modal_html = render_to_string('core/modals/coverage_modal.html', {
+            'form': form,
+            'object': coverage
+        }, request=request)
+        
+        return JsonResponse({
+            'success': True,
+            'html': modal_html
+        })
+    
+    elif request.method == 'POST':
+        form = CoverageForm(request.POST, instance=coverage)
+        
+        if form.is_valid():
+            updated_coverage = form.save()
+            
+            row_html = render_to_string('core/partials/coverage_row.html', {
+                'coverage': updated_coverage
+            }, request=request)
+            
+            return JsonResponse({
+                'success': True,
+                'message': f'Coverage "{updated_coverage.coverage_name}" updated successfully!',
+                'object_id': updated_coverage.coverage_id,
+                'row_html': row_html
+            })
+        else:
+            modal_html = render_to_string('core/modals/coverage_modal.html', {
+                'form': form,
+                'object': coverage
+            }, request=request)
+            
+            return JsonResponse({
+                'success': False,
+                'html': modal_html,
+                'errors': form.errors
+            })
+
+@csrf_exempt
+@api_view(['GET', 'POST'])  
+def coverage_modal_add(request):
+    """AJAX view for adding new Coverage in modal"""
+    
+    if request.method == 'GET':
+        form = CoverageForm()
+        
+        modal_html = render_to_string('core/modals/coverage_modal.html', {
+            'form': form,
+            'object': None
+        }, request=request)
+        
+        return JsonResponse({
+            'success': True,
+            'html': modal_html
+        })
+    
+    elif request.method == 'POST':
+        form = CoverageForm(request.POST)
+        
+        if form.is_valid():
+            new_coverage = form.save()
+            
+            row_html = render_to_string('core/partials/coverage_row.html', {
+                'coverage': new_coverage
+            }, request=request)
+            
+            return JsonResponse({
+                'success': True,
+                'message': f'Coverage "{new_coverage.coverage_name}" added successfully!',
+                'object_id': new_coverage.coverage_id,
+                'row_html': row_html,
+                'action': 'add'
+            })
+        else:
+            modal_html = render_to_string('core/modals/coverage_modal.html', {
+                'form': form,
+                'object': None
+            }, request=request)
+            
+            return JsonResponse({
+                'success': False,
+                'html': modal_html,
+                'errors': form.errors
+            })
+
+@csrf_exempt
+@api_view(['GET', 'POST'])
+def drive_modal_edit(request, pk):
+    """AJAX view for editing Drive in modal"""
+    try:
+        drive = get_object_or_404(Drive, pk=pk)
+    except Drive.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'error': 'Drive not found'
+        })
+
+    if request.method == 'GET':
+        form = DriveForm(instance=drive)
+        
+        modal_html = render_to_string('core/modals/drive_modal.html', {
+            'form': form,
+            'object': drive
+        }, request=request)
+        
+        return JsonResponse({
+            'success': True,
+            'html': modal_html
+        })
+    
+    elif request.method == 'POST':
+        form = DriveForm(request.POST, instance=drive)
+        
+        if form.is_valid():
+            updated_drive = form.save()
+            
+            row_html = render_to_string('core/partials/drive_row.html', {
+                'drive': updated_drive
+            }, request=request)
+            
+            return JsonResponse({
+                'success': True,
+                'message': f'Drive "{updated_drive.drive_name}" updated successfully!',
+                'object_id': updated_drive.drive_id,
+                'row_html': row_html
+            })
+        else:
+            modal_html = render_to_string('core/modals/drive_modal.html', {
+                'form': form,
+                'object': drive
+            }, request=request)
+            
+            return JsonResponse({
+                'success': False,
+                'html': modal_html,
+                'errors': form.errors
+            })
+
+@csrf_exempt
+@api_view(['GET', 'POST'])  
+def drive_modal_add(request):
+    """AJAX view for adding new Drive in modal"""
+    
+    if request.method == 'GET':
+        form = DriveForm()
+        
+        modal_html = render_to_string('core/modals/drive_modal.html', {
+            'form': form,
+            'object': None
+        }, request=request)
+        
+        return JsonResponse({
+            'success': True,
+            'html': modal_html
+        })
+    
+    elif request.method == 'POST':
+        form = DriveForm(request.POST)
+        
+        if form.is_valid():
+            new_drive = form.save()
+            
+            row_html = render_to_string('core/partials/drive_row.html', {
+                'drive': new_drive
+            }, request=request)
+            
+            return JsonResponse({
+                'success': True,
+                'message': f'Drive "{new_drive.drive_name}" added successfully!',
+                'object_id': new_drive.drive_id,
+                'row_html': row_html,
+                'action': 'add'
+            })
+        else:
+            modal_html = render_to_string('core/modals/drive_modal.html', {
+                'form': form,
+                'object': None
+            }, request=request)
+            
+            return JsonResponse({
+                'success': False,
+                'html': modal_html,
+                'errors': form.errors
+            })
+
+@csrf_exempt
+@api_view(['GET', 'POST'])
+def employee_location_modal_edit(request, pk):
+    """AJAX view for editing EmployeeLocation in modal"""
+    try:
+        location = get_object_or_404(EmployeeLocation, pk=pk)
+    except EmployeeLocation.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'error': 'Employee location not found'
+        })
+
+    if request.method == 'GET':
+        form = EmployeeLocationForm(instance=location)
+        
+        modal_html = render_to_string('core/modals/employee_location_modal.html', {
+            'form': form,
+            'object': location
+        }, request=request)
+        
+        return JsonResponse({
+            'success': True,
+            'html': modal_html
+        })
+    
+    elif request.method == 'POST':
+        form = EmployeeLocationForm(request.POST, instance=location)
+        
+        if form.is_valid():
+            updated_location = form.save()
+            
+            row_html = render_to_string('core/partials/employee_location_row.html', {
+                'location': updated_location
+            }, request=request)
+            
+            return JsonResponse({
+                'success': True,
+                'message': f'Location "{updated_location.employee_location_name}" updated successfully!',
+                'object_id': updated_location.employee_location_id,
+                'row_html': row_html
+            })
+        else:
+            modal_html = render_to_string('core/modals/employee_location_modal.html', {
+                'form': form,
+                'object': location
+            }, request=request)
+            
+            return JsonResponse({
+                'success': False,
+                'html': modal_html,
+                'errors': form.errors
+            })
+
+@csrf_exempt
+@api_view(['GET', 'POST'])  
+def employee_location_modal_add(request):
+    """AJAX view for adding new EmployeeLocation in modal"""
+    
+    if request.method == 'GET':
+        form = EmployeeLocationForm()
+        
+        modal_html = render_to_string('core/modals/employee_location_modal.html', {
+            'form': form,
+            'object': None
+        }, request=request)
+        
+        return JsonResponse({
+            'success': True,
+            'html': modal_html
+        })
+    
+    elif request.method == 'POST':
+        form = EmployeeLocationForm(request.POST)
+        
+        if form.is_valid():
+            new_location = form.save()
+            
+            row_html = render_to_string('core/partials/employee_location_row.html', {
+                'location': new_location
+            }, request=request)
+            
+            return JsonResponse({
+                'success': True,
+                'message': f'Location "{new_location.employee_location_name}" added successfully!',
+                'object_id': new_location.employee_location_id,
+                'row_html': row_html,
+                'action': 'add'
+            })
+        else:
+            modal_html = render_to_string('core/modals/employee_location_modal.html', {
+                'form': form,
+                'object': None
+            }, request=request)
+            
+            return JsonResponse({
+                'success': False,
+                'html': modal_html,
+                'errors': form.errors
+            })

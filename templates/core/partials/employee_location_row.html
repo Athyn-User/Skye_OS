@@ -1,0 +1,29 @@
+<td>{{ location.employee_location_id }}</td>
+<td>
+    <strong>{{ location.employee_location_name|default:"Unnamed Location" }}</strong>
+</td>
+<td>
+    {% if location.venture %}
+        <a href="#ventures">{{ location.venture.venture_name|default:"Unnamed Venture" }}</a>
+    {% else %}
+        No venture assigned
+    {% endif %}
+</td>
+<td>
+    {% if location.employee_location_city and location.employee_location_state %}
+        {{ location.employee_location_city }}, {{ location.employee_location_state }}
+    {% else %}
+        Not specified
+    {% endif %}
+</td>
+<td>{{ location.employee_location_address_1|truncatechars:30|default:"No address" }}</td>
+<td>
+    <div class="action-buttons">
+        <button class="btn-edit-modal" 
+                data-model="employee-location" 
+                data-id="{{ location.employee_location_id }}">
+            Edit
+        </button>
+        <a href="#" onclick="alert('View location {{ location.employee_location_id }}')">View Details</a>
+    </div>
+</td>

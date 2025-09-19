@@ -1,0 +1,23 @@
+{% extends "core/modals/base_modal.html" %}
+
+{% block modal_title %}
+    {% if object %}
+        Edit Coverage: {{ object.coverage_name }}
+    {% else %}
+        Add New Coverage Type
+    {% endif %}
+{% endblock %}
+
+{% block form_action %}/ajax/coverage/{% if object %}{{ object.coverage_id }}/edit/{% else %}add/{% endif %}{% endblock %}
+
+{% block form_fields %}
+    <div class="form-group">
+        {{ form.coverage_name.label_tag }}
+        {{ form.coverage_name }}
+        {% if form.coverage_name.errors %}
+            {% for error in form.coverage_name.errors %}
+                <span class="error-message">{{ error }}</span>
+            {% endfor %}
+        {% endif %}
+    </div>
+{% endblock %}

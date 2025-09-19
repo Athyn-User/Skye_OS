@@ -197,4 +197,21 @@ path('ajax/document-detail/add/', views.document_detail_modal_add, name='documen
     # Employee Function AJAX endpoints
     path('ajax/employee-function/<int:pk>/edit/', views.employee_function_modal_edit, name='employee_function_modal_edit'),
     path('ajax/employee-function/add/', views.employee_function_modal_add, name='employee_function_modal_add'),
+
+# Venture AJAX endpoints
+path('ajax/venture/<int:pk>/edit/', views.venture_modal_edit, name='venture_modal_edit'),
+path('ajax/venture/add/', views.venture_modal_add, name='venture_modal_add'),
+
+# Coverage AJAX endpoints  
+path('ajax/coverage/<int:pk>/edit/', views.coverage_modal_edit, name='coverage_modal_edit'),
+path('ajax/coverage/add/', views.coverage_modal_add, name='coverage_modal_add'),
+
+# Drive AJAX endpoints
+path('ajax/drive/<int:pk>/edit/', views.drive_modal_edit, name='drive_modal_edit'),
+path('ajax/drive/add/', views.drive_modal_add, name='drive_modal_add'),
+
+# Employee Location AJAX endpoints
+path('ajax/employee-location/<int:pk>/edit/', views.employee_location_modal_edit, name='employee_location_modal_edit'),
+path('ajax/employee-location/add/', views.employee_location_modal_add, name='employee_location_modal_add'),
+
 ]
