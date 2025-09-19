@@ -62,8 +62,14 @@ def catalog_view(request):
         'applications': applications,
         'application_questions': application_questions,
         # Add the 4 newest data sets
-        'parameters': parameters,@csrf_exempt
+        'parameters': parameters,
+        'parameter_maps': parameter_maps,
+        'documents': documents,
+        'tasks': tasks,
+    }
+return render(request, 'core/catalog.html', context)
 
+@csrf_exempt
 @api_view(['GET', 'POST'])
 def company_modal_edit(request, pk):
     """AJAX view for editing Company in modal"""
