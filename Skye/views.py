@@ -1,7 +1,7 @@
 # Skye/views.py
 
 import json
-from django.shortcuts import redirect
+import logging
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from django.core.paginator import Paginator
@@ -12,13 +12,9 @@ from django.views.generic import ListView, DetailView, CreateView, UpdateView, D
 from django.urls import reverse_lazy
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
-
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-from django.contrib.auth.decorators import login_required
 from django.conf import settings
-from django.core.paginator import Paginator
 from django.apps import apps
+from django.core.exceptions import ObjectDoesNotExist
 
 from .config_parser import SkyeConfigParser
 from .services import ForeignKeyResolver, ProgressiveDataLoader
@@ -34,6 +30,9 @@ from .forms import (
     CompanyForm, CompanyContactForm, ProductsForm, OrdersForm,
     ApplicationsForm, EmployeeContactForm, VentureForm
 )
+
+# Setup logging
+logger = logging.getLogger(__name__)
 
 # Dashboard View
 @login_required
@@ -855,3 +854,382 @@ def get_page_config(page_name):
         return {}
     else:
         return {}
+
+logger = logging.getLogger(__name__)
+
+def load_section_data(section_name, section_config, limit=20):
+    """
+    Enhanced helper function to load data for a single section with better error handling
+    """
+    table_name = section_config['table']
+    
+    try:
+        # Try to get the model class
+        model_class = None
+        
+        # Try different model name variations
+        possible_names = [
+            table_name,  # e.g., 'venture'
+            table_name.title(),  # e.g., 'Venture'
+            ''.join(word.title() for word in table_name.split('_')),  # e.g., 'EmployeeContact'
+        ]
+        
+        for model_name in possible_names:
+            try:
+                model_class = apps.get_model('Skye', model_name)
+                break
+            except LookupError:
+                continue
+        
+        if not model_class:
+            logger.warning(f"Model not found for table: {table_name}")
+            return {
+                'config': section_config,
+                'data': [],
+                'total_count': 0,
+                'error': f'Model {table_name} not implemented yet'
+            }
+        
+        # Get limited queryset
+        queryset = model_class.objects.all()[:limit]
+        total_count = model_class.objects.count()
+        
+        # Convert to simple data structure
+        data = []
+        for obj in queryset:
+            obj_data = {'pk': obj.pk}
+            
+            for column in section_config['columns']:
+                field_name = column['db_column']
+                try:
+                    if hasattr(obj, field_name):
+                        value = getattr(obj, field_name)
+                        # Handle foreign keys - show string representation
+                        if hasattr(value, 'pk') and hasattr(value, '__str__'):
+                            obj_data[field_name] = str(value)
+                        else:
+                            obj_data[field_name] = value if value is not None else ""
+                    else:
+                        obj_data[field_name] = ""
+                except Exception as e:
+                    logger.warning(f"Error getting field {field_name} for {table_name}: {e}")
+                    obj_data[field_name] = ""
+            
+            data.append(obj_data)
+        
+        return {
+            'config': section_config,
+            'data': data,
+            'total_count': total_count
+        }
+        
+    except Exception as e:
+        logger.error(f"Error loading {section_name}: {e}")
+        return {
+            'config': section_config,
+            'data': [],
+            'total_count': 0,
+            'error': str(e)
+        }
+
+@login_required
+def main_page_view(request, page_name):
+    """
+    Enhanced main page view with improved progressive loading setup
+    """
+    valid_pages = ['IT', 'DocGen', 'Portfolio', 'Workstation', 'Catalog', 'Machine Learning']
+    if page_name not in valid_pages:
+        return render(request, '404.html', status=404)
+    
+    # For placeholder pages
+    if page_name in ['IT', 'DocGen', 'Portfolio', 'Machine Learning']:
+        return render(request, 'main_pages/placeholder.html', {
+            'page_name': page_name,
+            'page_config': settings.SKYE_PAGES_CONFIG.get(page_name, {}),
+        })
+    
+    # For Workstation - also placeholder for now
+    if page_name == 'Workstation':
+        return render(request, 'main_pages/placeholder.html', {
+            'page_name': page_name,
+            'page_config': settings.SKYE_PAGES_CONFIG.get(page_name, {}),
+        })
+    
+    # For Catalog - load real data with progressive loading
+    if page_name == 'Catalog':
+        try:
+            page_config = SkyeConfigParser.generate_catalog_config()['Catalog']
+            section_names = list(page_config.keys())
+            
+            # Load first 3 sections with real data
+            initial_sections = {}
+            initial_count = min(3, len(section_names))
+            
+            for i in range(initial_count):
+                section_name = section_names[i]
+                initial_sections[section_name] = load_section_data(
+                    section_name, 
+                    page_config[section_name]
+                )
+            
+            # Prepare sections config for JavaScript (convert to JSON-safe format)
+            sections_config_json = json.dumps(page_config)
+            
+            context = {
+                'page_name': page_name,
+                'page_config': settings.SKYE_PAGES_CONFIG.get(page_name, {}),
+                'sections_config': page_config,
+                'initial_sections': initial_sections,
+                'has_more_sections': len(section_names) > initial_count,
+                'next_section_index': initial_count,
+                'total_sections': len(section_names)
+            }
+            
+            logger.info(f"Catalog page loaded with {len(initial_sections)} initial sections, "
+                       f"{len(section_names) - initial_count} remaining")
+            
+            return render(request, 'main_pages/main_page.html', context)
+            
+        except Exception as e:
+            logger.error(f"Error loading Catalog page: {e}")
+            return render(request, 'main_pages/placeholder.html', {
+                'page_name': page_name,
+                'error': f'Error loading {page_name}: {str(e)}'
+            })
+    
+    # Fallback for any other pages
+    return render(request, 'main_pages/placeholder.html', {
+        'page_name': page_name,
+        'page_config': settings.SKYE_PAGES_CONFIG.get(page_name, {}),
+    })
+
+@csrf_exempt
+@login_required
+def load_more_sections(request, page_name):
+    """
+    Enhanced AJAX endpoint for progressive loading of remaining sections
+    """
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST method required'}, status=405)
+    
+    try:
+        data = json.loads(request.body)
+        start_index = data.get('start_index', 3)
+        batch_size = getattr(settings, 'PROGRESSIVE_LOADING', {}).get('SECTION_BATCH_SIZE', 3)
+        
+        logger.info(f"Loading more sections for {page_name}, start_index: {start_index}")
+        
+        if page_name == 'Catalog':
+            page_config = SkyeConfigParser.generate_catalog_config()['Catalog']
+            section_names = list(page_config.keys())
+            
+            # Calculate batch boundaries
+            end_index = min(start_index + batch_size, len(section_names))
+            batch_sections = section_names[start_index:end_index]
+            
+            logger.info(f"Loading sections {start_index} to {end_index-1}: {batch_sections}")
+            
+            # Load batch sections
+            sections_data = {}
+            for section_name in batch_sections:
+                sections_data[section_name] = load_section_data(
+                    section_name, 
+                    page_config[section_name]
+                )
+            
+            return JsonResponse({
+                'success': True,
+                'sections': sections_data,
+                'has_more': end_index < len(section_names),
+                'next_index': end_index,
+                'loaded_count': len(sections_data),
+                'total_count': len(section_names)
+            })
+        
+        return JsonResponse({'error': f'Progressive loading not supported for {page_name}'}, status=400)
+        
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON in request body'}, status=400)
+    except Exception as e:
+        logger.error(f"Error in load_more_sections: {e}")
+        return JsonResponse({'error': str(e)}, status=500)
+
+@csrf_exempt
+@login_required
+def search_sections(request, page_name):
+    """
+    Enhanced search across all sections in a page
+    """
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST method required'}, status=405)
+    
+    try:
+        data = json.loads(request.body)
+        search_query = data.get('query', '').strip()
+        
+        if not search_query:
+            return JsonResponse({'error': 'Search query required'}, status=400)
+        
+        logger.info(f"Searching {page_name} for: {search_query}")
+        
+        if page_name == 'Catalog':
+            page_config = SkyeConfigParser.generate_catalog_config()['Catalog']
+            results = {}
+            
+            for section_name, section_config in page_config.items():
+                table_name = section_config['table']
+                
+                try:
+                    # Try to get model class
+                    model_class = None
+                    possible_names = [
+                        table_name,
+                        table_name.title(),
+                        ''.join(word.title() for word in table_name.split('_')),
+                    ]
+                    
+                    for model_name in possible_names:
+                        try:
+                            model_class = apps.get_model('Skye', model_name)
+                            break
+                        except LookupError:
+                            continue
+                    
+                    if not model_class:
+                        continue
+                    
+                    # Build search filter across searchable columns
+                    from django.db.models import Q
+                    search_filter = Q()
+                    
+                    for column in section_config['columns']:
+                        if column.get('searchable', True):
+                            field_name = column['db_column']
+                            if hasattr(model_class, field_name):
+                                search_filter |= Q(**{f"{field_name}__icontains": search_query})
+                    
+                    if search_filter:
+                        queryset = model_class.objects.filter(search_filter)[:10]
+                        
+                        if queryset.exists():
+                            # Convert to simple data structure
+                            search_results = []
+                            for obj in queryset:
+                                obj_data = {'pk': obj.pk}
+                                for column in section_config['columns']:
+                                    field_name = column['db_column']
+                                    try:
+                                        if hasattr(obj, field_name):
+                                            value = getattr(obj, field_name)
+                                            if hasattr(value, 'pk') and hasattr(value, '__str__'):
+                                                obj_data[field_name] = str(value)
+                                            else:
+                                                obj_data[field_name] = value if value is not None else ""
+                                        else:
+                                            obj_data[field_name] = ""
+                                    except Exception:
+                                        obj_data[field_name] = ""
+                                search_results.append(obj_data)
+                            
+                            results[section_name] = {
+                                'config': section_config,
+                                'data': search_results,
+                                'count': len(search_results)
+                            }
+                            
+                except Exception as e:
+                    logger.warning(f"Error searching section {section_name}: {e}")
+                    continue
+            
+            return JsonResponse({
+                'success': True,
+                'results': results,
+                'query': search_query,
+                'sections_found': len(results)
+            })
+        
+        return JsonResponse({'error': f'Search not supported for {page_name}'}, status=400)
+        
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON in request body'}, status=400)
+    except Exception as e:
+        logger.error(f"Error in search_sections: {e}")
+        return JsonResponse({'error': str(e)}, status=500)
+
+@csrf_exempt
+@login_required
+def get_section_data(request, page_name, section_name):
+    """
+    Get full data for a specific section (when "View All" is clicked)
+    """
+    try:
+        if page_name == 'Catalog':
+            page_config = SkyeConfigParser.generate_catalog_config()['Catalog']
+            
+            if section_name not in page_config:
+                return JsonResponse({'error': 'Section not found'}, status=404)
+            
+            section_config = page_config[section_name]
+            table_name = section_config['table']
+            
+            # Try to get model class
+            model_class = None
+            possible_names = [
+                table_name,
+                table_name.title(),
+                ''.join(word.title() for word in table_name.split('_')),
+            ]
+            
+            for model_name in possible_names:
+                try:
+                    model_class = apps.get_model('Skye', model_name)
+                    break
+                except LookupError:
+                    continue
+            
+            if not model_class:
+                return JsonResponse({'error': f'Model {table_name} not found'}, status=404)
+            
+            # Handle pagination
+            from django.core.paginator import Paginator
+            page = request.GET.get('page', 1)
+            paginator = Paginator(model_class.objects.all(), 50)
+            page_obj = paginator.get_page(page)
+            
+            # Convert to data structure
+            data = []
+            for obj in page_obj.object_list:
+                obj_data = {'pk': obj.pk}
+                for column in section_config['columns']:
+                    field_name = column['db_column']
+                    try:
+                        if hasattr(obj, field_name):
+                            value = getattr(obj, field_name)
+                            if hasattr(value, 'pk') and hasattr(value, '__str__'):
+                                obj_data[field_name] = str(value)
+                            else:
+                                obj_data[field_name] = value if value is not None else ""
+                        else:
+                            obj_data[field_name] = ""
+                    except Exception:
+                        obj_data[field_name] = ""
+                data.append(obj_data)
+            
+            return JsonResponse({
+                'success': True,
+                'data': data,
+                'config': section_config,
+                'pagination': {
+                    'current_page': page_obj.number,
+                    'total_pages': paginator.num_pages,
+                    'has_next': page_obj.has_next(),
+                    'has_previous': page_obj.has_previous(),
+                    'total_count': paginator.count
+                }
+            })
+        
+        return JsonResponse({'error': f'Section data not supported for {page_name}'}, status=400)
+        
+    except Exception as e:
+        logger.error(f"Error in get_section_data: {e}")
+        return JsonResponse({'error': str(e)}, status=500)
