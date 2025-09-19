@@ -1,0 +1,48 @@
+﻿/* Custom styles for Skye OS */
+.navbar-brand {
+    font-weight: bold;
+}
+
+.card-header h5 {
+    margin-bottom: 0;
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(0, 123, 255, 0.075);
+}
+
+.btn-group .btn {
+    margin-right: 0;
+}
+
+.pagination .page-link {
+    color: #0d6efd;
+}
+
+.pagination .page-item.active .page-link {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+}
+
+/* Dashboard cards */
+.card.text-white .card-footer a {
+    text-decoration: none;
+}
+
+.card.text-white .card-footer a:hover {
+    text-decoration: underline;
+}
+
+/* Form styling */
+.form-control:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+/* Search form */
+.search-form {
+    background-color: #f8f9fa;
+    padding: 1rem;
+    border-radius: 0.375rem;
+    margin-bottom: 1rem;
+}
