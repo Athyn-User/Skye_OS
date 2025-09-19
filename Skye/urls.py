@@ -4,12 +4,22 @@ from . import views
 
 urlpatterns = [
     # Authentication URLs
-    path('login/', auth_views.LoginView.as_view(template_name='auth/login.html'), name='login'),
-    path('logout/', auth_views.LogoutView.as_view(next_page='/'), name='logout'),
+    path('accounts/login/', auth_views.LoginView.as_view(template_name='auth/login.html'), name='login'),
+    path('accounts/logout/', auth_views.LogoutView.as_view(next_page='/'), name='logout'),
+    path('login/', auth_views.LoginView.as_view(template_name='auth/login.html'), name='login_short'),
+    path('logout/', auth_views.LogoutView.as_view(next_page='/'), name='logout_short'),
     
     # Dashboard
     path('', views.dashboard, name='dashboard'),
     
+    # Main Pages (Vertex AI Style)
+    path('main/<str:page_name>/', views.main_page_view, name='main_page'),
+    path('main/<str:page_name>/load-more/', views.load_more_sections, name='load_more_sections'),
+    path('main/<str:page_name>/search/', views.search_sections, name='search_sections'),
+    path('main/<str:page_name>/<str:section_name>/data/', views.get_section_data, name='get_section_data'),
+    path('main/<str:page_name>/<str:section_name>/<int:record_id>/edit/', views.edit_record, name='edit_record'),
+    path('main/<str:page_name>/<str:section_name>/add/', views.add_record, name='add_record'),
+
     # Company URLs
     path('companies/', views.CompanyListView.as_view(), name='company_list'),
     path('companies/<int:company_id>/', views.CompanyDetailView.as_view(), name='company_detail'),

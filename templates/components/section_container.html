@@ -1,0 +1,112 @@
+<!-- templates/components/section_container.html -->
+<section class="section-container" id="section-{{ section_name|slugify }}" data-section="{{ section_name }}">
+    <div class="section-header">
+        <div class="section-title">
+            <span class="material-icons section-icon">{{ section_data.config.icon }}</span>
+            <h4>{{ section_name }}</h4>
+            <span class="section-count">({{ section_data.total_count }} total)</span>
+        </div>
+        
+        <div class="section-actions">
+            {% if section_data.config.add_button %}
+            <button type="button" 
+                    class="btn btn-primary btn-sm add-record-btn"
+                    data-section="{{ section_name }}"
+                    data-table="{{ section_data.config.table }}">
+                <span class="material-icons">add</span>
+                Add New
+            </button>
+            {% endif %}
+            
+            <button type="button" 
+                    class="btn btn-outline-primary btn-sm view-all-btn"
+                    data-section="{{ section_name }}"
+                    data-table="{{ section_data.config.table }}">
+                <span class="material-icons">view_list</span>
+                View All
+            </button>
+        </div>
+    </div>
+
+    <div class="section-content">
+        {% if section_data.error %}
+            <div class="alert alert-warning" role="alert">
+                <span class="material-icons">error</span>
+                Error loading data: {{ section_data.error }}
+            </div>
+        {% elif section_data.data %}
+            <div class="table-responsive">
+                <table class="table table-hover vertex-table">
+                    <thead>
+                        <tr>
+                            {% for column in section_data.config.columns %}
+                            <th>{{ column.display_name }}</th>
+                            {% endfor %}
+                            {% if section_data.config.edit_button %}
+                            <th class="actions-column">Actions</th>
+                            {% endif %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for record in section_data.data %}
+                        <tr data-record-id="{{ record.pk }}">
+                            {% for column in section_data.config.columns %}
+                            <td data-field="{{ column.db_column }}">
+                                {% with field_value=record|default:""|get_item:column.db_column %}
+                                    {% if field_value %}
+                                        {{ field_value }}
+                                    {% else %}
+                                        <span class="text-muted">—</span>
+                                    {% endif %}
+                                {% endwith %}
+                            </td>
+                            {% endfor %}
+                            
+                            {% if section_data.config.edit_button %}
+                            <td class="actions-column">
+                                <button type="button" 
+                                        class="btn btn-sm btn-outline-primary edit-record-btn"
+                                        data-section="{{ section_name }}"
+                                        data-table="{{ section_data.config.table }}"
+                                        data-record-id="{{ record.pk }}">
+                                    <span class="material-icons">edit</span>
+                                </button>
+                                <button type="button" 
+                                        class="btn btn-sm btn-outline-danger delete-record-btn"
+                                        data-section="{{ section_name }}"
+                                        data-table="{{ section_data.config.table }}"
+                                        data-record-id="{{ record.pk }}">
+                                    <span class="material-icons">delete</span>
+                                </button>
+                            </td>
+                            {% endif %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            {% if section_data.total_count > section_data.data|length %}
+            <div class="section-footer">
+                <small class="text-muted">
+                    Showing {{ section_data.data|length }} of {{ section_data.total_count }} records
+                </small>
+            </div>
+            {% endif %}
+        {% else %}
+            <div class="empty-state">
+                <span class="material-icons empty-icon">inbox</span>
+                <p class="text-muted">No data available</p>
+                {% if section_data.config.add_button %}
+                <button type="button" 
+                        class="btn btn-primary add-record-btn"
+                        data-section="{{ section_name }}"
+                        data-table="{{ section_data.config.table }}">
+                    <span class="material-icons">add</span>
+                    Add First Record
+                </button>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+</section>

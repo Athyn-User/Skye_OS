@@ -1,0 +1,112 @@
+﻿{% extends 'base_main.html' %}
+{% load static skye_tags %}
+
+{% block title %}{{ page_name }} - Skye OS{% endblock %}
+
+{% block content %}
+<div class="main-layout">
+    <!-- Left Sidebar Navigation -->
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h6 class="sidebar-title">{{ page_name }}</h6>
+        </div>
+        
+        <div class="sidebar-content">
+            {% for section_name, section_config in sections_config.items %}
+            <a href="#section-{{ section_name|slugify }}" class="sidebar-item" data-section="{{ section_name }}">
+                <span class="material-icons sidebar-icon">{{ section_config.icon }}</span>
+                <span class="sidebar-text">{{ section_name }}</span>
+            </a>
+            {% endfor %}
+        </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="content-area" id="contentArea">
+        <!-- Search Bar -->
+        <div class="search-container">
+            <div class="search-bar">
+                <span class="material-icons search-icon">search</span>
+                <input type="text" id="globalSearch" class="search-input" 
+                       placeholder="Search across all {{ page_name }} sections...">
+            </div>
+        </div>
+
+        <!-- Sections Container -->
+        <div class="sections-container" id="sectionsContainer">
+            {% for section_name, section_data in initial_sections.items %}
+            <section class="section-container" id="section-{{ section_name|slugify }}" data-section="{{ section_name }}">
+                <div class="section-header">
+                    <div class="section-title">
+                        <span class="material-icons section-icon">{{ section_data.config.icon }}</span>
+                        <h4>{{ section_name }}</h4>
+                        <span class="section-count">({{ section_data.total_count }} total)</span>
+                    </div>
+                    
+                    <div class="section-actions">
+                        <button type="button" class="btn btn-primary btn-sm">
+                            <span class="material-icons">add</span>
+                            Add New
+                        </button>
+                        <button type="button" class="btn btn-outline-primary btn-sm">
+                            <span class="material-icons">view_list</span>
+                            View All
+                        </button>
+                    </div>
+                </div>
+
+                <div class="section-content">
+                    {% if section_data.error %}
+                        <div class="alert alert-warning" role="alert">
+                            <span class="material-icons">error</span>
+                            Error: {{ section_data.error }}
+                        </div>
+                    {% elif section_data.data %}
+                        <div class="table-responsive">
+                            <table class="table table-hover vertex-table">
+                                <thead>
+                                    <tr>
+                                        {% for column in section_data.config.columns %}
+                                        <th>{{ column.display_name }}</th>
+                                        {% endfor %}
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for record in section_data.data %}
+                                    <tr>
+                                        {% for column in section_data.config.columns %}
+                                        <td>
+                                            {% if record|lookup:column.db_column %}
+                                                {{ record|lookup:column.db_column }}
+                                            {% else %}
+                                                —
+                                            {% endif %}
+                                        </td>
+                                        {% endfor %}
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary">
+                                                <span class="material-icons">edit</span>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="empty-state">
+                            <span class="material-icons empty-icon">inbox</span>
+                            <p class="text-muted">No data available</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </section>
+            {% endfor %}
+        </div>
+    </main>
+</div>
+
+<script src="{% static 'js/progressive_loader.js' %}"></script>
+
+{% endblock %}

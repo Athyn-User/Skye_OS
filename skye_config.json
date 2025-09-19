@@ -1,0 +1,740 @@
+{
+  "Catalog": {
+    "Venture": {
+      "table": "venture",
+      "icon": "business",
+      "columns": [
+        {
+          "db_column": "venture_id",
+          "display_name": "Venture ID",
+          "searchable": true
+        },
+        {
+          "db_column": "venture_name",
+          "display_name": "Venture Name",
+          "searchable": true
+        },
+        {
+          "db_column": "venture_address_1",
+          "display_name": "Venture Address 1",
+          "searchable": true
+        },
+        {
+          "db_column": "venture_address_2",
+          "display_name": "Venture Address 2",
+          "searchable": true
+        },
+        {
+          "db_column": "venture_city",
+          "display_name": "Venture City",
+          "searchable": true
+        },
+        {
+          "db_column": "venture_state",
+          "display_name": "Venture State",
+          "searchable": true
+        },
+        {
+          "db_column": "venture_zip",
+          "display_name": "Venture Zip",
+          "searchable": true
+        }
+      ],
+      "add_button": true,
+      "edit_button": true
+    },
+    "Drive": {
+      "table": "drive",
+      "icon": "storage",
+      "columns": [
+        {
+          "db_column": "drive_id",
+          "display_name": "Drive ID",
+          "searchable": true
+        },
+        {
+          "db_column": "drive_name",
+          "display_name": "Drive Name",
+          "searchable": true
+        },
+        {
+          "db_column": "venture_id",
+          "display_name": "Venture ID",
+          "searchable": true
+        }
+      ],
+      "add_button": true,
+      "edit_button": true
+    },
+    "Employee Location": {
+      "table": "employee_location",
+      "icon": "location_on",
+      "columns": [
+        {
+          "db_column": "employee_location_id",
+          "display_name": "Employee Location ID",
+          "searchable": true
+        },
+        {
+          "db_column": "venture_id",
+          "display_name": "Venture ID",
+          "searchable": true
+        },
+        {
+          "db_column": "employee_location_name",
+          "display_name": "Employee Location Name",
+          "searchable": true
+        },
+        {
+          "db_column": "employee_location_address_1",
+          "display_name": "Employee Location Address 1",
+          "searchable": true
+        },
+        {
+          "db_column": "employee_location_address_2",
+          "display_name": "Employee Location Address 2",
+          "searchable": true
+        },
+        {
+          "db_column": "employee_location_city",
+          "display_name": "Employee Location City",
+          "searchable": true
+        },
+        {
+          "db_column": "employee_location_state",
+          "display_name": "Employee Location State",
+          "searchable": true
+        },
+        {
+          "db_column": "employee_location_zip",
+          "display_name": "Employee Location Zip",
+          "searchable": true
+        }
+      ],
+      "add_button": true,
+      "edit_button": true
+    },
+    "Employee Contact": {
+      "table": "employee_contact",
+      "icon": "people",
+      "columns": [
+        {
+          "db_column": "employee_id",
+          "display_name": "Employee ID",
+          "searchable": true
+        },
+        {
+          "db_column": "employee_location_id",
+          "display_name": "Employee Location ID",
+          "searchable": true
+        },
+        {
+          "db_column": "employee_name_first",
+          "display_name": "Employee Name First",
+          "searchable": true
+        },
+        {
+          "db_column": "employee_name_last",
+          "display_name": "Employee Name Last",
+          "searchable": true
+        },
+        {
+          "db_column": "employee_email",
+          "display_name": "Employee Email",
+          "searchable": true
+        },
+        {
+          "db_column": "employee_name_combined",
+          "display_name": "Employee Name Combined",
+          "searchable": true
+        }
+      ],
+      "add_button": true,
+      "edit_button": true
+    },
+    "Products": {
+      "table": "products",
+      "icon": "inventory",
+      "columns": [
+        {
+          "db_column": "products_id",
+          "display_name": "Products ID",
+          "searchable": true
+        },
+        {
+          "db_column": "product_name",
+          "display_name": "Product Name",
+          "searchable": true
+        },
+        {
+          "db_column": "venture_id",
+          "display_name": "Venture ID",
+          "searchable": true
+        },
+        {
+          "db_column": "coverage_id",
+          "display_name": "Coverage ID",
+          "searchable": true
+        },
+        {
+          "db_column": "product_code",
+          "display_name": "Product Code",
+          "searchable": true
+        },
+        {
+          "db_column": "product_prefix",
+          "display_name": "Product Prefix",
+          "searchable": true
+        },
+        {
+          "db_column": "documents_name",
+          "display_name": "Documents Name",
+          "searchable": true
+        }
+      ],
+      "add_button": true,
+      "edit_button": true
+    },
+    "Cover": {
+      "table": "cover",
+      "icon": "shield",
+      "columns": [
+        {
+          "db_column": "cover_id",
+          "display_name": "Cover ID",
+          "searchable": true
+        },
+        {
+          "db_column": "cover_name",
+          "display_name": "Product ID",
+          "searchable": true
+        },
+        {
+          "db_column": "product_id",
+          "display_name": "Cover Name",
+          "searchable": true
+        }
+      ],
+      "add_button": true,
+      "edit_button": true
+    },
+    "Employee Function": {
+      "table": "employee_function_detail",
+      "icon": "work",
+      "columns": [
+        {
+          "db_column": "employee_function_detail_id",
+          "display_name": "Employee Function Detail ID",
+          "searchable": true
+        },
+        {
+          "db_column": "employee_id",
+          "display_name": "Employee ID",
+          "searchable": true
+        },
+        {
+          "db_column": "employee_function_id",
+          "display_name": "Employee Function ID",
+          "searchable": true
+        },
+        {
+          "db_column": "product_id",
+          "display_name": "Product ID",
+          "searchable": true
+        },
+        {
+          "db_column": "cloud_name",
+          "display_name": "Cloud Name",
+          "searchable": true
+        },
+        {
+          "db_column": "iam",
+          "display_name": "IAM",
+          "searchable": true
+        }
+      ],
+      "add_button": true,
+      "edit_button": true
+    },
+    "Paper": {
+      "table": "paper",
+      "icon": "description",
+      "columns": [
+        {
+          "db_column": "paper_id",
+          "display_name": "Paper ID",
+          "searchable": true
+        },
+        {
+          "db_column": "paper_name",
+          "display_name": "Paper Name",
+          "searchable": true
+        },
+        {
+          "db_column": "am_best_rating",
+          "display_name": "AM Best Rating",
+          "searchable": true
+        },
+        {
+          "db_column": "am_best_financial_size",
+          "display_name": "AM Best Financial Size",
+          "searchable": true
+        }
+      ],
+      "add_button": true,
+      "edit_button": true
+    },
+    "Paper Detail": {
+      "table": "paper_detail",
+      "icon": "list_alt",
+      "columns": [
+        {
+          "db_column": "paper_detail_id",
+          "display_name": "Paper Detail ID",
+          "searchable": true
+        },
+        {
+          "db_column": "products_id",
+          "display_name": "Products ID",
+          "searchable": true
+        },
+        {
+          "db_column": "paper_id",
+          "display_name": "Paper ID",
+          "searchable": true
+        },
+        {
+          "db_column": "paper_percentage",
+          "display_name": "Paper Percentage",
+          "searchable": true
+        }
+      ],
+      "add_button": true,
+      "edit_button": true
+    },
+    "Applications": {
+      "table": "applications",
+      "icon": "apps",
+      "columns": [
+        {
+          "db_column": "application_id",
+          "display_name": "Application ID",
+          "searchable": true
+        },
+        {
+          "db_column": "application_name",
+          "display_name": "Application Name",
+          "searchable": true
+        },
+        {
+          "db_column": "product_id",
+          "display_name": "Product ID",
+          "searchable": true
+        }
+      ],
+      "add_button": true,
+      "edit_button": true
+    },
+    "Application Question": {
+      "table": "application_question",
+      "icon": "help",
+      "columns": [
+        {
+          "db_column": "application_question_id",
+          "display_name": "Application Question ID",
+          "searchable": true
+        },
+        {
+          "db_column": "application_id",
+          "display_name": "Application ID",
+          "searchable": true
+        },
+        {
+          "db_column": "custom_question",
+          "display_name": "Custom Question",
+          "searchable": true
+        },
+        {
+          "db_column": "parameter_id",
+          "display_name": "Parameter ID",
+          "searchable": true
+        }
+      ],
+      "add_button": true,
+      "edit_button": true
+    },
+    "Parameter": {
+      "table": "parameter",
+      "icon": "settings",
+      "columns": [
+        {
+          "db_column": "parameter_id",
+          "display_name": "Parameter ID",
+          "searchable": true
+        },
+        {
+          "db_column": "parameter_name",
+          "display_name": "Parameter Name",
+          "searchable": true
+        },
+        {
+          "db_column": "parameter_type_id",
+          "display_name": "Parameter Type ID",
+          "searchable": true
+        }
+      ],
+      "add_button": true,
+      "edit_button": true
+    },
+    "Parameter Map": {
+      "table": "parameter_map",
+      "icon": "map",
+      "columns": [
+        {
+          "db_column": "parameter_map_id",
+          "display_name": "Parameter Map ID",
+          "searchable": true
+        },
+        {
+          "db_column": "products_id",
+          "display_name": "Products ID",
+          "searchable": true
+        },
+        {
+          "db_column": "parameter_id",
+          "display_name": "Parameter ID",
+          "searchable": true
+        },
+        {
+          "db_column": "console_element",
+          "display_name": "Console Element",
+          "searchable": true
+        },
+        {
+          "db_column": "quote_item",
+          "display_name": "Quote Item",
+          "searchable": true
+        },
+        {
+          "db_column": "binder_item",
+          "display_name": "Binder Item",
+          "searchable": true
+        },
+        {
+          "db_column": "policy_item",
+          "display_name": "Policy Item",
+          "searchable": true
+        }
+      ],
+      "add_button": true,
+      "edit_button": true
+    },
+    "Document": {
+      "table": "document",
+      "icon": "folder",
+      "columns": [
+        {
+          "db_column": "document_id",
+          "display_name": "Document ID",
+          "searchable": true
+        },
+        {
+          "db_column": "document_name",
+          "display_name": "Document Name",
+          "searchable": true
+        },
+        {
+          "db_column": "product_id",
+          "display_name": "Product ID",
+          "searchable": true
+        },
+        {
+          "db_column": "document_number",
+          "display_name": "Document Number",
+          "searchable": true
+        },
+        {
+          "db_column": "default_document",
+          "display_name": "Default Document",
+          "searchable": true
+        },
+        {
+          "db_column": "document_added",
+          "display_name": "Document Added",
+          "searchable": true
+        },
+        {
+          "db_column": "document_expiration",
+          "display_name": "Document Expiration",
+          "searchable": true
+        },
+        {
+          "db_column": "document_prior_version",
+          "display_name": "Document Prior Version",
+          "searchable": true
+        },
+        {
+          "db_column": "document_code",
+          "display_name": "Document Code",
+          "searchable": true
+        }
+      ],
+      "add_button": true,
+      "edit_button": true
+    },
+    "Task": {
+      "table": "task",
+      "icon": "task",
+      "columns": [
+        {
+          "db_column": "task_id",
+          "display_name": "Task ID",
+          "searchable": true
+        },
+        {
+          "db_column": "task_name",
+          "display_name": "Task Name",
+          "searchable": true
+        },
+        {
+          "db_column": "task_description",
+          "display_name": "Task Description",
+          "searchable": true
+        },
+        {
+          "db_column": "task_display",
+          "display_name": "Task Display",
+          "searchable": true
+        },
+        {
+          "db_column": "subroutine_name",
+          "display_name": "Subroutine Name",
+          "searchable": true
+        }
+      ],
+      "add_button": true,
+      "edit_button": true
+    },
+    "Workflow": {
+      "table": "workflow",
+      "icon": "workflow",
+      "columns": [
+        {
+          "db_column": "workflow_id",
+          "display_name": "Workflow ID",
+          "searchable": true
+        },
+        {
+          "db_column": "workflow_name",
+          "display_name": "Workflow Name",
+          "searchable": true
+        },
+        {
+          "db_column": "workflow_type",
+          "display_name": "Workflow Type",
+          "searchable": true
+        }
+      ],
+      "add_button": true,
+      "edit_button": true
+    },
+    "Workflow Detail": {
+      "table": "workflow_detail",
+      "icon": "timeline",
+      "columns": [
+        {
+          "db_column": "workflow_detail_id",
+          "display_name": "Workflow Detail ID",
+          "searchable": true
+        },
+        {
+          "db_column": "workflow_id",
+          "display_name": "Workflow ID",
+          "searchable": true
+        },
+        {
+          "db_column": "stage_id",
+          "display_name": "Stage ID",
+          "searchable": true
+        },
+        {
+          "db_column": "task_id",
+          "display_name": "Task ID",
+          "searchable": true
+        },
+        {
+          "db_column": "workflow_sequence",
+          "display_name": "Workflow Sequence",
+          "searchable": true
+        },
+        {
+          "db_column": "man_auto",
+          "display_name": "Man Auto",
+          "searchable": true
+        }
+      ],
+      "add_button": true,
+      "edit_button": true
+    },
+    "Attachment": {
+      "table": "attachment",
+      "icon": "attach_file",
+      "columns": [
+        {
+          "db_column": "attachment_id",
+          "display_name": "Attachment ID",
+          "searchable": true
+        },
+        {
+          "db_column": "attachment_name",
+          "display_name": "Attachment Name",
+          "searchable": true
+        }
+      ],
+      "add_button": true,
+      "edit_button": true
+    },
+    "Attachment Detail": {
+      "table": "attachment_detail",
+      "icon": "attachment",
+      "columns": [
+        {
+          "db_column": "attachment_detail_id",
+          "display_name": "Attachment Detail ID",
+          "searchable": true
+        },
+        {
+          "db_column": "attachment_id",
+          "display_name": "Attachment ID",
+          "searchable": true
+        },
+        {
+          "db_column": "product_id",
+          "display_name": "Product ID",
+          "searchable": true
+        },
+        {
+          "db_column": "task_id",
+          "display_name": "Task ID",
+          "searchable": true
+        },
+        {
+          "db_column": "attachment_type_id",
+          "display_name": "Attachment Type ID",
+          "searchable": true
+        }
+      ],
+      "add_button": true,
+      "edit_button": true
+    },
+    "Limits": {
+      "table": "limits",
+      "icon": "limit",
+      "columns": [
+        {
+          "db_column": "limits_id",
+          "display_name": "Limits ID",
+          "searchable": true
+        },
+        {
+          "db_column": "product_id",
+          "display_name": "Product ID",
+          "searchable": true
+        },
+        {
+          "db_column": "cover_id",
+          "display_name": "Cover ID",
+          "searchable": true
+        },
+        {
+          "db_column": "limit_text",
+          "display_name": "Limit Text",
+          "searchable": true
+        },
+        {
+          "db_column": "limit_pc_number",
+          "display_name": "Limit PC Number",
+          "searchable": true
+        },
+        {
+          "db_column": "limit_ag_number",
+          "display_name": "Limit AG Number",
+          "searchable": true
+        }
+      ],
+      "add_button": true,
+      "edit_button": true
+    },
+    "Retention": {
+      "table": "retention",
+      "icon": "schedule",
+      "columns": [
+        {
+          "db_column": "retention_id",
+          "display_name": "Retention ID",
+          "searchable": true
+        },
+        {
+          "db_column": "products_id",
+          "display_name": "Products ID",
+          "searchable": true
+        },
+        {
+          "db_column": "cover_id",
+          "display_name": "Cover ID",
+          "searchable": true
+        },
+        {
+          "db_column": "retention_text",
+          "display_name": "Retention Text",
+          "searchable": true
+        },
+        {
+          "db_column": "retention_pc_number",
+          "display_name": "Retention PC Number",
+          "searchable": true
+        },
+        {
+          "db_column": "retention_ag_number",
+          "display_name": "Retention AG Number",
+          "searchable": true
+        }
+      ],
+      "add_button": true,
+      "edit_button": true
+    },
+    "Sublimit": {
+      "table": "sublimit",
+      "icon": "subdirectory_arrow_right",
+      "columns": [
+        {
+          "db_column": "sublimit_id",
+          "display_name": "Sublimit ID",
+          "searchable": true
+        },
+        {
+          "db_column": "orders_id",
+          "display_name": "Orders ID",
+          "searchable": true
+        },
+        {
+          "db_column": "products_id",
+          "display_name": "Products ID",
+          "searchable": true
+        },
+        {
+          "db_column": "sublimit_name",
+          "display_name": "Sublimit Name",
+          "searchable": true
+        },
+        {
+          "db_column": "sublimit_amount",
+          "display_name": "Sublimit Amount",
+          "searchable": true
+        }
+      ],
+      "add_button": true,
+      "edit_button": true
+    }
+  }
+}

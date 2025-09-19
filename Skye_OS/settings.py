@@ -108,3 +108,23 @@ PAGINATION_PER_PAGE = 25
 LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
+
+# Skye OS Configuration
+SKYE_PAGES_CONFIG = {
+    'IT': {'icon': 'computer', 'color': '#4285f4'},
+    'DocGen': {'icon': 'description', 'color': '#34a853'},
+    'Portfolio': {'icon': 'folder', 'color': '#fbbc04'},
+    'Workstation': {'icon': 'work', 'color': '#ea4335'},
+    'Catalog': {'icon': 'storage', 'color': '#9aa0a6'},
+    'Machine Learning': {'icon': 'psychology', 'color': '#9c27b0'}
+}
+
+# Progressive loading settings
+PROGRESSIVE_LOADING = {
+    'INITIAL_SECTIONS': 3,  # Load first 3 sections immediately
+    'SECTION_BATCH_SIZE': 2,  # Load 2 sections per subsequent request
+    'RECORDS_PER_SECTION': 20  # Max records per section preview
+}
+
+# Foreign key resolution cache settings
+FK_RESOLUTION_CACHE_TIMEOUT = 300  # 5 minutes
