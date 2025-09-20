@@ -403,3 +403,263 @@ class BrokerContact(models.Model):
 
     def __str__(self):
         return f"{self.broker_first_name} {self.broker_last_name}"
+
+class Drive(models.Model):
+    drive_id = models.AutoField(primary_key=True)
+    drive_name = models.TextField(blank=True, null=True)
+    venture = models.ForeignKey(Venture, on_delete=models.CASCADE, null=True, blank=True)
+
+    class Meta:
+        db_table = 'drive'
+
+    def __str__(self):
+        return self.drive_name or f"Drive {self.drive_id}"
+
+
+class EmployeeFunction(models.Model):
+    employee_function_id = models.AutoField(primary_key=True)
+    employee_function = models.TextField(blank=True, null=True)
+
+    class Meta:
+        db_table = 'employee_function'
+
+    def __str__(self):
+        return self.employee_function or f"Function {self.employee_function_id}"
+
+
+class EmployeeFunctionDetail(models.Model):
+    employee_function_detail_id = models.AutoField(primary_key=True)
+    employee = models.ForeignKey(EmployeeContact, on_delete=models.CASCADE, null=True, blank=True)
+    employee_function = models.ForeignKey(EmployeeFunction, on_delete=models.CASCADE, null=True, blank=True)
+    product = models.ForeignKey(Products, on_delete=models.CASCADE, null=True, blank=True)
+    cloud_name = models.TextField(blank=True, null=True)
+    iam = models.TextField(blank=True, null=True)
+
+    class Meta:
+        db_table = 'employee_function_detail'
+
+    def __str__(self):
+        return f"Function Detail {self.employee_function_detail_id}"
+
+
+class Paper(models.Model):
+    paper_id = models.AutoField(primary_key=True)
+    paper_name = models.TextField(blank=True, null=True)
+    am_best_rating = models.TextField(blank=True, null=True)
+    am_best_financial_size = models.TextField(blank=True, null=True)
+
+    class Meta:
+        db_table = 'paper'
+
+    def __str__(self):
+        return self.paper_name or f"Paper {self.paper_id}"
+
+
+class PaperDetail(models.Model):
+    paper_detail_id = models.AutoField(primary_key=True)
+    products = models.ForeignKey(Products, on_delete=models.CASCADE, null=True, blank=True)
+    paper = models.ForeignKey(Paper, on_delete=models.CASCADE, null=True, blank=True)
+    paper_percentage = models.DecimalField(max_digits=20, decimal_places=2, null=True, blank=True)
+
+    class Meta:
+        db_table = 'paper_detail'
+
+    def __str__(self):
+        return f"Paper Detail {self.paper_detail_id}"
+
+
+class ParameterMap(models.Model):
+    parameter_map_id = models.AutoField(primary_key=True)
+    products = models.ForeignKey(Products, on_delete=models.CASCADE, null=True, blank=True)
+    parameter = models.ForeignKey(Parameter, on_delete=models.CASCADE, null=True, blank=True)
+    console_element = models.BooleanField(default=False)
+    quote_item = models.BooleanField(default=False)
+    binder_item = models.BooleanField(default=False)
+    policy_item = models.BooleanField(default=False)
+
+    class Meta:
+        db_table = 'parameter_map'
+
+    def __str__(self):
+        return f"Parameter Map {self.parameter_map_id}"
+
+
+class AttachmentType(models.Model):
+    attachment_type_id = models.AutoField(primary_key=True)
+    attachment_type_name = models.TextField(blank=True, null=True)
+
+    class Meta:
+        db_table = 'attachment_type'
+
+    def __str__(self):
+        return self.attachment_type_name or f"Attachment Type {self.attachment_type_id}"
+
+
+class Attachment(models.Model):
+    attachment_id = models.AutoField(primary_key=True)
+    attachment_name = models.TextField(blank=True, null=True)
+    output_description = models.TextField(blank=True, null=True)
+    attachment_type = models.ForeignKey(AttachmentType, on_delete=models.CASCADE, null=True, blank=True)
+
+    class Meta:
+        db_table = 'attachment'
+
+    def __str__(self):
+        return self.attachment_name or f"Attachment {self.attachment_id}"
+
+
+class AttachmentDetail(models.Model):
+    attachment_detail_id = models.AutoField(primary_key=True)
+    attachment = models.ForeignKey(Attachment, on_delete=models.CASCADE, null=True, blank=True)
+    product = models.ForeignKey(Products, on_delete=models.CASCADE, null=True, blank=True)
+    task = models.ForeignKey(Task, on_delete=models.CASCADE, null=True, blank=True)
+    attachment_type = models.ForeignKey(AttachmentType, on_delete=models.CASCADE, null=True, blank=True)
+
+    class Meta:
+        db_table = 'attachment_detail'
+
+    def __str__(self):
+        return f"Attachment Detail {self.attachment_detail_id}"
+
+
+class Sublimit(models.Model):
+    sublimit_id = models.AutoField(primary_key=True)
+    orders = models.ForeignKey(Orders, on_delete=models.CASCADE, null=True, blank=True)
+    products = models.ForeignKey(Products, on_delete=models.CASCADE, null=True, blank=True)
+    sublimit_name = models.TextField(blank=True, null=True)
+    sublimit_amount = models.DecimalField(max_digits=20, decimal_places=2, null=True, blank=True)
+
+    class Meta:
+        db_table = 'sublimit'
+
+    def __str__(self):
+        return self.sublimit_name or f"Sublimit {self.sublimit_id}"
+
+
+class WorkflowStandard(models.Model):
+    workflow_standard_id = models.AutoField(primary_key=True)
+    workflow_type = models.TextField(blank=True, null=True)
+    stage = models.ForeignKey(Stage, on_delete=models.CASCADE, null=True, blank=True)
+    next_stage_id = models.IntegerField(null=True, blank=True)
+    task = models.ForeignKey(Task, on_delete=models.CASCADE, null=True, blank=True)
+    workflow_sequence = models.TextField(blank=True, null=True)
+    man_auto = models.IntegerField(null=True, blank=True)
+
+    class Meta:
+        db_table = 'workflow_standard'
+
+    def __str__(self):
+        return f"Workflow Standard {self.workflow_standard_id}"
+
+class GenerationModel(models.Model):
+    generation_model_id = models.AutoField(primary_key=True)
+    generation_model_name = models.TextField(blank=True, null=True)
+    python_exe_file = models.TextField(blank=True, null=True)
+    python_file_path = models.TextField(blank=True, null=True)
+    jupyter_file_path = models.TextField(blank=True, null=True)
+    model_filename = models.TextField(blank=True, null=True)
+    model_code = models.TextField(blank=True, null=True)
+    py_file = models.TextField(blank=True, null=True)
+
+    class Meta:
+        db_table = 'generation_model'
+
+    def __str__(self):
+        return self.generation_model_name or f"Generation Model {self.generation_model_id}"
+
+
+class DataSeed(models.Model):
+    data_seed_id = models.AutoField(primary_key=True)
+    data_seed_filename = models.TextField(blank=True, null=True)
+    show_seed = models.BooleanField(default=False)
+    product = models.ForeignKey(Products, on_delete=models.CASCADE, null=True, blank=True)
+
+    class Meta:
+        db_table = 'data_seed'
+
+    def __str__(self):
+        return self.data_seed_filename or f"Data Seed {self.data_seed_id}"
+
+
+class GenerationJob(models.Model):
+    generation_job_id = models.AutoField(primary_key=True)
+    generator_model = models.ForeignKey(GenerationModel, on_delete=models.CASCADE, null=True, blank=True)
+    product = models.ForeignKey(Products, on_delete=models.CASCADE, null=True, blank=True)
+    data_seed = models.ForeignKey(DataSeed, on_delete=models.CASCADE, null=True, blank=True)
+
+    class Meta:
+        db_table = 'generation_job'
+
+    def __str__(self):
+        return f"Generation Job {self.generation_job_id}"
+
+
+class GenerationLog(models.Model):
+    output_id = models.AutoField(primary_key=True)
+    model_code = models.TextField(blank=True, null=True)
+    output_file_name = models.TextField(blank=True, null=True)
+    product = models.ForeignKey(Products, on_delete=models.CASCADE)
+    output_id_2 = models.TextField(blank=True, null=True)
+
+    class Meta:
+        db_table = 'generation_log'
+
+    def __str__(self):
+        return f"Generation Log {self.output_id}"
+
+
+class TrainingModel(models.Model):
+    training_model_id = models.AutoField(primary_key=True)
+    model_name = models.TextField(blank=True, null=True)
+    python_exe_file = models.TextField(blank=True, null=True)
+    python_file_path = models.TextField(blank=True, null=True)
+    jupyter_file_path = models.TextField(blank=True, null=True)
+    model_filename = models.TextField(blank=True, null=True)
+    model_code = models.TextField(blank=True, null=True)
+    py_file = models.TextField(blank=True, null=True)
+    pickle_dump = models.TextField(blank=True, null=True)
+    inference_py_file = models.TextField(blank=True, null=True)
+
+    class Meta:
+        db_table = 'training_model'
+
+    def __str__(self):
+        return self.model_name or f"Training Model {self.training_model_id}"
+
+
+class TrainingJob(models.Model):
+    training_job_id = models.AutoField(primary_key=True)
+    training_model = models.ForeignKey(TrainingModel, on_delete=models.CASCADE, null=True, blank=True)
+    products = models.ForeignKey(Products, on_delete=models.CASCADE, null=True, blank=True)
+    data_set_id = models.TextField(blank=True, null=True)
+    pickle_file_name = models.TextField(blank=True, null=True)
+
+    class Meta:
+        db_table = 'training_job'
+
+    def __str__(self):
+        return f"Training Job {self.training_job_id}"
+
+
+class InputOutput(models.Model):
+    input_output_id = models.AutoField(primary_key=True)
+    input_output_name = models.TextField(blank=True, null=True)
+
+    class Meta:
+        db_table = 'input_output'
+
+    def __str__(self):
+        return self.input_output_name or f"Input/Output {self.input_output_id}"
+
+
+class ModelParameter(models.Model):
+    model_parameter_id = models.AutoField(primary_key=True)
+    training_job = models.ForeignKey(TrainingJob, on_delete=models.CASCADE, null=True, blank=True)
+    parameter = models.ForeignKey(Parameter, on_delete=models.CASCADE, null=True, blank=True)
+    input_output = models.ForeignKey(InputOutput, on_delete=models.CASCADE, null=True, blank=True)
+
+    class Meta:
+        db_table = 'model_parameter'
+
+    def __str__(self):
+        return f"Model Parameter {self.model_parameter_id}"

@@ -6,7 +6,10 @@ from .models import (
     EmployeeLocation, EmployeeContact, Orders, Applications, Parameter,
     ApplicationQuestion, ApplicationResponse, Cover, Options, Limits,
     Retention, OrderOption, Document, Broker, BrokerLocation, BrokerContact,
-    Stage, FlowOrigin, Workflow, Task, WorkflowDetail, ParameterType
+    Stage, FlowOrigin, Workflow, Task, WorkflowDetail, ParameterType,
+    Drive, EmployeeFunction, EmployeeFunctionDetail, Paper, PaperDetail,
+    ParameterMap, AttachmentType, Attachment, AttachmentDetail, Sublimit,
+    WorkflowStandard
 )
 
 
@@ -193,6 +196,14 @@ class BrokerContactAdmin(admin.ModelAdmin):
     search_fields = ('broker_first_name', 'broker_last_name', 'broker_email')
     list_filter = ('broker_location',)
 
+
+@admin.register(Drive)
+class DriveAdmin(admin.ModelAdmin):
+    list_display = ('drive_id', 'drive_name', 'venture')
+
+@admin.register(EmployeeFunction)
+class EmployeeFunctionAdmin(admin.ModelAdmin):
+    list_display = ('employee_function_id', 'employee_function')
 
 # Customize the admin site header
 admin.site.site_header = "Skye OS Administration"

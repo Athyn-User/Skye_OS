@@ -12,13 +12,21 @@ urlpatterns = [
     # Dashboard
     path('', views.dashboard, name='dashboard'),
     
-    # Main Pages (Vertex AI Style)
+    # Main Pages (Vertex AI Style) - Enhanced with dynamic modal endpoints
     path('main/<str:page_name>/', views.main_page_view, name='main_page'),
     path('main/<str:page_name>/load-more/', views.load_more_sections, name='load_more_sections'),
     path('main/<str:page_name>/search/', views.search_sections, name='search_sections'),
     path('main/<str:page_name>/<str:section_name>/data/', views.get_section_data, name='get_section_data'),
-    path('main/<str:page_name>/<str:section_name>/<int:record_id>/edit/', views.edit_record, name='edit_record'),
-    path('main/<str:page_name>/<str:section_name>/add/', views.add_record, name='add_record'),
+    
+    # Dynamic modal endpoints for enhanced form functionality
+    path('main/<str:page_name>/<str:section_name>/fields/', views.get_form_fields, name='get_form_fields'),
+    path('main/<str:page_name>/<str:section_name>/create/', views.create_record, name='create_record'),
+    path('main/<str:page_name>/<str:section_name>/<int:record_id>/update/', views.update_record, name='update_record'),
+    path('main/<str:page_name>/<str:section_name>/fk-options/<str:field_name>/', views.get_foreign_key_options, name='get_fk_options'),
+    
+    # Legacy endpoints (maintained for backward compatibility)
+    path('main/<str:page_name>/<str:section_name>/<int:record_id>/edit/', views.update_record, name='edit_record'),
+    path('main/<str:page_name>/<str:section_name>/add/', views.create_record, name='add_record'),
 
     # Company URLs
     path('companies/', views.CompanyListView.as_view(), name='company_list'),

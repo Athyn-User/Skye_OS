@@ -125,9 +125,9 @@ body {
     background: white;
     border-right: 1px solid var(--gray-200);
     overflow-y: auto;
-    position: fixed;
     height: calc(100vh - var(--top-nav-height));
-    z-index: 100;
+    flex-shrink: 0;
+    /* ... rest of existing sidebar styles ... */
 }
 
 .sidebar-header {
@@ -193,10 +193,11 @@ body {
 
 /* Content Area */
 .content-area {
-    margin-left: var(--sidebar-width);
+    flex: 1;
     padding: 24px;
     overflow-y: auto;
     height: 100%;
+    min-width: 0;
 }
 
 /* Search Container */
@@ -280,7 +281,7 @@ body {
 
 .section-header {
     display: flex;
-    justify-content: between;
+    justify-content: space-between;
     align-items: center;
     padding: 20px;
     border-bottom: 1px solid var(--gray-200);
@@ -524,4 +525,22 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
     background: var(--gray-500);
+}
+
+.sections-container {
+    width: 100%;
+}
+
+.section-container {
+    width: 100%;
+    max-width: none;
+}
+
+.table-responsive {
+    width: 100%;
+}
+
+.vertex-table {
+    width: 100%;
+    table-layout: auto;
 }

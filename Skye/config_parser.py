@@ -553,3 +553,130 @@ class SkyeConfigParser:
                 }
             }
         }
+
+    @staticmethod
+    def generate_machine_learning_config():
+        """
+        Generate Machine Learning page configuration with corrected field references
+        """
+        return {
+            'Machine Learning': {
+                'Generation Jobs': {
+                    'table': 'generation_job',
+                    'icon': 'model_training',
+                    'add_button': True,
+                    'edit_button': True,
+                    'columns': [
+                        {
+                            'db_column': 'generation_job_id',
+                            'display_name': 'Generation Job ID',
+                            'searchable': True
+                        },
+                        {
+                            'db_column': 'generator_model',  # Changed from generator_model_id
+                            'display_name': 'Generator Model',
+                            'searchable': True
+                        },
+                        {
+                            'db_column': 'product',  # Changed from product_id
+                            'display_name': 'Product',
+                            'searchable': True
+                        },
+                        {
+                            'db_column': 'data_seed',  # Changed from data_seed_id
+                            'display_name': 'Data Seed',
+                            'searchable': True
+                        }
+                    ]
+                },
+                'Generation Log': {
+                    'table': 'generation_log',
+                    'icon': 'analytics',
+                    'add_button': True,
+                    'edit_button': True,
+                    'columns': [
+                        {
+                            'db_column': 'output_id',
+                            'display_name': 'Output ID',
+                            'searchable': True
+                        },
+                        {
+                            'db_column': 'model_code',
+                            'display_name': 'Model Code',
+                            'searchable': True
+                        },
+                        {
+                            'db_column': 'output_file_name',
+                            'display_name': 'Output File Name',
+                            'searchable': True
+                        },
+                        {
+                            'db_column': 'product',  # This was already correct - it's a text field
+                            'display_name': 'Product',
+                            'searchable': True
+                        }
+                    ]
+                },
+                'Model Parameter': {
+                    'table': 'model_parameter',
+                    'icon': 'tune',
+                    'add_button': True,
+                    'edit_button': True,
+                    'columns': [
+                        {
+                            'db_column': 'model_parameter_id',
+                            'display_name': 'Model Parameter ID',
+                            'searchable': True
+                        },
+                        {
+                            'db_column': 'training_job',  # Already fixed
+                            'display_name': 'Training Job',
+                            'searchable': True
+                        },
+                        {
+                            'db_column': 'parameter',  # Already fixed
+                            'display_name': 'Parameter',
+                            'searchable': True
+                        },
+                        {
+                            'db_column': 'input_output',  # Already fixed
+                            'display_name': 'Input / Output',
+                            'searchable': True
+                        }
+                    ]
+                },
+                'Model Training Jobs': {
+                    'table': 'training_job',
+                    'icon': 'school',
+                    'add_button': True,
+                    'edit_button': True,
+                    'columns': [
+                        {
+                            'db_column': 'training_job_id',
+                            'display_name': 'Training Job ID',
+                            'searchable': True
+                        },
+                        {
+                            'db_column': 'training_model',  # Changed from training_model_id
+                            'display_name': 'Training Model',
+                            'searchable': True
+                        },
+                        {
+                            'db_column': 'products',  # Changed from products_id
+                            'display_name': 'Products',
+                            'searchable': True
+                        },
+                        {
+                            'db_column': 'data_set_id',
+                            'display_name': 'Data Set ID',
+                            'searchable': True
+                        },
+                        {
+                            'db_column': 'pickle_file_name',
+                            'display_name': 'Pickle File Name',
+                            'searchable': True
+                        }
+                    ]
+                }
+            }
+        }
