@@ -1,31 +1,51 @@
-# Skye_OS/settings.py
-
-import os
+﻿import os
 from pathlib import Path
+from decouple import config
+import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'your-secret-key-here-change-in-production'
+SECRET_KEY = config('SECRET_KEY', default='django-insecure-change-me-in-production')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config('DEBUG', default=True, cast=bool)
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1').split(',')
 
 # Application definition
-INSTALLED_APPS = [
+DJANGO_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'Skye',  # Your main app
 ]
 
+THIRD_PARTY_APPS = [
+    'rest_framework',
+    'rest_framework_simplejwt',
+    'corsheaders',
+]
+
+LOCAL_APPS = [
+    'core',
+    'organizations',
+    'clients',
+    'products',
+    'applications',
+    'underwriting',
+    'documents',
+    'ml_engine',
+    'api',
+]
+
+INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
+
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -35,7 +55,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'Skye_OS.urls'
+ROOT_URLCONF = 'skye_os.urls'
 
 TEMPLATES = [
     {
@@ -53,17 +73,17 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'Skye_OS.wsgi.application'
+WSGI_APPLICATION = 'skye_os.wsgi.application'
 
-# Database configuration for PostgreSQL
+# Database
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'postgres',
-        'USER': 'postgres',
-        'PASSWORD': 'MyPSW555',  # Replace with your actual password
-        'HOST': 'localhost',
-        'PORT': '5432',
+        'NAME': config('DATABASE_NAME', default='skye_os'),
+        'USER': config('DATABASE_USER', default='postgres'),
+        'PASSWORD': config('DATABASE_PASSWORD', default=''),
+        'HOST': config('DATABASE_HOST', default='localhost'),
+        'PORT': config('DATABASE_PORT', default='5432', cast=int),
     }
 }
 
@@ -91,6 +111,7 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [
     BASE_DIR / 'static',
 ]
@@ -102,57 +123,90 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Pagination
-PAGINATION_PER_PAGE = 25
-# Login/Logout URLs
-LOGIN_URL = '/login/'
-LOGIN_REDIRECT_URL = '/'
-LOGOUT_REDIRECT_URL = '/'
-
-# Skye OS Configuration
-SKYE_PAGES_CONFIG = {
-    'IT': {
-        'title': 'IT Operations',
-        'description': 'Infrastructure and technology management',
-        'icon': 'computer', 
-        'color': '#4285f4'
-    },
-    'DocGen': {
-        'title': 'Document Generation',
-        'description': 'Automated document creation and processing',
-        'icon': 'description', 
-        'color': '#34a853'
-    },
-    'Portfolio': {
-        'title': 'Portfolio Management',
-        'description': 'Investment and portfolio tracking',
-        'icon': 'folder', 
-        'color': '#fbbc04'
-    },
-    'Workstation': {
-        'title': 'Workstation',
-        'description': 'Personal productivity and task management',
-        'icon': 'work', 
-        'color': '#ea4335'
-    },
-    'Catalog': {
-        'title': 'Data Catalog',
-        'description': 'Comprehensive data management and organization',
-        'icon': 'storage', 
-        'color': '#9aa0a6'
-    },
-    'Machine Learning': {
-        'title': 'Machine Learning',
-        'description': 'AI model training, generation, and parameter management',
-        'icon': 'psychology', 
-        'color': '#9c27b0'
-    }
+# REST Framework configuration
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 50
 }
 
-PROGRESSIVE_LOADING = {
-    'INITIAL_SECTIONS': 3,  # Load first 3 sections immediately
-    'SECTION_BATCH_SIZE': 2,  # Load 2 sections per subsequent request
-    'RECORDS_PER_SECTION': 20  # Max records per section preview
+# Celery Configuration
+CELERY_BROKER_URL = config('CELERY_BROKER_URL', default='redis://localhost:6379/0')
+CELERY_RESULT_BACKEND = config('CELERY_RESULT_BACKEND', default='redis://localhost:6379/0')
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = TIME_ZONE
+
+# ML Configuration
+ML_MODELS_PATH = BASE_DIR / 'ml_models'
+DATASETS_PATH = BASE_DIR / 'datasets'
+
+# Logging configuration
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': BASE_DIR / 'logs' / 'skye_os.log',
+            'formatter': 'verbose',
+        },
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple',
+        },
+    },
+    'root': {
+        'handlers': ['console', 'file'],
+        'level': 'INFO',
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console', 'file'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'skye_os': {
+            'handlers': ['console', 'file'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+    },
 }
-# Foreign key resolution cache settings
-FK_RESOLUTION_CACHE_TIMEOUT = 300  # 5 minutes
+
+# CORS settings for API
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",  # React development server
+    "http://127.0.0.1:3000",
+    "http://localhost:8080",  # Vue development server
+    "http://127.0.0.1:8080",
+]
+
+# Security settings
+if not DEBUG:
+    SECURE_SSL_REDIRECT = True
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    SECURE_HSTS_SECONDS = 31536000
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    X_FRAME_OPTIONS = 'DENY'
