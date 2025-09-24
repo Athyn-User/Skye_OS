@@ -4,6 +4,7 @@ from .certificate_views import certificate_list, certificate_detail, certificate
 from .policy_views import policy_list, policy_detail, policy_from_quote, policy_renew, renewal_dashboard, renewal_process, renewal_detail, renewal_accept
 from .billing_views import billing_dashboard, payment_list, create_billing_schedule, record_payment, commission_report
 from .billing_views import billing_dashboard, payment_list, create_billing_schedule, record_payment, commission_report
+from . import document_views
 
 app_name = 'applications'
 urlpatterns = [
@@ -56,6 +57,22 @@ urlpatterns = [
     path('policies/<int:policy_id>/billing/create/', create_billing_schedule, name='create_billing_schedule'),
         path('billing/payments/<int:payment_id>/record/', record_payment, name='record_payment'),
     path('billing/commissions/', commission_report, name='commission_report'),
+    # Document Management URLs
+    path('policies/<int:policy_id>/generate-documents/', document_views.generate_policy_documents, name='generate_policy_documents'),
+    path('policies/<int:policy_id>/documents/', document_views.view_policy_documents, name='view_policy_documents'),
+    path('documents/package/<int:package_id>/download/', document_views.download_policy_package, name='download_policy_package'),
+    path('documents/templates/', document_views.manage_templates, name='manage_templates'),
+
+    # Endorsement URLs
+    path('policies/<int:policy_id>/endorsements/create/', document_views.create_endorsement, name='create_endorsement'),
+    path('policies/<int:policy_id>/endorsements/', document_views.view_endorsements, name='view_endorsements'),
+    path('endorsements/<int:endorsement_id>/download/', document_views.download_endorsement, name='download_endorsement'),
+    path('templates/<int:template_id>/upload/', document_views.upload_template_file, name='upload_template_file'),
+
+    # Template Upload URLs
+    path('documents/templates/upload/', document_views.upload_templates_page, name='upload_templates_page'),
+    path('documents/templates/bulk-upload/', document_views.bulk_upload_templates, name='bulk_upload_templates'),
+    path('documents/templates/verify/', document_views.verify_template_files, name='verify_template_files'),
 ]
 
 

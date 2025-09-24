@@ -819,3 +819,11 @@ class SequenceTracker(models.Model):
                 tracker.last_used_number = number
                 tracker.save()
             return tracker.last_used_number
+
+from .document_models import (
+    DocumentTemplate,
+    PolicyDocumentPackage,
+    DocumentComponent,
+    EndorsementDocument,
+    DocumentDelivery
+)

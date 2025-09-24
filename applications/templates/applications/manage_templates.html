@@ -1,0 +1,128 @@
+<!-- File: applications/templates/applications/manage_templates.html -->
+{% extends 'base.html' %}
+
+{% block title %}Document Templates{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2>Document Templates</h2>
+            <p class="text-muted">Manage policy document templates and endorsements</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addTemplateModal">
+                <i class="fas fa-plus"></i> Add Template
+            </button>
+            <a href="{% url 'applications:policy_list' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Policies
+            </a>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Total Templates</h5>
+                    <h3 class="text-primary">{{ total_count }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Active</h5>
+                    <h3 class="text-success">{{ total_count }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Endorsements</h5>
+                    <h3 class="text-info">{{ grouped_templates.Endorsement|length|default:0 }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">State Forms</h5>
+                    <h3 class="text-warning">{{ grouped_templates.State_Mandatory_Form|length|default:0 }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Templates by Type -->
+    {% for template_type, templates in grouped_templates.items %}
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">{{ template_type }}</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Name</th>
+                            <th>Format</th>
+                            <th>Product</th>
+                            <th>Version</th>
+                            <th>Sequence</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for template in templates %}
+                        <tr>
+                            <td><code>{{ template.template_code }}</code></td>
+                            <td>{{ template.template_name }}</td>
+                            <td>
+                                {% if template.template_format == 'dynamic' %}
+                                    <span class="badge bg-success">Dynamic</span>
+                                {% elif template.template_format == 'static' %}
+                                    <span class="badge bg-secondary">Static</span>
+                                {% else %}
+                                    <span class="badge bg-info">Hybrid</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ template.product.product_name|default:"-" }}</td>
+                            <td>{{ template.version }}</td>
+                            <td>{{ template.default_sequence }}</td>
+                            <td>
+                                {% if template.is_active %}
+                                    <span class="badge bg-success">Active</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Inactive</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-outline-primary" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-outline-info" title="Preview">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    {% if template.template_format == 'static' %}
+                                    <button class="btn btn-outline-secondary" title="Upload PDF">
+                                        <i class="fas fa-upload"></i>
+                                    </button>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

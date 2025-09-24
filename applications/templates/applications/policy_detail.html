@@ -165,6 +165,15 @@
                             <a href="{% url 'applications:create_billing_schedule' policy.policy_id %}" class="btn btn-primary">
                                 <i class="fas fa-credit-card"></i> Setup Billing
                             </a>
+                            <!-- Document Management -->
+                            <hr>
+                            <h6>Documents</h6>
+                            <a href="{% url 'applications:generate_policy_documents' policy.policy_id %}" class="btn btn-success">
+                                <i class="fas fa-file-pdf"></i> Generate Documents
+                            </a>
+                            <a href="{% url 'applications:view_policy_documents' policy.policy_id %}" class="btn btn-info">
+                                <i class="fas fa-folder-open"></i> View Documents
+                            </a>                
                             {% if needs_renewal %}
                                 <a href="{% url 'applications:renewal_process' policy.policy_id %}" class="btn btn-warning">
                                     <i class="fas fa-sync"></i> Start Renewal Process

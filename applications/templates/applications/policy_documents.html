@@ -1,0 +1,174 @@
+<!-- File: applications/templates/applications/policy_documents.html -->
+{% extends 'base.html' %}
+
+{% block title %}Policy Documents - {{ policy.policy_number }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2>Policy Documents</h2>
+            <h4>{{ policy.policy_number }}</h4>
+            <p class="text-muted">{{ policy.quote.application.company.company_name }}</p>
+        </div>
+        <div class="col-md-4 text-end">
+            {% if package %}
+            <a href="{% url 'applications:download_policy_package' package.package_id %}" class="btn btn-primary">
+                <i class="fas fa-download"></i> Download Package
+            </a>
+            {% endif %}
+            <a href="{% url 'applications:policy_detail' policy.policy_id %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Policy
+            </a>
+        </div>
+    </div>
+
+    {% if package %}
+    <!-- Current Package Info -->
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Current Document Package</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3">
+                    <strong>Package Number:</strong><br>
+                    {{ package.package_number }}
+                </div>
+                <div class="col-md-3">
+                    <strong>Version:</strong><br>
+                    {{ package.package_version }}
+                </div>
+                <div class="col-md-3">
+                    <strong>Generated:</strong><br>
+                    {{ package.generated_date|date:"M d, Y H:i" }}
+                </div>
+                <div class="col-md-3">
+                    <strong>Status:</strong><br>
+                    <span class="badge bg-success">{{ package.get_package_status_display }}</span>
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col-md-3">
+                    <strong>Total Pages:</strong><br>
+                    {{ package.total_pages }}
+                </div>
+                <div class="col-md-3">
+                    <strong>File Size:</strong><br>
+                    {{ package.file_size|filesizeformat }}
+                </div>
+                <div class="col-md-3">
+                    <strong>State Code:</strong><br>
+                    {{ package.state_code|default:"N/A" }}
+                </div>
+                <div class="col-md-3">
+                    <strong>Actions:</strong><br>
+                    <a href="{% url 'applications:generate_policy_documents' policy.policy_id %}?regenerate=1" 
+                       class="btn btn-sm btn-warning"
+                       onclick="return confirm('This will create a new version. Continue?')">
+                        <i class="fas fa-redo"></i> Regenerate
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Document Components -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">Document Components</h5>
+        </div>
+        <div class="card-body">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Order</th>
+                        <th>Component</th>
+                        <th>Type</th>
+                        <th>Pages</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for component in components %}
+                    <tr>
+                        <td>{{ component.sequence_order }}</td>
+                        <td>{{ component.component_name }}</td>
+                        <td>
+                            <span class="badge bg-info">{{ component.component_type }}</span>
+                        </td>
+                        <td>{{ component.page_count }}</td>
+                        <td>
+                            {% if component.component_status == 'generated' %}
+                                <span class="badge bg-success">Generated</span>
+                            {% elif component.component_status == 'error' %}
+                                <span class="badge bg-danger" title="{{ component.error_message }}">Error</span>
+                            {% else %}
+                                <span class="badge bg-warning">{{ component.get_component_status_display }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if component.file_path %}
+                            <button class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-eye"></i> View
+                            </button>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Version History -->
+    {% if all_packages.count > 1 %}
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">Version History</h5>
+        </div>
+        <div class="card-body">
+            <table class="table table-sm">
+                <thead>
+                    <tr>
+                        <th>Version</th>
+                        <th>Package Number</th>
+                        <th>Generated</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for pkg in all_packages %}
+                    <tr {% if pkg == package %}class="table-active"{% endif %}>
+                        <td>{{ pkg.package_version }}</td>
+                        <td>{{ pkg.package_number }}</td>
+                        <td>{{ pkg.generated_date|date:"M d, Y H:i" }}</td>
+                        <td>{{ pkg.get_package_status_display }}</td>
+                        <td>
+                            <a href="{% url 'applications:download_policy_package' pkg.package_id %}" 
+                               class="btn btn-sm btn-outline-secondary">
+                                <i class="fas fa-download"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    {% else %}
+    <!-- No Documents Yet -->
+    <div class="alert alert-info">
+        <h4>No Documents Generated</h4>
+        <p>This policy doesn't have any generated documents yet.</p>
+        <a href="{% url 'applications:generate_policy_documents' policy.policy_id %}" class="btn btn-primary">
+            <i class="fas fa-file-pdf"></i> Generate Documents Now
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

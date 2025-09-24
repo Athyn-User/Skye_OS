@@ -1,0 +1,117 @@
+<!-- File: applications/templates/applications/upload_templates.html -->
+{% extends 'base.html' %}
+
+{% block title %}Upload PDF Templates{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2>Upload PDF Templates</h2>
+            <p class="text-muted">Upload your policy forms, endorsements, and state-specific documents</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{% url 'applications:manage_templates' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Templates
+            </a>
+        </div>
+    </div>
+
+    <!-- Upload Instructions -->
+    <div class="alert alert-info">
+        <h5>Upload Instructions</h5>
+        <ul>
+            <li>Select the template type and upload the corresponding PDF</li>
+            <li>Static forms: Upload the complete PDF as-is</li>
+            <li>Hybrid forms: Upload fillable PDFs with form fields</li>
+            <li>State forms: Ensure the state code matches the template</li>
+        </ul>
+    </div>
+
+    <!-- Templates Needing PDFs -->
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Templates Requiring PDF Upload</h5>
+        </div>
+        <div class="card-body">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Template Code</th>
+                        <th>Name</th>
+                        <th>Type</th>
+                        <th>Product</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for template in templates_needing_files %}
+                    <tr>
+                        <td><code>{{ template.template_code }}</code></td>
+                        <td>{{ template.template_name }}</td>
+                        <td>
+                            {% if template.template_format == 'static' %}
+                                <span class="badge bg-secondary">Static PDF</span>
+                            {% else %}
+                                <span class="badge bg-info">Hybrid PDF</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ template.product.product_name|default:"-" }}</td>
+                        <td>
+                            {% if template.storage_path %}
+                                <span class="badge bg-success">Has File</span>
+                            {% else %}
+                                <span class="badge bg-warning">Needs Upload</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <form method="POST" action="{% url 'applications:upload_template_file' template.template_id %}" 
+                                  enctype="multipart/form-data" class="d-inline">
+                                {% csrf_token %}
+                                <div class="input-group input-group-sm">
+                                    <input type="file" name="pdf_file" accept=".pdf" required class="form-control">
+                                    <button type="submit" class="btn btn-primary btn-sm">
+                                        <i class="fas fa-upload"></i> Upload
+                                    </button>
+                                </div>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Bulk Upload Section -->
+    <div class="card mt-4">
+        <div class="card-header">
+            <h5 class="mb-0">Bulk Upload</h5>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{% url 'applications:bulk_upload_templates' %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>File Naming Convention</h6>
+                        <p>Name your files using the template code:</p>
+                        <ul>
+                            <li><code>FORM-WCP-001.pdf</code></li>
+                            <li><code>END-ADD-INSURED-WCP.pdf</code></li>
+                            <li><code>CA-NOTICE-001.pdf</code></li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Select Multiple PDFs</label>
+                        <input type="file" name="pdf_files" multiple accept=".pdf" class="form-control">
+                        <button type="submit" class="btn btn-success mt-3">
+                            <i class="fas fa-cloud-upload-alt"></i> Upload All
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
