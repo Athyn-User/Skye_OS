@@ -1,0 +1,233 @@
+<!-- File: applications/templates/applications/policy_detail.html -->
+{% extends 'base.html' %}
+
+{% block title %}Policy {{ policy.policy_number }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2>Policy Details</h2>
+            <h4>{{ policy.policy_number }}</h4>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{% url 'applications:policy_list' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Policies
+            </a>
+            {% if needs_renewal %}
+                <a href="{% url 'applications:renewal_process' policy.policy_id %}" class="btn btn-warning">
+                    <i class="fas fa-sync"></i> Start Renewal
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Status Alert -->
+    {% if days_until_expiration < 0 %}
+    <div class="alert alert-danger">
+        <i class="fas fa-exclamation-triangle"></i> This policy expired {{ days_expired }} days ago
+    </div>
+    {% elif days_until_expiration <= 30 %}
+    <div class="alert alert-warning">
+        <i class="fas fa-clock"></i> This policy expires in {{ days_until_expiration }} days
+    </div>
+    {% elif days_until_expiration <= 60 %}
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle"></i> This policy expires in {{ days_until_expiration }} days - Renewal process should begin soon
+    </div>
+    {% endif %}
+
+    <div class="row">
+        <!-- Policy Information -->
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Policy Information</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm">
+                        <tr>
+                            <th width="40%">Policy Number:</th>
+                            <td><strong>{{ policy.policy_number }}</strong></td>
+                        </tr>
+                        <tr>
+                            <th>Status:</th>
+                            <td>
+                                {% if policy.policy_status == 'active' %}
+                                    <span class="badge bg-success">{{ policy.get_policy_status_display }}</span>
+                                {% elif policy.policy_status == 'expired' %}
+                                    <span class="badge bg-danger">{{ policy.get_policy_status_display }}</span>
+                                {% elif policy.policy_status == 'cancelled' %}
+                                    <span class="badge bg-secondary">{{ policy.get_policy_status_display }}</span>
+                                {% else %}
+                                    <span class="badge bg-warning">{{ policy.get_policy_status_display }}</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Effective Date:</th>
+                            <td>{{ policy.effective_date|date:"M d, Y" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Expiration Date:</th>
+                            <td>{{ policy.expiration_date|date:"M d, Y" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Issue Date:</th>
+                            <td>{{ policy.issue_date|date:"M d, Y" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Annual Premium:</th>
+                            <td>${{ policy.annual_premium|floatformat:2 }}</td>
+                        </tr>
+                        <tr>
+                            <th>Billing Frequency:</th>
+                            <td>{{ policy.get_billing_frequency_display }}</td>
+                        </tr>
+                        <tr>
+                            <th>Auto Renewal:</th>
+                            <td>
+                                {% if policy.auto_renewal %}
+                                    <span class="text-success"><i class="fas fa-check"></i> Yes</span>
+                                {% else %}
+                                    <span class="text-danger"><i class="fas fa-times"></i> No</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% if policy.renewal_date %}
+                        <tr>
+                            <th>Renewal Date:</th>
+                            <td>{{ policy.renewal_date|date:"M d, Y" }}</td>
+                        </tr>
+                        {% endif %}
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Company & Product Information -->
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">Company & Product</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm">
+                        <tr>
+                            <th width="40%">Company:</th>
+                            <td>{{ policy.quote.application.company.company_name }}</td>
+                        </tr>
+                        {% if policy.quote.application.company.dba_name %}
+                        <tr>
+                            <th>DBA:</th>
+                            <td>{{ policy.quote.application.company.dba_name }}</td>
+                        </tr>
+                        {% endif %}
+                        <tr>
+                            <th>Product:</th>
+                            <td>{{ policy.quote.application.product.product_name }}</td>
+                        </tr>
+                        {% if policy.quote.application.broker %}
+                        <tr>
+                            <th>Broker:</th>
+                            <td>{{ policy.quote.application.broker.broker_name }}</td>
+                        </tr>
+                        {% endif %}
+                        <tr>
+                            <th>Original Quote:</th>
+                            <td>
+                                <a href="{% url 'applications:quote_detail' policy.quote.quote_id %}">
+                                    {{ policy.quote.quote_number }}
+                                </a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Application:</th>
+                            <td>
+                                <a href="{% url 'applications:application_detail' policy.quote.application.application_id %}">
+                                    {{ policy.quote.application.application_number }}
+                                </a>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        {% if policy.policy_status == 'active' %}
+                            <a href="{% url 'applications:create_billing_schedule' policy.policy_id %}" class="btn btn-primary">
+                                <i class="fas fa-credit-card"></i> Setup Billing
+                            </a>
+                            {% if needs_renewal %}
+                                <a href="{% url 'applications:renewal_process' policy.policy_id %}" class="btn btn-warning">
+                                    <i class="fas fa-sync"></i> Start Renewal Process
+                                </a>
+                            {% endif %}
+                        {% endif %}
+                        <a href="#" class="btn btn-info">
+                            <i class="fas fa-file-pdf"></i> Download Policy PDF
+                        </a>
+                        <a href="#" class="btn btn-outline-secondary">
+                            <i class="fas fa-envelope"></i> Email Policy
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Related Certificates -->
+    {% if certificates %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">Related Certificates</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Certificate Number</th>
+                                <th>Holder Name</th>
+                                <th>Effective Date</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for cert in certificates %}
+                            <tr>
+                                <td>{{ cert.certificate_number }}</td>
+                                <td>{{ cert.certificate_holder_name }}</td>
+                                <td>{{ cert.effective_date|date:"M d, Y" }}</td>
+                                <td>
+                                    {% if cert.certificate_status == 'issued' %}
+                                        <span class="badge bg-success">{{ cert.get_certificate_status_display }}</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">{{ cert.get_certificate_status_display }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{% url 'applications:certificate_detail' cert.certificate_id %}" class="btn btn-sm btn-primary">
+                                        View
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

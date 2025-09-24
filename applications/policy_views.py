@@ -86,15 +86,18 @@ def policy_list(request):
     }
     return render(request, 'applications/policy_list.html', context)
 
-def policy_detail(request, pk):
+def policy_detail(request, policy_id):
     """Display detailed information about a policy"""
-    policy = get_object_or_404(Policy, policy_id=pk)
+    policy = get_object_or_404(Policy, policy_id=policy_id)
     
     # Get related certificates
     certificates = Certificate.objects.filter(quote=policy.quote)
     
     # Calculate days until expiration
     days_until_exp = (policy.expiration_date - timezone.now().date()).days
+    
+    # Calculate days expired (positive number if expired)
+    days_expired = abs(days_until_exp) if days_until_exp < 0 else 0
     
     # Determine if renewal is needed
     needs_renewal = days_until_exp <= 60 and policy.policy_status == 'active'
@@ -103,6 +106,7 @@ def policy_detail(request, pk):
         'policy': policy,
         'certificates': certificates,
         'days_until_expiration': days_until_exp,
+        'days_expired': days_expired,  # Add this line
         'needs_renewal': needs_renewal,
     }
     return render(request, 'applications/policy_detail.html', context)
@@ -120,20 +124,28 @@ def policy_from_quote(request, quote_id):
     existing_policy = Policy.objects.filter(quote=quote).first()
     if existing_policy:
         messages.info(request, 'A policy already exists for this quote.')
-        return redirect('applications:policy_detail', pk=existing_policy.policy_id)
+        return redirect('applications:policy_detail', policy_id=existing_policy.policy_id)
     
     if request.method == 'POST':
         try:
+            # Generate policy number based on quote but WITHOUT version number
+            product_code = quote.application.product.document_code or 'GEN'
+            policy_number = f'POL-{product_code}-{quote.base_number}-{quote.sequence_number:02d}'
+            # Note: We do NOT add version number for new policies
+            
             # Create the policy
             policy = Policy.objects.create(
                 quote=quote,
-                policy_number=f'POL-{quote.quote_number[4:]}',  # Convert QTE-XXX to POL-XXX
+                policy_number=policy_number,
+                base_number=quote.base_number,  # Inherit from quote
+                sequence_number=quote.sequence_number,  # Inherit from quote
+                version_number=None,  # NEW POLICY - no version number
                 effective_date=quote.effective_date,
                 expiration_date=quote.expiration_date,
                 annual_premium=quote.total_premium,
                 billing_frequency=request.POST.get('billing_frequency', 'annual'),
                 policy_status='active',
-                auto_renewal=request.POST.get('auto_renewal', True),
+                auto_renewal=request.POST.get('auto_renewal') == 'on',  # Handle checkbox
                 created_by=request.user if request.user.is_authenticated else None
             )
             
@@ -143,13 +155,19 @@ def policy_from_quote(request, quote_id):
             quote.application.save()
             
             messages.success(request, f'Policy {policy.policy_number} created successfully!')
-            return redirect('applications:policy_detail', pk=policy.policy_id)
+            return redirect('applications:policy_detail', policy_id=policy.policy_id)
             
         except Exception as e:
             messages.error(request, f'Error creating policy: {str(e)}')
+            # Fall through to show the form again
+    
+    # For GET request or if there was an error, show the conversion form
+    # Show the proposed policy number WITHOUT version
+    proposed_number = f"POL-{quote.application.product.document_code or 'GEN'}-{quote.base_number}-{quote.sequence_number:02d}"
     
     context = {
         'quote': quote,
+        'proposed_policy_number': proposed_number,
     }
     return render(request, 'applications/policy_from_quote.html', context)
 
@@ -418,20 +436,23 @@ def renewal_accept(request, renewal_id):
             renewal.renewal_quote.quote_status = 'accepted'
             renewal.renewal_quote.save()
             
-            # Generate new policy number with sequence
-            original_number_parts = renewal.original_policy.policy_number.split('-')
-            if len(original_number_parts) == 3:  # Already has sequence
-                base_number = '-'.join(original_number_parts[:2])
-                sequence = int(original_number_parts[2]) + 1
-            else:  # First renewal
-                base_number = renewal.original_policy.policy_number
-                sequence = 1
-            new_policy_number = f"{base_number}-{sequence:02d}"
+            # Generate new policy number with incremented sequence
+            product_code = renewal.original_policy.quote.application.product.document_code or 'GEN'
+            base_number = renewal.original_policy.base_number
+            new_sequence = renewal.original_policy.sequence_number + 1
+            
+            # Renewal policy number: increment sequence, NO version number
+            new_policy_number = f"POL-{product_code}-{base_number}-{new_sequence:02d}"
             
             # Create new policy
             new_policy = Policy.objects.create(
                 policy_number=new_policy_number,
                 quote=renewal.renewal_quote,
+                base_number=base_number,  # Keep same base
+                sequence_number=new_sequence,  # Increment sequence for renewal
+                version_number=None,  # No version for new renewal
+                parent_policy=renewal.original_policy,  # Link to previous policy
+                original_policy=renewal.original_policy.original_policy or renewal.original_policy,  # Track the first in chain
                 effective_date=renewal.renewal_quote.effective_date,
                 expiration_date=renewal.renewal_quote.expiration_date,
                 annual_premium=renewal.proposed_premium,
@@ -450,8 +471,19 @@ def renewal_accept(request, renewal_id):
             renewal.original_policy.policy_status = 'expired'
             renewal.original_policy.save()
             
+            # Create transaction record
+            from applications.models import PolicyTransaction
+            PolicyTransaction.objects.create(
+                policy=new_policy,
+                transaction_type='renewal',
+                effective_date=new_policy.effective_date,
+                premium_change=renewal.proposed_premium - renewal.original_policy.annual_premium,
+                description=f'Renewal of policy {renewal.original_policy.policy_number}',
+                processed_by=request.user if request.user.is_authenticated else None
+            )
+            
             messages.success(request, f'Renewal accepted. New policy {new_policy.policy_number} created.')
-            return redirect('applications:policy_detail', pk=new_policy.policy_id)
+            return redirect('applications:policy_detail', policy_id=new_policy.policy_id)
             
         except Exception as e:
             messages.error(request, f'Error accepting renewal: {str(e)}')
@@ -459,7 +491,7 @@ def renewal_accept(request, renewal_id):
     context = {
         'renewal': renewal,
         'policy': renewal.original_policy,
-        'new_policy_number': f"{renewal.original_policy.policy_number}-01",  # Show preview
+        'new_policy_number': f"POL-{renewal.original_policy.quote.application.product.document_code or 'GEN'}-{renewal.original_policy.base_number}-{(renewal.original_policy.sequence_number + 1):02d}",  # Show preview
     }
     
     return render(request, 'applications/renewal_accept.html', context)

@@ -1,0 +1,202 @@
+<!-- File: applications/templates/applications/policy_from_quote.html -->
+{% extends 'base.html' %}
+
+{% block title %}Convert Quote to Policy{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2>Convert Quote to Policy</h2>
+            <p class="text-muted">Create a policy from accepted quote {{ quote.quote_number }}</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{% url 'applications:quote_detail' quote.quote_id %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Quote
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <!-- Quote Information -->
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">Quote Information</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm">
+                        <tr>
+                            <th width="40%">Quote Number:</th>
+                            <td><strong>{{ quote.quote_number }}</strong></td>
+                        </tr>
+                        <tr>
+                            <th>Company:</th>
+                            <td>{{ quote.application.company.company_name }}</td>
+                        </tr>
+                        <tr>
+                            <th>Product:</th>
+                            <td>{{ quote.application.product.product_name }}</td>
+                        </tr>
+                        <tr>
+                            <th>Status:</th>
+                            <td><span class="badge bg-success">{{ quote.get_quote_status_display }}</span></td>
+                        </tr>
+                        <tr>
+                            <th>Effective Date:</th>
+                            <td>{{ quote.effective_date|date:"M d, Y" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Expiration Date:</th>
+                            <td>{{ quote.expiration_date|date:"M d, Y" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Annual Premium:</th>
+                            <td>${{ quote.total_premium|floatformat:2 }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <!-- Policy Creation Form -->
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">New Policy Details</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{% url 'applications:policy_from_quote' quote.quote_id %}">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Policy Number</label>
+                            <input type="text" class="form-control-plaintext" value="{{ proposed_policy_number }}" readonly>
+                            <small class="text-muted">Policy number will be auto-generated</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Effective Date</label>
+                            <input type="text" class="form-control-plaintext" value="{{ quote.effective_date|date:'M d, Y' }}" readonly>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Expiration Date</label>
+                            <input type="text" class="form-control-plaintext" value="{{ quote.expiration_date|date:'M d, Y' }}" readonly>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="billing_frequency" class="form-label">Billing Frequency</label>
+                            <select name="billing_frequency" id="billing_frequency" class="form-select" required>
+                                <option value="annual" selected>Annual</option>
+                                <option value="semi_annual">Semi-Annual</option>
+                                <option value="quarterly">Quarterly</option>
+                                <option value="monthly">Monthly</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="auto_renewal" name="auto_renewal" checked>
+                                <label class="form-check-label" for="auto_renewal">
+                                    Enable Auto-Renewal
+                                </label>
+                                <small class="form-text text-muted d-block">
+                                    If checked, renewal notices will be sent 60 days before expiration
+                                </small>
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i> 
+                            <strong>Important:</strong> Creating this policy will:
+                            <ul class="mb-0 mt-2">
+                                <li>Mark the quote as accepted</li>
+                                <li>Update the application status to "Bound"</li>
+                                <li>Set the bound premium to ${{ quote.total_premium|floatformat:2 }}</li>
+                                <li>Create billing records based on the selected frequency</li>
+                            </ul>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-file-contract"></i> Create Policy
+                            </button>
+                            <a href="{% url 'applications:quote_detail' quote.quote_id %}" class="btn btn-outline-secondary">
+                                Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Additional Information -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Coverage Summary</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Policy Coverage</h6>
+                            <ul>
+                                <li>Product: {{ quote.application.product.product_name }}</li>
+                                <li>Term: {{ quote.effective_date|date:"M d, Y" }} to {{ quote.expiration_date|date:"M d, Y" }}</li>
+                                <li>Annual Premium: ${{ quote.total_premium|floatformat:2 }}</li>
+                                {% if quote.commission_amount %}
+                                <li>Commission: ${{ quote.commission_amount|floatformat:2 }}</li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            {% if quote.special_conditions %}
+                            <h6>Special Conditions</h6>
+                            <p>{{ quote.special_conditions }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Calculate installment amounts based on frequency
+    document.getElementById('billing_frequency').addEventListener('change', function() {
+        const premium = {{ quote.total_premium }};
+        const frequency = this.value;
+        let installments = 1;
+        let installmentAmount = premium;
+        
+        switch(frequency) {
+            case 'monthly':
+                installments = 12;
+                break;
+            case 'quarterly':
+                installments = 4;
+                break;
+            case 'semi_annual':
+                installments = 2;
+                break;
+            case 'annual':
+            default:
+                installments = 1;
+                break;
+        }
+        
+        installmentAmount = (premium / installments).toFixed(2);
+        
+        // Update display if you want to show installment info
+        // You could add a div to show this information
+    });
+</script>
+{% endblock %}
