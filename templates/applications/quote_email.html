@@ -1,0 +1,69 @@
+﻿{% extends 'base.html' %}
+
+{% block title %}Email Quote {{ quote.quote_number }} - Skye OS{% endblock %}
+
+{% block content %}
+<h1>Email Quote {{ quote.quote_number }}</h1>
+
+<div class="card">
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Recipient Email *</label>
+                        <input type="email" name="email" id="email" class="form-control" required
+                               placeholder="Enter email address">
+                        <div class="form-text">PDF quote will be attached to this email</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Quote Summary</label>
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <p><strong>Quote:</strong> {{ quote.quote_number }}</p>
+                                <p><strong>Company:</strong> {{ quote.application.company.company_name }}</p>
+                                <p><strong>Premium:</strong> ${{ quote.total_premium|floatformat:2 }}</p>
+                                <p><strong>Effective:</strong> {{ quote.effective_date }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Email Preview</label>
+                        <div class="card">
+                            <div class="card-body">
+                                <p><strong>Subject:</strong> Insurance Quote #{{ quote.quote_number }}</p>
+                                <hr>
+                                <p>Dear Client,</p>
+                                <p>Please find attached your insurance quote #{{ quote.quote_number }} for {{ quote.application.company.company_name }}.</p>
+                                <p><strong>Quote Details:</strong></p>
+                                <ul>
+                                    <li>Total Premium: ${{ quote.total_premium|floatformat:2 }}</li>
+                                    <li>Effective Date: {{ quote.effective_date|date:"F d, Y" }}</li>
+                                    <li>Expiration Date: {{ quote.expiration_date|date:"F d, Y" }}</li>
+                                </ul>
+                                <p>This quote is valid for 30 days. Please contact us to accept this quote and bind coverage.</p>
+                                <p>Best regards,<br>Skye Insurance Group</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="alert alert-info">
+                <strong>Note:</strong> Email functionality requires SMTP configuration. 
+                For now, this will generate the PDF and show a confirmation message.
+            </div>
+            
+            <div class="d-flex justify-content-between">
+                <a href="{% url 'applications:quote_detail' quote.pk %}" class="btn btn-secondary">Cancel</a>
+                <button type="submit" class="btn btn-primary">Send Email with PDF</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

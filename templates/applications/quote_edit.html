@@ -1,0 +1,84 @@
+﻿{% extends 'base.html' %}
+
+{% block title %}Edit Quote {{ quote.quote_number }} - Skye OS{% endblock %}
+
+{% block content %}
+<h1>Edit Quote {{ quote.quote_number }}</h1>
+
+<div class="card">
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="quote_status" class="form-label">Quote Status</label>
+                        <select name="quote_status" id="quote_status" class="form-select">
+                            <option value="draft" {% if quote.quote_status == 'draft' %}selected{% endif %}>Draft</option>
+                            <option value="presented" {% if quote.quote_status == 'presented' %}selected{% endif %}>Presented</option>
+                            <option value="accepted" {% if quote.quote_status == 'accepted' %}selected{% endif %}>Accepted</option>
+                            <option value="declined" {% if quote.quote_status == 'declined' %}selected{% endif %}>Declined</option>
+                            <option value="expired" {% if quote.quote_status == 'expired' %}selected{% endif %}>Expired</option>
+                            <option value="superseded" {% if quote.quote_status == 'superseded' %}selected{% endif %}>Superseded</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="total_premium" class="form-label">Total Premium *</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input type="number" name="total_premium" id="total_premium" class="form-control" 
+                                   step="0.01" value="{{ quote.total_premium }}" required>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="commission_amount" class="form-label">Commission Amount</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input type="number" name="commission_amount" id="commission_amount" class="form-control" 
+                                   step="0.01" value="{{ quote.commission_amount|default:'' }}">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="special_conditions" class="form-label">Special Conditions</label>
+                        <textarea name="special_conditions" id="special_conditions" class="form-control" rows="6">{{ quote.special_conditions }}</textarea>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-12">
+                    <div class="card bg-light">
+                        <div class="card-body">
+                            <h6>Quote Information (Read-only)</h6>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <p><strong>Application:</strong> {{ quote.application.application_number }}</p>
+                                    <p><strong>Company:</strong> {{ quote.application.company.company_name }}</p>
+                                </div>
+                                <div class="col-md-4">
+                                    <p><strong>Effective Date:</strong> {{ quote.effective_date }}</p>
+                                    <p><strong>Expiration Date:</strong> {{ quote.expiration_date }}</p>
+                                </div>
+                                <div class="col-md-4">
+                                    <p><strong>Quote Date:</strong> {{ quote.quote_date }}</p>
+                                    <p><strong>Version:</strong> {{ quote.quote_version }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="d-flex justify-content-between mt-4">
+                <a href="{% url 'applications:quote_detail' quote.pk %}" class="btn btn-secondary">Cancel</a>
+                <button type="submit" class="btn btn-primary">Update Quote</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

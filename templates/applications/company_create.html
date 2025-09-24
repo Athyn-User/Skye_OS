@@ -1,0 +1,72 @@
+﻿{% extends 'base.html' %}
+
+{% block title %}New Company - Skye OS{% endblock %}
+
+{% block content %}
+<h1>Create New Company</h1>
+
+<div class="card">
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="company_name" class="form-label">Company Name *</label>
+                        <input type="text" name="company_name" id="company_name" class="form-control" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="dba_name" class="form-label">DBA Name</label>
+                        <input type="text" name="dba_name" id="dba_name" class="form-control">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="tax_id" class="form-label">Tax ID</label>
+                        <input type="text" name="tax_id" id="tax_id" class="form-control">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="company_type" class="form-label">Company Type</label>
+                        <select name="company_type" id="company_type" class="form-select">
+                            <option value="">Select Type</option>
+                            <option value="corporation">Corporation</option>
+                            <option value="llc">LLC</option>
+                            <option value="partnership">Partnership</option>
+                            <option value="sole_proprietorship">Sole Proprietorship</option>
+                            <option value="non_profit">Non-Profit</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="industry_description" class="form-label">Industry</label>
+                        <input type="text" name="industry_description" id="industry_description" class="form-control" placeholder="e.g., Manufacturing, Technology, Healthcare">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="employee_count" class="form-label">Number of Employees</label>
+                        <input type="number" name="employee_count" id="employee_count" class="form-control" min="1">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="annual_revenue" class="form-label">Annual Revenue</label>
+                        <input type="number" name="annual_revenue" id="annual_revenue" class="form-control" step="1000" placeholder="0">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="website" class="form-label">Website</label>
+                        <input type="url" name="website" id="website" class="form-control" placeholder="https://example.com">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="d-flex justify-content-between">
+                <a href="{% url 'applications:company_list' %}" class="btn btn-secondary">Cancel</a>
+                <button type="submit" class="btn btn-primary">Create Company</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,310 @@
+<!-- claims/templates/claims/claim_detail.html -->
+{% extends 'base.html' %}
+
+{% block title %}Claim {{ claim.claim_number }} - Skye OS{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Claim {{ claim.claim_number }}</h2>
+            <div>
+                {% if claim.claim_status == 'FNOL' %}
+                    <span class="badge bg-danger fs-6">{{ claim.get_claim_status_display }}</span>
+                {% elif claim.claim_status == 'ASSIGNED' %}
+                    <span class="badge bg-warning fs-6">{{ claim.get_claim_status_display }}</span>
+                {% elif claim.claim_status == 'INVESTIGATING' %}
+                    <span class="badge bg-info fs-6">{{ claim.get_claim_status_display }}</span>
+                {% elif claim.claim_status == 'APPROVED' %}
+                    <span class="badge bg-success fs-6">{{ claim.get_claim_status_display }}</span>
+                {% elif claim.claim_status == 'DENIED' %}
+                    <span class="badge bg-dark fs-6">{{ claim.get_claim_status_display }}</span>
+                {% elif claim.claim_status == 'SETTLED' %}
+                    <span class="badge bg-primary fs-6">{{ claim.get_claim_status_display }}</span>
+                {% elif claim.claim_status == 'CLOSED' %}
+                    <span class="badge bg-secondary fs-6">{{ claim.get_claim_status_display }}</span>
+                {% else %}
+                    <span class="badge bg-light text-dark fs-6">{{ claim.get_claim_status_display }}</span>
+                {% endif %}
+            </div>
+        </div>
+        
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'applications:dashboard' %}">Home</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'claims:dashboard' %}">Claims</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'claims:claim_list' %}">All Claims</a></li>
+                <li class="breadcrumb-item active">{{ claim.claim_number }}</li>
+            </ol>
+        </nav>
+        
+        <!-- Quick Actions -->
+        <div class="mb-3">
+            <a href="{% url 'claims:claim_update' claim.pk %}" class="btn btn-primary">
+                <i class="fas fa-edit"></i> Edit Claim
+            </a>
+            {% if not claim.adjuster %}
+            <a href="{% url 'claims:claim_assign' claim.pk %}" class="btn btn-warning">
+                <i class="fas fa-user-tie"></i> Assign Adjuster
+            </a>
+            {% endif %}
+            <a href="{% url 'claims:claim_add_note' claim.pk %}" class="btn btn-secondary">
+                <i class="fas fa-sticky-note"></i> Add Note
+            </a>
+            <a href="{% url 'claims:claim_add_payment' claim.pk %}" class="btn btn-success">
+                <i class="fas fa-dollar-sign"></i> Add Payment
+            </a>
+            <a href="{% url 'claims:claim_add_document' claim.pk %}" class="btn btn-info">
+                <i class="fas fa-file-upload"></i> Upload Document
+            </a>
+        </div>
+        
+        <!-- Financial Summary -->
+        <div class="row mb-3">
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <h6 class="text-muted">Estimated Loss</h6>
+                        <h4>${{ claim.estimated_loss|floatformat:2 }}</h4>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <h6 class="text-muted">Current Reserve</h6>
+                        <h4>${{ claim.reserve_amount|floatformat:2 }}</h4>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <h6 class="text-muted">Total Paid</h6>
+                        <h4>${{ total_paid|floatformat:2 }}</h4>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <h6 class="text-muted">Net Paid</h6>
+                        <h4>${{ net_paid|floatformat:2 }}</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Claim Information -->
+        <div class="card mb-3">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Claim Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <table class="table table-sm">
+                            <tr>
+                                <th width="40%">Claim Number:</th>
+                                <td>{{ claim.claim_number }}</td>
+                            </tr>
+                            <tr>
+                                <th>Claim Type:</th>
+                                <td>{{ claim.get_claim_type_display }}</td>
+                            </tr>
+                            <tr>
+                                <th>Severity:</th>
+                                <td>
+                                    {% if claim.severity == 'HIGH' %}
+                                        <span class="badge bg-danger">{{ claim.get_severity_display }}</span>
+                                    {% elif claim.severity == 'CATASTROPHIC' %}
+                                        <span class="badge bg-dark">{{ claim.get_severity_display }}</span>
+                                    {% elif claim.severity == 'MEDIUM' %}
+                                        <span class="badge bg-warning">{{ claim.get_severity_display }}</span>
+                                    {% else %}
+                                        <span class="badge bg-success">{{ claim.get_severity_display }}</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Date of Loss:</th>
+                                <td>{{ claim.date_of_loss|date:"F d, Y" }}{% if claim.time_of_loss %} at {{ claim.time_of_loss }}{% endif %}</td>
+                            </tr>
+                            <tr>
+                                <th>Reported Date:</th>
+                                <td>{{ claim.reported_date|date:"F d, Y g:i A" }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <table class="table table-sm">
+                            <tr>
+                                <th width="40%">Policy/Quote:</th>
+                                <td>
+                                    <a href="{% url 'applications:quote_detail' claim.quote.pk %}">
+                                        {{ claim.quote.quote_number }}
+                                    </a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Company:</th>
+                                <td>{{ claim.quote.application.company.company_name }}</td>
+                            </tr>
+                            <tr>
+                                <th>Adjuster:</th>
+                                <td>
+                                    {% if claim.adjuster %}
+                                        {{ claim.adjuster.get_full_name|default:claim.adjuster.username }}
+                                    {% else %}
+                                        <span class="text-danger">Unassigned</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Deductible:</th>
+                                <td>${{ claim.deductible|floatformat:2 }}</td>
+                            </tr>
+                            <tr>
+                                <th>Created By:</th>
+                                <td>{{ claim.created_by.get_full_name|default:claim.created_by.username }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Loss Information -->
+        <div class="card mb-3">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Loss Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Cause of Loss:</strong> {{ claim.cause_of_loss }}</p>
+                        <p><strong>Location:</strong> {{ claim.location_of_loss }}</p>
+                        {% if claim.police_report_number %}
+                        <p><strong>Police Report #:</strong> {{ claim.police_report_number }}</p>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-2">
+                            {% if claim.injuries_reported %}
+                                <span class="badge bg-danger">Injuries Reported</span>
+                            {% endif %}
+                            {% if claim.property_damage %}
+                                <span class="badge bg-warning">Property Damage</span>
+                            {% endif %}
+                            {% if claim.subrogation_possible %}
+                                <span class="badge bg-info">Subrogation Possible</span>
+                            {% endif %}
+                            {% if claim.litigation_pending %}
+                                <span class="badge bg-dark">Litigation Pending</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12">
+                        <p><strong>Description:</strong></p>
+                        <p class="ms-3">{{ claim.loss_description|linebreaks }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Claimant Information -->
+        <div class="card mb-3">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Claimant Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Name:</strong> {{ claim.claimant_name }}</p>
+                        <p><strong>Phone:</strong> {{ claim.claimant_phone }}</p>
+                        <p><strong>Email:</strong> <a href="mailto:{{ claim.claimant_email }}">{{ claim.claimant_email }}</a></p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Address:</strong></p>
+                        <p class="ms-3">{{ claim.claimant_address|linebreaks }}</p>
+                        <p><strong>Is Insured:</strong> 
+                            {% if claim.is_insured %}
+                                <span class="badge bg-success">Yes</span>
+                            {% else %}
+                                <span class="badge bg-warning">No</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Recent Notes -->
+        <div class="card mb-3">
+            <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Recent Notes</h5>
+                <a href="{% url 'claims:claim_add_note' claim.pk %}" class="btn btn-sm btn-light">Add Note</a>
+            </div>
+            <div class="card-body">
+                {% if notes %}
+                <div class="list-group">
+                    {% for note in notes|slice:":5" %}
+                    <div class="list-group-item">
+                        <div class="d-flex justify-content-between">
+                            <h6>{{ note.subject }}</h6>
+                            <small class="text-muted">{{ note.created_date|date:"m/d/Y g:i A" }}</small>
+                        </div>
+                        <p class="mb-1">{{ note.content|truncatechars:200 }}</p>
+                        <small>By: {{ note.created_by.get_full_name|default:note.created_by.username }} | 
+                            Type: {{ note.get_note_type_display }}</small>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-muted">No notes yet.</p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Recent Payments -->
+        <div class="card mb-3">
+            <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Recent Payments</h5>
+                <a href="{% url 'claims:claim_add_payment' claim.pk %}" class="btn btn-sm btn-light">Add Payment</a>
+            </div>
+            <div class="card-body">
+                {% if payments %}
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Type</th>
+                                <th>Payee</th>
+                                <th>Amount</th>
+                                <th>Method</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for payment in payments|slice:":5" %}
+                            <tr>
+                                <td>{{ payment.payment_date|date:"m/d/Y" }}</td>
+                                <td>{{ payment.get_payment_type_display }}</td>
+                                <td>{{ payment.payee_name }}</td>
+                                <td>${{ payment.amount|floatformat:2 }}</td>
+                                <td>{{ payment.get_payment_method_display }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">No payments recorded.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

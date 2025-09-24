@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+
+{% block title %}Policy {{ policy.policy_number }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Policy {{ policy.policy_number }}</h2>
+        <div class="btn-group">
+            <a href="{% url 'applications:policy_list' %}" class="btn btn-outline-secondary">Back to Policies</a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Policy Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Policy Number:</strong> {{ policy.policy_number }}</p>
+                            <p><strong>Status:</strong> 
+                                <span class="badge bg-success">{{ policy.get_policy_status_display }}</span>
+                            </p>
+                            <p><strong>Effective Date:</strong> {{ policy.effective_date|date:"M d, Y" }}</p>
+                            <p><strong>Expiration Date:</strong> {{ policy.expiration_date|date:"M d, Y" }}</p>
+                            <p><strong>Annual Premium:</strong> {{ policy.annual_premium|floatformat:2 }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Issue Date:</strong> {{ policy.issue_date|date:"M d, Y" }}</p>
+                            <p><strong>Billing Frequency:</strong> {{ policy.get_billing_frequency_display }}</p>
+                            <p><strong>Auto Renewal:</strong> {{ policy.auto_renewal|yesno:"Yes,No" }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5>Related Quote & Application</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Company:</strong> {{ policy.quote.application.company.company_name }}</p>
+                    <p><strong>Product:</strong> {{ policy.quote.application.product.product_name }}</p>
+                    <p><strong>Original Quote:</strong> 
+                        <a href="{% url 'applications:quote_detail' policy.quote.pk %}">{{ policy.quote.quote_number }}</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Certificates</h5>
+                </div>
+                <div class="card-body">
+                    {% for certificate in certificates %}
+                        <div class="d-flex justify-content-between align-items-center py-2">
+                            <div>
+                                <strong>{{ certificate.certificate_number }}</strong>
+                                <small class="text-muted d-block">{{ certificate.effective_date|date:"M d, Y" }}</small>
+                            </div>
+                            <a href="{% url 'applications:certificate_detail' certificate.certificate_id %}" class="btn btn-sm btn-outline-primary">View</a>
+                        </div>
+                    {% empty %}
+                    <p class="text-muted">No certificates issued.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        <div class="card mt-3">
+                <div class="card-header">
+                    <h5>Billing & Payments</h5>
+                </div>
+                <div class="card-body">
+                    {% if policy.billingschedule %}
+                        <p><strong>Billing Frequency:</strong> {{ policy.billingschedule.get_billing_frequency_display }}</p>
+                        <p><strong>Installment Amount:</strong> ${{ policy.billingschedule.installment_amount|floatformat:2 }}</p>
+                        <p><strong>Total Installments:</strong> {{ policy.billingschedule.installments_count }}</p>
+                        <a href="{% url 'applications:payment_list' %}?policy={{ policy.policy_id }}" class="btn btn-sm btn-outline-primary">View Payments</a>
+                    {% else %}
+                        <p class="text-muted">No billing schedule created yet.</p>
+                        <a href="{% url 'applications:create_billing_schedule' policy.policy_id %}" class="btn btn-sm btn-primary">Create Billing Schedule</a>
+                    {% endif %}
+                </div>
+            </div>
+    </div>
+</div>
+{% endblock %}

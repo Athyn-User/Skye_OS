@@ -1,0 +1,66 @@
+﻿{% extends 'base.html' %}
+
+{% block title %}Policy Management{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Policy Management</h2>
+        {% if renewal_alerts > 0 %}
+        <div class="alert alert-warning">
+            <i class="fas fa-exclamation-triangle"></i> 
+            {{ renewal_alerts }} policies require renewal attention
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Policy Number</th>
+                            <th>Company</th>
+                            <th>Status</th>
+                            <th>Effective Date</th>
+                            <th>Expiration Date</th>
+                            <th>Annual Premium</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for policy in policies %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'applications:policy_detail' policy.policy_id %}">
+                                    {{ policy.policy_number }}
+                                </a>
+                            </td>
+                            <td>{{ policy.quote.application.company.company_name }}</td>
+                            <td>
+                                <span class="badge bg-success">
+                                    {{ policy.get_policy_status_display }}
+                                </span>
+                            </td>
+                            <td>{{ policy.effective_date|date:"M d, Y" }}</td>
+                            <td>{{ policy.expiration_date|date:"M d, Y" }}</td>
+                            <td>{{ policy.annual_premium|floatformat:2 }}</td>
+                            <td>
+                                <a href="{% url 'applications:policy_detail' policy.policy_id %}" class="btn btn-sm btn-outline-primary">View</a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center text-muted">
+                                No policies found.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

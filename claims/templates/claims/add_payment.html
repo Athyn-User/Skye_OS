@@ -1,0 +1,148 @@
+<!-- claims/templates/claims/add_payment.html -->
+{% extends 'base.html' %}
+
+{% block title %}Add Payment - Claim {{ claim.claim_number }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <h2 class="mb-4">Add Payment to Claim {{ claim.claim_number }}</h2>
+        
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'applications:dashboard' %}">Home</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'claims:dashboard' %}">Claims</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'claims:claim_detail' claim.pk %}">{{ claim.claim_number }}</a></li>
+                <li class="breadcrumb-item active">Add Payment</li>
+            </ol>
+        </nav>
+        
+        <!-- Claim Summary -->
+        <div class="card mb-3 bg-light">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <p><strong>Claim:</strong> {{ claim.claim_number }}</p>
+                        <p><strong>Claimant:</strong> {{ claim.claimant_name }}</p>
+                    </div>
+                    <div class="col-md-4">
+                        <p><strong>Current Reserve:</strong> ${{ claim.reserve_amount|floatformat:2 }}</p>
+                        <p><strong>Already Paid:</strong> ${{ claim.paid_amount|floatformat:2 }}</p>
+                    </div>
+                    <div class="col-md-4">
+                        <p><strong>Deductible:</strong> ${{ claim.deductible|floatformat:2 }}</p>
+                        <p><strong>Available:</strong> ${{ claim.outstanding_reserve|floatformat:2 }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Payment Form -->
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">Payment Details</h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="{{ form.payment_type.id_for_label }}" class="form-label">Payment Type</label>
+                                {{ form.payment_type }}
+                                {% if form.payment_type.errors %}
+                                    <div class="text-danger">{{ form.payment_type.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="{{ form.payment_method.id_for_label }}" class="form-label">Payment Method</label>
+                                {{ form.payment_method }}
+                                {% if form.payment_method.errors %}
+                                    <div class="text-danger">{{ form.payment_method.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="{{ form.payee_name.id_for_label }}" class="form-label">Payee Name</label>
+                                {{ form.payee_name }}
+                                {% if form.payee_name.errors %}
+                                    <div class="text-danger">{{ form.payee_name.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="{{ form.amount.id_for_label }}" class="form-label">Amount</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    {{ form.amount }}
+                                </div>
+                                {% if form.amount.errors %}
+                                    <div class="text-danger">{{ form.amount.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="{{ form.payment_date.id_for_label }}" class="form-label">Payment Date</label>
+                                {{ form.payment_date }}
+                                {% if form.payment_date.errors %}
+                                    <div class="text-danger">{{ form.payment_date.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="{{ form.check_number.id_for_label }}" class="form-label">Check/Transaction Number</label>
+                                {{ form.check_number }}
+                                {% if form.check_number.errors %}
+                                    <div class="text-danger">{{ form.check_number.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="{{ form.cleared_date.id_for_label }}" class="form-label">Cleared Date (Optional)</label>
+                                {{ form.cleared_date }}
+                                {% if form.cleared_date.errors %}
+                                    <div class="text-danger">{{ form.cleared_date.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.notes.id_for_label }}" class="form-label">Notes</label>
+                        {{ form.notes }}
+                        {% if form.notes.errors %}
+                            <div class="text-danger">{{ form.notes.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-dollar-sign"></i> Process Payment
+                        </button>
+                        <a href="{% url 'claims:claim_detail' claim.pk %}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

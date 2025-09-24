@@ -1,0 +1,130 @@
+﻿{% extends 'base.html' %}
+
+{% block title %}Dashboard - Skye OS{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1>Insurance Dashboard</h1>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-white bg-primary">
+            <div class="card-body">
+                <h5 class="card-title">Total Applications</h5>
+                <h2>{{ total_applications }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-warning">
+            <div class="card-body">
+                <h5 class="card-title">Open Applications</h5>
+                <h2>{{ open_applications }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-success">
+            <div class="card-body">
+                <h5 class="card-title">Quoted Applications</h5>
+                <h2>{{ quoted_applications }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-info">
+            <div class="card-body">
+                <h5 class="card-title">Quick Actions</h5>
+                <a href="{% url 'applications:application_create' %}" class="btn btn-light btn-sm">New Application</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>Recent Applications</h5>
+            </div>
+            <div class="card-body">
+                {% if recent_applications %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Number</th>
+                                    <th>Company</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for app in recent_applications %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'applications:application_detail' app.pk %}">
+                                            {{ app.application_number }}
+                                        </a>
+                                    </td>
+                                    <td>{{ app.company.company_name }}</td>
+                                    <td>
+                                        <span class="badge bg-secondary">{{ app.get_application_status_display }}</span>
+                                    </td>
+                                    <td>{{ app.submission_date }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p>No applications yet. <a href="{% url 'applications:application_create' %}">Create the first one</a>.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>Pending Quotes</h5>
+            </div>
+            <div class="card-body">
+                {% if pending_quotes %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Quote Number</th>
+                                    <th>Company</th>
+                                    <th>Premium</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for quote in pending_quotes %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'applications:quote_detail' quote.pk %}">
+                                            {{ quote.quote_number }}
+                                        </a>
+                                    </td>
+                                    <td>{{ quote.application.company.company_name }}</td>
+                                    <td>${{ quote.total_premium|floatformat:2 }}</td>
+                                    <td>{{ quote.quote_date }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p>No pending quotes.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

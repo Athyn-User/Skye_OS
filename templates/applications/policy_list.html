@@ -1,0 +1,183 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Policies - Skye OS{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header with statistics -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h2 class="mb-4">Policies</h2>
+            
+            <!-- Statistics Cards -->
+            <div class="row mb-3">
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ total_policies }}</h5>
+                            <p class="card-text text-muted">Total Policies</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 class="card-title text-success">{{ active_policies }}</h5>
+                            <p class="card-text text-muted">Active Policies</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 class="card-title text-warning">{{ expiring_count }}</h5>
+                            <p class="card-text text-muted">Expiring Soon</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <a href="{% url 'applications:quote_list' %}" class="btn btn-primary">
+                                <i class="fas fa-plus"></i> New Policy from Quote
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filters and Search -->
+            <div class="card mb-3">
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-4">
+                            <input type="text" name="search" class="form-control" 
+                                   placeholder="Search by policy number or company..." 
+                                   value="{{ search_query }}">
+                        </div>
+                        <div class="col-md-2">
+                            <select name="status" class="form-select">
+                                <option value="">All Status</option>
+                                <option value="active" {% if current_status == 'active' %}selected{% endif %}>Active</option>
+                                <option value="pending" {% if current_status == 'pending' %}selected{% endif %}>Pending</option>
+                                <option value="expired" {% if current_status == 'expired' %}selected{% endif %}>Expired</option>
+                                <option value="cancelled" {% if current_status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="expiring" value="1" 
+                                       {% if is_expiring_filter %}checked{% endif %}>
+                                <label class="form-check-label">
+                                    Expiring Soon
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-search"></i> Search
+                            </button>
+                            <a href="{% url 'applications:policy_list' %}" class="btn btn-secondary">
+                                Clear
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Policies Table -->
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Policy Number</th>
+                                    <th>Company</th>
+                                    <th>Product</th>
+                                    <th>Status</th>
+                                    <th>Premium</th>
+                                    <th>Effective Date</th>
+                                    <th>Expiration Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for policy in policies %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'applications:policy_detail' policy.policy_id %}">
+                                            {{ policy.policy_number }}
+                                        </a>
+                                    </td>
+                                    <td>{{ policy.quote.application.company.company_name }}</td>
+                                    <td>{{ policy.quote.application.product.product_name }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ policy.status_color }}">
+                                            {{ policy.status_badge }}
+                                        </span>
+                                    </td>
+                                    <td>${{ policy.annual_premium|floatformat:2 }}</td>
+                                    <td>{{ policy.effective_date|date:"M d, Y" }}</td>
+                                    <td>{{ policy.expiration_date|date:"M d, Y" }}</td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a href="{% url 'applications:policy_detail' policy.policy_id %}" 
+                                               class="btn btn-sm btn-outline-primary" title="View">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            {% if policy.policy_status == 'active' %}
+                                                <a href="{% url 'applications:certificate_list' %}?policy={{ policy.policy_id }}" 
+                                                   class="btn btn-sm btn-outline-info" title="Certificates">
+                                                    <i class="fas fa-certificate"></i>
+                                                </a>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="8" class="text-center">No policies found.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    {% if page_obj.has_other_pages %}
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination justify-content-center">
+                            {% if page_obj.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if current_status %}&status={{ current_status }}{% endif %}">First</a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if current_status %}&status={{ current_status }}{% endif %}">Previous</a>
+                                </li>
+                            {% endif %}
+                            
+                            <li class="page-item active">
+                                <span class="page-link">
+                                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                                </span>
+                            </li>
+                            
+                            {% if page_obj.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if current_status %}&status={{ current_status }}{% endif %}">Next</a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if current_status %}&status={{ current_status }}{% endif %}">Last</a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

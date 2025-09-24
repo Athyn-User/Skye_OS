@@ -1,0 +1,211 @@
+{% extends 'base.html' %}
+
+{% block title %}Renewal Detail - {{ renewal.original_policy.policy_number }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2>Renewal Detail</h2>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'applications:renewal_dashboard' %}">Renewals</a></li>
+                    <li class="breadcrumb-item active">{{ renewal.original_policy.policy_number }}</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Renewal Status Card -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header {% if renewal.renewal_status == 'accepted' %}bg-success{% elif renewal.renewal_status == 'declined' %}bg-danger{% elif renewal.renewal_status == 'quoted' %}bg-info{% else %}bg-warning{% endif %} text-white">
+                    <h5 class="mb-0">
+                        Renewal Status: {{ renewal.get_renewal_status_display }}
+                        {% if days_until_renewal > 0 %}
+                            <span class="float-end">{{ days_until_renewal }} days until expiration</span>
+                        {% elif days_until_renewal == 0 %}
+                            <span class="float-end">Expires today!</span>
+                        {% else %}
+                            <span class="float-end">Expired {{ days_expired }} days ago</span>
+                        {% endif %}
+                    </h5>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Original Policy Information -->
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Original Policy</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm">
+                        <tr>
+                            <th>Policy Number:</th>
+                            <td>{{ renewal.original_policy.policy_number }}</td>
+                        </tr>
+                        <tr>
+                            <th>Insured:</th>
+                            <td>{{ renewal.original_policy.quote.application.company.company_name }}</td>
+                        </tr>
+                        <tr>
+                            <th>Product:</th>
+                            <td>{{ renewal.original_policy.quote.application.product.product_name }}</td>
+                        </tr>
+                        <tr>
+                            <th>Current Premium:</th>
+                            <td>${{ renewal.original_policy.annual_premium|floatformat:2 }}</td>
+                        </tr>
+                        <tr>
+                            <th>Effective Date:</th>
+                            <td>{{ renewal.original_policy.effective_date|date:"M d, Y" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Expiration Date:</th>
+                            <td>{{ renewal.original_policy.expiration_date|date:"M d, Y" }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Renewal Quote Information -->
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Renewal Quote</h5>
+                </div>
+                <div class="card-body">
+                    {% if renewal.renewal_quote %}
+                    <table class="table table-sm">
+                        <tr>
+                            <th>Quote Number:</th>
+                            <td>{{ renewal.renewal_quote.quote_number }}</td>
+                        </tr>
+                        <tr>
+                            <th>Proposed Premium:</th>
+                            <td class="fw-bold text-primary">${{ renewal.proposed_premium|floatformat:2 }}</td>
+                        </tr>
+                        <tr>
+                            <th>Premium Change:</th>
+                            <td>
+                                {% if renewal.premium_change_percent > 0 %}
+                                    <span class="text-danger">+{{ renewal.premium_change_percent|floatformat:2 }}%</span>
+                                {% elif renewal.premium_change_percent < 0 %}
+                                    <span class="text-success">{{ renewal.premium_change_percent|floatformat:2 }}%</span>
+                                {% else %}
+                                    <span class="text-muted">No change</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>New Effective Date:</th>
+                            <td>{{ renewal.renewal_quote.effective_date|date:"M d, Y" }}</td>
+                        </tr>
+                        <tr>
+                            <th>New Expiration Date:</th>
+                            <td>{{ renewal.renewal_quote.expiration_date|date:"M d, Y" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Notice Sent:</th>
+                            <td>{{ renewal.notice_sent_date|date:"M d, Y"|default:"Not sent" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Response Due:</th>
+                            <td>{{ renewal.response_due_date|date:"M d, Y"|default:"N/A" }}</td>
+                        </tr>
+                    </table>
+                    {% else %}
+                    <p class="text-muted">No renewal quote created yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Renewal Notes -->
+    {% if renewal.notes %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Renewal Notes</h5>
+                </div>
+                <div class="card-body">
+                    <p>{{ renewal.notes|linebreaks }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Action Buttons -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'applications:renewal_dashboard' %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Back to Renewals
+                        </a>
+                        
+                        <div>
+                            {% if renewal.renewal_status == 'pending' %}
+                                <a href="{% url 'applications:renewal_process' renewal.original_policy.policy_id %}" 
+                                   class="btn btn-primary">
+                                    <i class="fas fa-edit"></i> Create Renewal Quote
+                                </a>
+                            {% endif %}
+                            
+                            {% if renewal.renewal_status == 'quoted' and can_accept %}
+                                <a href="{% url 'applications:renewal_accept' renewal.renewal_id %}" 
+                                   class="btn btn-success me-2">
+                                    <i class="fas fa-check"></i> Accept Renewal
+                                </a>
+                                <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#declineModal">
+                                    <i class="fas fa-times"></i> Decline Renewal
+                                </button>
+                            {% endif %}
+                            
+                            {% if renewal.renewal_status == 'accepted' and renewal.renewal_policy %}
+                                <a href="{% url 'applications:policy_detail' renewal.renewal_policy.policy_id %}" 
+                                   class="btn btn-primary">
+                                    <i class="fas fa-file-alt"></i> View New Policy
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Decline Modal -->
+<div class="modal fade" id="declineModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Decline Renewal</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to decline this renewal?</p>
+                <p class="text-danger">This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form method="post" action="#" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Decline Renewal</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

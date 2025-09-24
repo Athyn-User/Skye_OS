@@ -1,0 +1,95 @@
+﻿{% extends 'base.html' %}
+
+{% block title %}Upload Document - Skye OS{% endblock %}
+
+{% block content %}
+<h1>Upload New Document</h1>
+
+<div class="card">
+    <div class="card-body">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="file" class="form-label">Select File *</label>
+                        <input type="file" name="file" id="file" class="form-control" required>
+                        <div class="form-text">Maximum file size: 50MB</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="document_name" class="form-label">Document Name</label>
+                        <input type="text" name="document_name" id="document_name" class="form-control" 
+                               placeholder="Leave blank to use filename">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="category" class="form-label">Category *</label>
+                        <select name="category" id="category" class="form-select" required>
+                            <option value="">Select Category</option>
+                            {% for category in categories %}
+                                <option value="{{ category.document_category_id }}">{{ category.category_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="application" class="form-label">Related Application</label>
+                        <select name="application" id="application" class="form-select">
+                            <option value="">Not related to an application</option>
+                            {% for app in applications %}
+                                <option value="{{ app.application_id }}">{{ app.application_number }} - {{ app.company.company_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="quote" class="form-label">Related Quote</label>
+                        <select name="quote" id="quote" class="form-select">
+                            <option value="">Not related to a quote</option>
+                            {% for quote in quotes %}
+                                <option value="{{ quote.quote_id }}">{{ quote.quote_number }} - {{ quote.application.company.company_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="company" class="form-label">Related Company</label>
+                        <select name="company" id="company" class="form-select">
+                            <option value="">Not related to a company</option>
+                            {% for company in companies %}
+                                <option value="{{ company.company_id }}">{{ company.company_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <label for="description" class="form-label">Description</label>
+                <textarea name="description" id="description" class="form-control" rows="3" 
+                          placeholder="Optional description of the document..."></textarea>
+            </div>
+            
+            <div class="d-flex justify-content-between">
+                <a href="{% url 'documents:document_list' %}" class="btn btn-secondary">Cancel</a>
+                <button type="submit" class="btn btn-primary">Upload Document</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.getElementById('file').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const nameInput = document.getElementById('document_name');
+        if (!nameInput.value) {
+            nameInput.value = file.name.split('.').slice(0, -1).join('.');
+        }
+    }
+});
+</script>
+{% endblock %}

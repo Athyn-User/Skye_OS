@@ -1,0 +1,162 @@
+{% extends 'base.html' %}
+
+{% block title %}Renewal Dashboard - Skye OS{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="mb-4">
+                <i class="fas fa-sync-alt"></i> Policy Renewal Dashboard
+            </h2>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card border-danger">
+                <div class="card-body text-center">
+                    <h3 class="text-danger">{{ total_overdue }}</h3>
+                    <p class="card-text text-muted mb-0">Overdue Renewals</p>
+                    <small class="text-muted">Expired without renewal</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-warning">
+                <div class="card-body text-center">
+                    <h3 class="text-warning">{{ urgent_count }}</h3>
+                    <p class="card-text text-muted mb-0">Urgent</p>
+                    <small class="text-muted">Expiring in 15 days</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-info">
+                <div class="card-body text-center">
+                    <h3 class="text-info">{{ total_upcoming }}</h3>
+                    <p class="card-text text-muted mb-0">Upcoming</p>
+                    <small class="text-muted">Next 90 days</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-success">
+                <div class="card-body text-center">
+                    <h3 class="text-success">${{ potential_revenue|floatformat:0 }}</h3>
+                    <p class="card-text text-muted mb-0">Potential Revenue</p>
+                    <small class="text-muted">From renewals</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Overdue Renewals Alert -->
+    {% if overdue_renewals %}
+    <div class="alert alert-danger" role="alert">
+        <h5><i class="fas fa-exclamation-triangle"></i> Overdue Renewals Require Immediate Attention</h5>
+        <p>{{ total_overdue }} policies have expired without renewal.</p>
+        <ul class="mb-0">
+            {% for policy in overdue_renewals|slice:":3" %}
+            <li>
+                <strong>{{ policy.policy_number }}</strong> - {{ policy.quote.application.company.company_name }}
+                (Expired: {{ policy.expiration_date|date:"M d, Y" }})
+                <a href="{% url 'applications:renewal_process' policy.policy_id %}" class="btn btn-sm btn-danger ms-2">
+                    Process Now
+                </a>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    <!-- Upcoming Renewals Table -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">Upcoming Renewals (Next 90 Days)</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Policy Number</th>
+                            <th>Company</th>
+                            <th>Product</th>
+                            <th>Expiration Date</th>
+                            <th>Days Until Expiry</th>
+                            <th>Annual Premium</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for policy in upcoming_renewals %}
+                        <tr class="{{ policy.urgency_class }}">
+                            <td>
+                                <a href="{% url 'applications:policy_detail' policy.policy_id %}">
+                                    {{ policy.policy_number }}
+                                </a>
+                            </td>
+                            <td>{{ policy.quote.application.company.company_name }}</td>
+                            <td>{{ policy.quote.application.product.product_name }}</td>
+                            <td>{{ policy.expiration_date|date:"M d, Y" }}</td>
+                            <td>
+                                {% if policy.days_until_expiration <= 0 %}
+                                    <span class="badge bg-danger">Expired</span>
+                                {% elif policy.days_until_expiration <= 7 %}
+                                    <span class="badge bg-danger">{{ policy.days_until_expiration }} days</span>
+                                {% elif policy.days_until_expiration <= 30 %}
+                                    <span class="badge bg-warning">{{ policy.days_until_expiration }} days</span>
+                                {% else %}
+                                    <span class="badge bg-info">{{ policy.days_until_expiration }} days</span>
+                                {% endif %}
+                            </td>
+                            <td>${{ policy.annual_premium|floatformat:2 }}</td>
+                            <td>
+                                <a href="{% url 'applications:renewal_process' policy.policy_id %}" 
+                                   class="btn btn-sm btn-primary">
+                                    <i class="fas fa-sync"></i> Process Renewal
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center text-muted">No upcoming renewals</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Renewal Activity -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">Recent Renewal Activity</h5>
+        </div>
+        <div class="card-body">
+            {% for renewal in recent_renewals %}
+            <div class="border-bottom pb-2 mb-2">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong>{{ renewal.original_policy.policy_number }}</strong>
+                        <span class="badge bg-info ms-2">{{ renewal.get_renewal_status_display }}</span>
+                        <br>
+                        <small class="text-muted">
+                            {{ renewal.original_policy.quote.application.company.company_name }} - 
+                            {{ renewal.created_at|date:"M d, Y" }}
+                        </small>
+                    </div>
+                    <a href="{% url 'applications:renewal_detail' renewal.renewal_id %}" 
+                       class="btn btn-sm btn-outline-primary">View</a>
+                </div>
+            </div>
+            {% empty %}
+            <p class="text-muted text-center">No recent renewal activity</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

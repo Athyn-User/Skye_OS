@@ -1,0 +1,233 @@
+<!-- claims/templates/claims/claim_form.html -->
+{% extends 'base.html' %}
+
+{% block title %}Edit Claim {{ claim.claim_number }} - Skye OS{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2 class="mb-4">Edit Claim {{ claim.claim_number }}</h2>
+        
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'applications:dashboard' %}">Home</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'claims:dashboard' %}">Claims</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'claims:claim_detail' claim.pk %}">{{ claim.claim_number }}</a></li>
+                <li class="breadcrumb-item active">Edit</li>
+            </ol>
+        </nav>
+        
+        <form method="post">
+            {% csrf_token %}
+            
+            <!-- Claim Status and Assignment -->
+            <div class="card mb-3">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Status and Assignment</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="{{ form.claim_status.id_for_label }}" class="form-label">Claim Status</label>
+                                {{ form.claim_status }}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="{{ form.severity.id_for_label }}" class="form-label">Severity</label>
+                                {{ form.severity }}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="{{ form.adjuster.id_for_label }}" class="form-label">Adjuster</label>
+                                {{ form.adjuster }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Claimant Information -->
+            <div class="card mb-3">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Claimant Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="{{ form.claimant_name.id_for_label }}" class="form-label">Claimant Name</label>
+                                {{ form.claimant_name }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="{{ form.claimant_phone.id_for_label }}" class="form-label">Phone</label>
+                                {{ form.claimant_phone }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="{{ form.claimant_email.id_for_label }}" class="form-label">Email</label>
+                                {{ form.claimant_email }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="{{ form.claimant_address.id_for_label }}" class="form-label">Address</label>
+                                {{ form.claimant_address }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Loss Information -->
+            <div class="card mb-3">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Loss Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="{{ form.location_of_loss.id_for_label }}" class="form-label">Location of Loss</label>
+                                {{ form.location_of_loss }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="{{ form.cause_of_loss.id_for_label }}" class="form-label">Cause of Loss</label>
+                                {{ form.cause_of_loss }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="mb-3">
+                                <label for="{{ form.loss_description.id_for_label }}" class="form-label">Loss Description</label>
+                                {{ form.loss_description }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Financial Information -->
+            <div class="card mb-3">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Financial Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="{{ form.estimated_loss.id_for_label }}" class="form-label">Estimated Loss</label>
+                                {{ form.estimated_loss }}
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="{{ form.deductible.id_for_label }}" class="form-label">Deductible</label>
+                                {{ form.deductible }}
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="{{ form.reserve_amount.id_for_label }}" class="form-label">Reserve Amount</label>
+                                {{ form.reserve_amount }}
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label class="form-label">Paid Amount</label>
+                                <input type="text" class="form-control" value="${{ claim.paid_amount|floatformat:2 }}" readonly>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Additional Details -->
+            <div class="card mb-3">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Additional Details</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="{{ form.police_report_number.id_for_label }}" class="form-label">Police Report Number</label>
+                                {{ form.police_report_number }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3 mt-4">
+                                <div class="form-check form-check-inline">
+                                    {{ form.injuries_reported }}
+                                    <label class="form-check-label" for="{{ form.injuries_reported.id_for_label }}">
+                                        Injuries Reported
+                                    </label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    {{ form.property_damage }}
+                                    <label class="form-check-label" for="{{ form.property_damage.id_for_label }}">
+                                        Property Damage
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-check">
+                                {{ form.subrogation_possible }}
+                                <label class="form-check-label" for="{{ form.subrogation_possible.id_for_label }}">
+                                    Subrogation Possible
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-check">
+                                {{ form.litigation_pending }}
+                                <label class="form-check-label" for="{{ form.litigation_pending.id_for_label }}">
+                                    Litigation Pending
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Internal Notes -->
+            <div class="card mb-3">
+                <div class="card-header bg-warning">
+                    <h5 class="mb-0">Internal Notes</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="{{ form.internal_notes.id_for_label }}" class="form-label">Internal Notes (Not visible to client)</label>
+                        {{ form.internal_notes }}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Form Actions -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Save Changes
+                    </button>
+                    <a href="{% url 'claims:claim_detail' claim.pk %}" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> Cancel
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

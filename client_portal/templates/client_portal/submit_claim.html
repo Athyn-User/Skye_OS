@@ -1,0 +1,158 @@
+<!-- client_portal/templates/client_portal/submit_claim.html -->
+{% extends 'client_portal/base.html' %}
+
+{% block title %}Submit Claim - Client Portal{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h2 class="mb-4">Submit New Claim</h2>
+    
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'client_portal:dashboard' %}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'client_portal:claims' %}">Claims</a></li>
+            <li class="breadcrumb-item active">Submit Claim</li>
+        </ol>
+    </nav>
+    
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        <!-- Policy Selection -->
+        <div class="card mb-3">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Policy Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label for="{{ form.quote.id_for_label }}" class="form-label">Select Policy*</label>
+                    {{ form.quote }}
+                    <small class="form-text text-muted">Choose the policy this claim relates to</small>
+                </div>
+                <div class="mb-3">
+                    <label for="{{ form.claim_type.id_for_label }}" class="form-label">Claim Type*</label>
+                    {{ form.claim_type }}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Loss Information -->
+        <div class="card mb-3">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Loss Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="{{ form.date_of_loss.id_for_label }}" class="form-label">Date of Loss*</label>
+                            {{ form.date_of_loss }}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="{{ form.time_of_loss.id_for_label }}" class="form-label">Time of Loss</label>
+                            {{ form.time_of_loss }}
+                        </div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="{{ form.location_of_loss.id_for_label }}" class="form-label">Location of Loss*</label>
+                    {{ form.location_of_loss }}
+                </div>
+                <div class="mb-3">
+                    <label for="{{ form.cause_of_loss.id_for_label }}" class="form-label">What Happened?*</label>
+                    {{ form.cause_of_loss }}
+                </div>
+                <div class="mb-3">
+                    <label for="{{ form.loss_description.id_for_label }}" class="form-label">Detailed Description*</label>
+                    {{ form.loss_description }}
+                    <small class="form-text text-muted">Please provide as much detail as possible</small>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Contact Information -->
+        <div class="card mb-3">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Contact Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="{{ form.claimant_name.id_for_label }}" class="form-label">Contact Name*</label>
+                            {{ form.claimant_name }}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="{{ form.claimant_phone.id_for_label }}" class="form-label">Phone*</label>
+                            {{ form.claimant_phone }}
+                        </div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="{{ form.claimant_email.id_for_label }}" class="form-label">Email*</label>
+                    {{ form.claimant_email }}
+                </div>
+                <div class="mb-3">
+                    <label for="{{ form.claimant_address.id_for_label }}" class="form-label">Address*</label>
+                    {{ form.claimant_address }}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Additional Details -->
+        <div class="card mb-3">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Additional Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="{{ form.estimated_loss.id_for_label }}" class="form-label">Estimated Loss Amount</label>
+                            {{ form.estimated_loss }}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="{{ form.police_report_number.id_for_label }}" class="form-label">Police Report # (if applicable)</label>
+                            {{ form.police_report_number }}
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-check mb-3">
+                            {{ form.injuries_reported }}
+                            <label class="form-check-label" for="{{ form.injuries_reported.id_for_label }}">
+                                Were there any injuries?
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-check mb-3">
+                            {{ form.property_damage }}
+                            <label class="form-check-label" for="{{ form.property_damage.id_for_label }}">
+                                Was there property damage?
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Submit Buttons -->
+        <div class="text-center mb-4">
+            <button type="submit" class="btn btn-success btn-lg">
+                <i class="fas fa-paper-plane"></i> Submit Claim
+            </button>
+            <a href="{% url 'client_portal:claims' %}" class="btn btn-secondary btn-lg ms-2">
+                <i class="fas fa-times"></i> Cancel
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

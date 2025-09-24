@@ -1,0 +1,86 @@
+﻿{% extends 'client_portal/base.html' %}
+
+{% block title %}Dashboard - Client Portal{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Welcome Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2>Welcome, {{ request.user.first_name }}!</h2>
+            <p class="text-muted">{{ company.company_name }} - Client Portal</p>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card border-primary">
+                <div class="card-body text-center">
+                    <h3 class="text-primary">{{ active_policies }}</h3>
+                    <p class="mb-0">Active Policies</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-info">
+                <div class="card-body text-center">
+                    <h3 class="text-info">{{ active_certificates }}</h3>
+                    <p class="mb-0">Active Certificates</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-warning">
+                <div class="card-body text-center">
+                    <h3 class="text-warning">{{ open_claims }}</h3>
+                    <p class="mb-0">Open Claims</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-danger">
+                <div class="card-body text-center">
+                    <h3 class="text-danger">${{ pending_payments|floatformat:2 }}</h3>
+                    <p class="mb-0">Pending Payments</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-2">
+                            <a href="{% url 'client_portal:submit_claim' %}" class="btn btn-outline-primary w-100">
+                                <i class="fas fa-file-medical"></i> Submit New Claim
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <a href="{% url 'client_portal:documents' %}" class="btn btn-outline-info w-100">
+                                <i class="fas fa-file-download"></i> Download Documents
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <a href="{% url 'client_portal:certificates' %}" class="btn btn-outline-success w-100">
+                                <i class="fas fa-certificate"></i> View Certificates
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <a href="{% url 'client_portal:profile' %}" class="btn btn-outline-secondary w-100">
+                                <i class="fas fa-user"></i> Update Profile
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>{{ title }}</h2>
+                <a href="{% url 'applications:certificate_list' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Certificates
+                </a>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <!-- Certificate Template Selection -->
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.template.id_for_label }}" class="form-label">Certificate Template</label>
+                                {{ form.template }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.certificate_status.id_for_label }}" class="form-label">Status</label>
+                                {{ form.certificate_status }}
+                            </div>
+                        </div>
+
+                        <h5 class="mb-3 mt-4">Certificate Holder Information</h5>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.certificate_holder_name.id_for_label }}" class="form-label">Certificate Holder Name *</label>
+                                {{ form.certificate_holder_name }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.certificate_holder_address.id_for_label }}" class="form-label">Certificate Holder Address *</label>
+                                {{ form.certificate_holder_address }}
+                            </div>
+                        </div>
+
+                        <h5 class="mb-3 mt-4">Additional Insured Information</h5>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.additional_insured_name.id_for_label }}" class="form-label">Additional Insured Name</label>
+                                {{ form.additional_insured_name }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.additional_insured_address.id_for_label }}" class="form-label">Additional Insured Address</label>
+                                {{ form.additional_insured_address }}
+                            </div>
+                        </div>
+
+                        <h5 class="mb-3 mt-4">Project Information</h5>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.project_location.id_for_label }}" class="form-label">Project Location</label>
+                                {{ form.project_location }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.project_description.id_for_label }}" class="form-label">Project Description</label>
+                                {{ form.project_description }}
+                            </div>
+                        </div>
+
+                        <h5 class="mb-3 mt-4">Certificate Details</h5>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.effective_date.id_for_label }}" class="form-label">Effective Date *</label>
+                                {{ form.effective_date }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.expiration_date.id_for_label }}" class="form-label">Expiration Date *</label>
+                                {{ form.expiration_date }}
+                            </div>
+                            <div class="col-md-12 mb-3">
+                                <label for="{{ form.special_provisions.id_for_label }}" class="form-label">Special Provisions</label>
+                                {{ form.special_provisions }}
+                            </div>
+                        </div>
+
+                        <h5 class="mb-3 mt-4">Coverage Options</h5>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div class="form-check">
+                                    {{ form.waiver_of_subrogation }}
+                                    <label class="form-check-label" for="{{ form.waiver_of_subrogation.id_for_label }}">
+                                        Waiver of Subrogation
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="form-check">
+                                    {{ form.primary_and_noncontributory }}
+                                    <label class="form-check-label" for="{{ form.primary_and_noncontributory.id_for_label }}">
+                                        Primary and Non-contributory
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save"></i> Save Certificate
+                                </button>
+                                <a href="{% url 'applications:certificate_list' %}" class="btn btn-secondary ml-2">
+                                    Cancel
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

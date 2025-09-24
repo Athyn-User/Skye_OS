@@ -1,0 +1,57 @@
+﻿{% extends 'base.html' %}
+
+{% block title %}Companies - Skye OS{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Companies</h1>
+    <a href="{% url 'applications:company_create' %}" class="btn btn-primary">New Company</a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Company Name</th>
+                        <th>Type</th>
+                        <th>Industry</th>
+                        <th>Employees</th>
+                        <th>Annual Revenue</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for company in companies %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'applications:company_detail' company.pk %}">
+                                {{ company.company_name }}
+                            </a>
+                        </td>
+                        <td>{{ company.company_type|default:"-" }}</td>
+                        <td>{{ company.industry_description|default:"-" }}</td>
+                        <td>{{ company.employee_count|default:"-" }}</td>
+                        <td>
+                            {% if company.annual_revenue %}
+                                ${{ company.annual_revenue|floatformat:0 }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{% url 'applications:company_detail' company.pk %}" class="btn btn-sm btn-outline-primary">View</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center">No companies found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

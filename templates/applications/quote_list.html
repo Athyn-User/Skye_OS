@@ -1,0 +1,57 @@
+﻿{% extends 'base.html' %}
+
+{% block title %}Quotes - Skye OS{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Quotes</h1>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Quote Number</th>
+                        <th>Application</th>
+                        <th>Company</th>
+                        <th>Status</th>
+                        <th>Premium</th>
+                        <th>Effective Date</th>
+                        <th>Quote Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for quote in quotes %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'applications:quote_detail' quote.pk %}">
+                                {{ quote.quote_number }}
+                            </a>
+                        </td>
+                        <td>{{ quote.application.application_number }}</td>
+                        <td>{{ quote.application.company.company_name }}</td>
+                        <td>
+                            <span class="badge bg-info">{{ quote.get_quote_status_display }}</span>
+                        </td>
+                        <td>${{ quote.total_premium|floatformat:2 }}</td>
+                        <td>{{ quote.effective_date }}</td>
+                        <td>{{ quote.quote_date }}</td>
+                        <td>
+                            <a href="{% url 'applications:quote_detail' quote.pk %}" class="btn btn-sm btn-outline-primary">View</a>
+                            <a href="{% url 'applications:quote_edit' quote.pk %}" class="btn btn-sm btn-outline-warning">Edit</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center">No quotes found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

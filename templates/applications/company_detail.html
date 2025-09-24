@@ -1,0 +1,124 @@
+﻿{% extends 'base.html' %}
+
+{% block title %}{{ company.company_name }} - Skye OS{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>{{ company.company_name }}</h1>
+    <a href="{% url 'applications:application_create' %}?company={{ company.pk }}" class="btn btn-success">New Application</a>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5>Company Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Company Name:</strong> {{ company.company_name }}</p>
+                        <p><strong>DBA Name:</strong> {{ company.dba_name|default:"Not specified" }}</p>
+                        <p><strong>Tax ID:</strong> {{ company.tax_id|default:"Not provided" }}</p>
+                        <p><strong>Company Type:</strong> {{ company.company_type|default:"Not specified" }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Industry:</strong> {{ company.industry_description|default:"Not specified" }}</p>
+                        <p><strong>Employee Count:</strong> {{ company.employee_count|default:"Unknown" }}</p>
+                        <p><strong>Annual Revenue:</strong> 
+                            {% if company.annual_revenue %}
+                                ${{ company.annual_revenue|floatformat:0 }}
+                            {% else %}
+                                Not disclosed
+                            {% endif %}
+                        </p>
+                        <p><strong>Website:</strong> 
+                            {% if company.website %}
+                                <a href="{{ company.website }}" target="_blank">{{ company.website }}</a>
+                            {% else %}
+                                Not provided
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5>Quick Stats</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Total Applications:</strong> {{ applications.count }}</p>
+                <p><strong>Active Applications:</strong> 
+                    {{ applications|length }}
+                </p>
+                <p><strong>Status:</strong> 
+                    {% if company.is_active %}
+                        <span class="badge bg-success">Active</span>
+                    {% else %}
+                        <span class="badge bg-danger">Inactive</span>
+                    {% endif %}
+                </p>
+                <p><strong>Created:</strong> {{ company.created_at|date:"M d, Y" }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if applications %}
+<div class="card mt-4">
+    <div class="card-header">
+        <h5>Applications for {{ company.company_name }}</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Application Number</th>
+                        <th>Product</th>
+                        <th>Broker</th>
+                        <th>Status</th>
+                        <th>Premium</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for app in applications %}
+                    <tr>
+                        <td>{{ app.application_number }}</td>
+                        <td>{{ app.product.product_name }}</td>
+                        <td>{{ app.broker.broker_name|default:"Direct" }}</td>
+                        <td>
+                            <span class="badge bg-secondary">{{ app.get_application_status_display }}</span>
+                        </td>
+                        <td>
+                            {% if app.quoted_premium %}
+                                ${{ app.quoted_premium|floatformat:2 }}
+                            {% elif app.estimated_premium %}
+                                ${{ app.estimated_premium|floatformat:2 }} (est.)
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td>{{ app.submission_date }}</td>
+                        <td>
+                            <a href="{% url 'applications:application_detail' app.pk %}" class="btn btn-sm btn-outline-primary">View</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div class="mt-4">
+    <a href="{% url 'applications:company_list' %}" class="btn btn-secondary">Back to Companies</a>
+</div>
+{% endblock %}

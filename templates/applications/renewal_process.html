@@ -1,0 +1,149 @@
+{% extends 'base.html' %}
+
+{% block title %}Process Renewal - {{ policy.policy_number }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2>Process Policy Renewal</h2>
+            <p class="text-muted">Create renewal quote for policy {{ policy.policy_number }}</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <!-- Current Policy Information -->
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Current Policy Information</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm">
+                        <tr>
+                            <th>Policy Number:</th>
+                            <td>{{ policy.policy_number }}</td>
+                        </tr>
+                        <tr>
+                            <th>Insured:</th>
+                            <td>{{ policy.quote.application.company.company_name }}</td>
+                        </tr>
+                        <tr>
+                            <th>Product:</th>
+                            <td>{{ policy.quote.application.product.product_name }}</td>
+                        </tr>
+                        <tr>
+                            <th>Current Premium:</th>
+                            <td class="text-primary fw-bold">${{ policy.annual_premium|floatformat:2 }}</td>
+                        </tr>
+                        <tr>
+                            <th>Effective Date:</th>
+                            <td>{{ policy.effective_date|date:"M d, Y" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Expiration Date:</th>
+                            <td class="text-danger">{{ policy.expiration_date|date:"M d, Y" }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <!-- Renewal Quote Form -->
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Create Renewal Quote</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label class="form-label">New Effective Date</label>
+                            <input type="date" class="form-control" value="{{ new_effective_date|date:'Y-m-d' }}" readonly>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">New Expiration Date</label>
+                            <input type="date" class="form-control" value="{{ new_expiration_date|date:'Y-m-d' }}" readonly>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="proposed_premium" class="form-label">
+                                Proposed Premium <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input type="number" 
+                                       class="form-control" 
+                                       id="proposed_premium" 
+                                       name="proposed_premium" 
+                                       value="{{ suggested_premium|floatformat:2 }}"
+                                       step="0.01"
+                                       required>
+                            </div>
+                            <small class="text-muted">Current: ${{ policy.annual_premium|floatformat:2 }}</small>
+                            <div id="premium_change" class="mt-1"></div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="premium_change_notes" class="form-label">Premium Change Justification</label>
+                            <textarea class="form-control" 
+                                      id="premium_change_notes" 
+                                      name="premium_change_notes" 
+                                      rows="2"
+                                      placeholder="Explain any premium changes..."></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="renewal_notes" class="form-label">Renewal Notes</label>
+                            <textarea class="form-control" 
+                                      id="renewal_notes" 
+                                      name="renewal_notes" 
+                                      rows="3"
+                                      placeholder="Additional notes about this renewal..."></textarea>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-check"></i> Create Renewal Quote
+                            </button>
+                            <a href="{% url 'applications:renewal_dashboard' %}" class="btn btn-secondary">
+                                Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const premiumInput = document.getElementById('proposed_premium');
+    const currentPremium = {{ policy.annual_premium }};
+    const changeDisplay = document.getElementById('premium_change');
+    
+    function calculateChange() {
+        const newPremium = parseFloat(premiumInput.value) || 0;
+        const change = newPremium - currentPremium;
+        const percentChange = (change / currentPremium * 100).toFixed(2);
+        
+        let html = '';
+        if (change > 0) {
+            html = `<small class="text-danger">+$${change.toFixed(2)} (${percentChange}% increase)</small>`;
+        } else if (change < 0) {
+            html = `<small class="text-success">$${change.toFixed(2)} (${Math.abs(percentChange)}% decrease)</small>`;
+        } else {
+            html = `<small class="text-muted">No change</small>`;
+        }
+        changeDisplay.innerHTML = html;
+    }
+    
+    premiumInput.addEventListener('input', calculateChange);
+    calculateChange();
+});
+</script>
+{% endblock %}

@@ -1,0 +1,90 @@
+<!-- claims/templates/claims/assign_adjuster.html -->
+{% extends 'base.html' %}
+
+{% block title %}Assign Adjuster - Claim {{ claim.claim_number }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6 offset-md-3">
+        <h2 class="mb-4">Assign Adjuster to Claim {{ claim.claim_number }}</h2>
+        
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'applications:dashboard' %}">Home</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'claims:dashboard' %}">Claims</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'claims:claim_detail' claim.pk %}">{{ claim.claim_number }}</a></li>
+                <li class="breadcrumb-item active">Assign Adjuster</li>
+            </ol>
+        </nav>
+        
+        <!-- Claim Summary -->
+        <div class="card mb-3 bg-light">
+            <div class="card-body">
+                <p><strong>Claim:</strong> {{ claim.claim_number }}</p>
+                <p><strong>Claimant:</strong> {{ claim.claimant_name }}</p>
+                <p><strong>Type:</strong> {{ claim.get_claim_type_display }}</p>
+                <p><strong>Severity:</strong> 
+                    {% if claim.severity == 'HIGH' %}
+                        <span class="badge bg-danger">{{ claim.get_severity_display }}</span>
+                    {% elif claim.severity == 'CATASTROPHIC' %}
+                        <span class="badge bg-dark">{{ claim.get_severity_display }}</span>
+                    {% elif claim.severity == 'MEDIUM' %}
+                        <span class="badge bg-warning">{{ claim.get_severity_display }}</span>
+                    {% else %}
+                        <span class="badge bg-success">{{ claim.get_severity_display }}</span>
+                    {% endif %}
+                </p>
+                <p><strong>Current Adjuster:</strong> 
+                    {% if claim.adjuster %}
+                        {{ claim.adjuster.get_full_name|default:claim.adjuster.username }}
+                    {% else %}
+                        <span class="text-danger">Unassigned</span>
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+        
+        <!-- Assign Form -->
+        <div class="card">
+            <div class="card-header bg-warning">
+                <h5 class="mb-0">Select Adjuster</h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="adjuster_id" class="form-label">Choose Adjuster</label>
+                        <select name="adjuster_id" id="adjuster_id" class="form-select" required>
+                            <option value="">-- Select Adjuster --</option>
+                            {% for adjuster in adjusters %}
+                                <option value="{{ adjuster.id }}" 
+                                    {% if adjuster == claim.adjuster %}selected{% endif %}>
+                                    {{ adjuster.get_full_name|default:adjuster.username }}
+                                    {% if adjuster == claim.adjuster %} (Current){% endif %}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    {% if not adjusters %}
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i> No adjusters available. 
+                        Please create an "Adjusters" group in the admin panel and assign users to it.
+                    </div>
+                    {% endif %}
+                    
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-warning" {% if not adjusters %}disabled{% endif %}>
+                            <i class="fas fa-user-tie"></i> Assign Adjuster
+                        </button>
+                        <a href="{% url 'claims:claim_detail' claim.pk %}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,106 @@
+<!-- client_portal/templates/client_portal/policies.html -->
+{% extends 'client_portal/base.html' %}
+
+{% block title %}Policies - Client Portal{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h2 class="mb-4">Your Insurance Policies</h2>
+    
+    <!-- Filter Bar -->
+    <div class="card mb-3">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-4">
+                    <select name="status" class="form-select">
+                        <option value="">All Policies</option>
+                        <option value="draft" {% if current_status == 'draft' %}selected{% endif %}>Draft</option>
+                        <option value="presented" {% if current_status == 'presented' %}selected{% endif %}>Presented</option>
+                        <option value="accepted" {% if current_status == 'accepted' %}selected{% endif %}>Active</option>
+                        <option value="expired" {% if current_status == 'expired' %}selected{% endif %}>Expired</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">Filter</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Policies Table -->
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Policy List</h5>
+        </div>
+        <div class="card-body">
+            {% if page_obj.object_list %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Quote #</th>
+                            <th>Product</th>
+                            <th>Status</th>
+                            <th>Effective Date</th>
+                            <th>Expiration Date</th>
+                            <th>Premium</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for quote in page_obj.object_list %}
+                        <tr>
+                            <td>{{ quote.quote_number }}</td>
+                            <td>{{ quote.application.product.product_name|default:"General Liability" }}</td>
+                            <td>
+                                {% if quote.quote_status == 'accepted' %}
+                                    <span class="badge bg-success">Active</span>
+                                {% elif quote.quote_status == 'draft' %}
+                                    <span class="badge bg-secondary">Draft</span>
+                                {% elif quote.quote_status == 'presented' %}
+                                    <span class="badge bg-info">Under Review</span>
+                                {% else %}
+                                    <span class="badge bg-warning">{{ quote.get_quote_status_display }}</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ quote.effective_date|date:"M d, Y" }}</td>
+                            <td>{{ quote.expiration_date|date:"M d, Y" }}</td>
+                            <td>${{ quote.total_premium|floatformat:2 }}</td>
+                            <td>
+
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            {% if page_obj.has_other_pages %}
+            <nav>
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                        </li>
+                    {% endif %}
+                    <li class="page-item active">
+                        <span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+                    </li>
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+            {% else %}
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> No policies found. Contact your insurance agent to get started.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

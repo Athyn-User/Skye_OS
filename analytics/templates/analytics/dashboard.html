@@ -1,0 +1,315 @@
+<!-- analytics/templates/analytics/dashboard.html -->
+{% extends 'base.html' %}
+
+{% block title %}Analytics Dashboard - Skye OS{% endblock %}
+
+{% block extra_css %}
+<style>
+    .metric-card {
+        transition: transform 0.2s;
+    }
+    .metric-card:hover {
+        transform: translateY(-5px);
+    }
+    .chart-container {
+        position: relative;
+        height: 300px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2>Analytics Dashboard</h2>
+                <div>
+                    <span class="text-muted">{{ month_name }} | Updated: {{ report_date|date:"M d, Y" }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Key Metrics Row -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card metric-card border-primary">
+                <div class="card-body">
+                    <h6 class="text-muted">Monthly Revenue</h6>
+                    <h3 class="text-primary">${{ current_month_revenue|floatformat:0 }}</h3>
+                    {% if revenue_growth > 0 %}
+                        <span class="badge bg-success">↑ {{ revenue_growth|floatformat:1 }}%</span>
+                    {% elif revenue_growth < 0 %}
+                        <span class="badge bg-danger">↓ {{ revenue_growth|floatformat:1 }}%</span>
+                    {% else %}
+                        <span class="badge bg-secondary">→ 0%</span>
+                    {% endif %}
+                    <small class="text-muted"> vs last month</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card metric-card border-success">
+                <div class="card-body">
+                    <h6 class="text-muted">YTD Revenue</h6>
+                    <h3 class="text-success">${{ ytd_revenue|floatformat:0 }}</h3>
+                    <small class="text-muted">Year to Date</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card metric-card border-warning">
+                <div class="card-body">
+                    <h6 class="text-muted">Loss Ratio</h6>
+                    <h3 class="text-warning">{{ loss_ratio|floatformat:1 }}%</h3>
+                    <small class="text-muted">Claims/Premium</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card metric-card border-info">
+                <div class="card-body">
+                    <h6 class="text-muted">Conversion Rate</h6>
+                    <h3 class="text-info">{{ conversion_rate|floatformat:1 }}%</h3>
+                    <small class="text-muted">Last 30 days</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Secondary Metrics -->
+    <div class="row mb-4">
+        <div class="col-md-2">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h4>{{ active_policies }}</h4>
+                    <small class="text-muted">Active Policies</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h4>{{ new_policies_this_month }}</h4>
+                    <small class="text-muted">New This Month</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h4>{{ expiring_soon }}</h4>
+                    <small class="text-muted">Expiring Soon</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h4>{{ open_claims }}</h4>
+                    <small class="text-muted">Open Claims</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h4>{{ total_clients }}</h4>
+                    <small class="text-muted">Total Clients</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h4>{{ new_clients_this_month }}</h4>
+                    <small class="text-muted">New Clients</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Revenue Trend (Last 12 Months)</h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="revenueChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Claims by Type</h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="claimsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Clients and Quick Actions -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Top Clients by Premium (YTD)</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Client</th>
+                                    <th class="text-end">Premium</th>
+                                    <th class="text-end">Policies</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for client in top_clients %}
+                                <tr>
+                                    <td>{{ client.company_name }}</td>
+                                    <td class="text-end">${{ client.total_premium|floatformat:0 }}</td>
+                                    <td class="text-end">{{ client.applications__count }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="3" class="text-muted text-center">No data available</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'analytics:revenue_report' %}" class="btn btn-outline-primary">
+                            <i class="fas fa-chart-line"></i> Detailed Revenue Report
+                        </a>
+                        <a href="{% url 'analytics:claims_report' %}" class="btn btn-outline-warning">
+                            <i class="fas fa-file-medical"></i> Claims Analysis
+                        </a>
+                        <a href="{% url 'analytics:client_report' %}" class="btn btn-outline-info">
+                            <i class="fas fa-users"></i> Client Analytics
+                        </a>
+                        <button class="btn btn-outline-success" onclick="exportDashboard()">
+                            <i class="fas fa-download"></i> Export Dashboard (PDF)
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alerts Section -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card border-warning">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="fas fa-exclamation-triangle"></i> Alerts & Notifications</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="mb-0">
+                        <li><strong>{{ expiring_soon }}</strong> policies expiring in next 30 days - <a href="#">View List</a></li>
+                        <li><strong>{{ open_claims }}</strong> claims pending resolution</li>
+                        {% if loss_ratio > 75 %}
+                        <li class="text-danger"><strong>High Loss Ratio:</strong> Current loss ratio ({{ loss_ratio|floatformat:1 }}%) exceeds target threshold</li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Revenue Chart
+const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+new Chart(revenueCtx, {
+    type: 'line',
+    data: {
+        labels: {{ revenue_chart_labels|safe }},
+        datasets: [{
+            label: 'Monthly Revenue',
+            data: {{ revenue_chart_data|safe }},
+            borderColor: 'rgb(13, 110, 253)',
+            backgroundColor: 'rgba(13, 110, 253, 0.1)',
+            tension: 0.4,
+            fill: true
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                display: false
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    callback: function(value) {
+                        return '$' + value.toLocaleString();
+                    }
+                }
+            }
+        }
+    }
+});
+
+// Claims Chart
+const claimsCtx = document.getElementById('claimsChart').getContext('2d');
+new Chart(claimsCtx, {
+    type: 'doughnut',
+    data: {
+        labels: {{ claims_chart_labels|safe }},
+        datasets: [{
+            data: {{ claims_chart_data|safe }},
+            backgroundColor: [
+                'rgba(255, 99, 132, 0.8)',
+                'rgba(54, 162, 235, 0.8)',
+                'rgba(255, 206, 86, 0.8)',
+                'rgba(75, 192, 192, 0.8)',
+                'rgba(153, 102, 255, 0.8)'
+            ]
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        }
+    }
+});
+
+function exportDashboard() {
+    alert('PDF export would be implemented here using a library like jsPDF or server-side generation');
+}
+</script>
+{% endblock %}

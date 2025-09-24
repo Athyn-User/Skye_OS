@@ -1,0 +1,131 @@
+<!-- client_portal/templates/client_portal/claims.html -->
+{% extends 'client_portal/base.html' %}
+
+{% block title %}Claims - Client Portal{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Your Claims</h2>
+        <a href="{% url 'client_portal:submit_claim' %}" class="btn btn-success">
+            <i class="fas fa-plus"></i> Submit New Claim
+        </a>
+    </div>
+    
+    <!-- Claims Summary -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card border-info">
+                <div class="card-body">
+                    <h6 class="text-muted">Open Claims</h6>
+                    <h3 class="text-info">{{ page_obj.paginator.count }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Filter Bar -->
+    <div class="card mb-3">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-4">
+                    <select name="status" class="form-select">
+                        <option value="">All Claims</option>
+                        <option value="FNOL" {% if current_status == 'FNOL' %}selected{% endif %}>First Notice</option>
+                        <option value="INVESTIGATING" {% if current_status == 'INVESTIGATING' %}selected{% endif %}>Under Investigation</option>
+                        <option value="APPROVED" {% if current_status == 'APPROVED' %}selected{% endif %}>Approved</option>
+                        <option value="DENIED" {% if current_status == 'DENIED' %}selected{% endif %}>Denied</option>
+                        <option value="SETTLED" {% if current_status == 'SETTLED' %}selected{% endif %}>Settled</option>
+                        <option value="CLOSED" {% if current_status == 'CLOSED' %}selected{% endif %}>Closed</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">Filter</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Claims Table -->
+    <div class="card">
+        <div class="card-header bg-warning">
+            <h5 class="mb-0">Claims History</h5>
+        </div>
+        <div class="card-body">
+            {% if page_obj.object_list %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Claim #</th>
+                            <th>Type</th>
+                            <th>Date of Loss</th>
+                            <th>Status</th>
+                            <th>Amount</th>
+                            <th>Adjuster</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for claim in page_obj.object_list %}
+                        <tr>
+                            <td>{{ claim.claim_number }}</td>
+                            <td>{{ claim.get_claim_type_display }}</td>
+                            <td>{{ claim.date_of_loss|date:"M d, Y" }}</td>
+                            <td>
+                                {% if claim.claim_status == 'FNOL' %}
+                                    <span class="badge bg-danger">New</span>
+                                {% elif claim.claim_status == 'INVESTIGATING' %}
+                                    <span class="badge bg-info">Investigating</span>
+                                {% elif claim.claim_status == 'APPROVED' %}
+                                    <span class="badge bg-success">Approved</span>
+                                {% elif claim.claim_status == 'DENIED' %}
+                                    <span class="badge bg-dark">Denied</span>
+                                {% elif claim.claim_status == 'SETTLED' %}
+                                    <span class="badge bg-primary">Settled</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">{{ claim.get_claim_status_display }}</span>
+                                {% endif %}
+                            </td>
+                            <td>${{ claim.estimated_loss|floatformat:2 }}</td>
+                            <td>{{ claim.adjuster.get_full_name|default:"Unassigned" }}</td>
+                            <td>
+                                <a href="{% url 'client_portal:claim_detail' claim.id %}" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye"></i> View
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            {% if page_obj.has_other_pages %}
+            <nav>
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                        </li>
+                    {% endif %}
+                    <li class="page-item active">
+                        <span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+                    </li>
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+            {% else %}
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> No claims on record. We hope it stays that way!
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

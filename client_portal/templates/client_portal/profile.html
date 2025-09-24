@@ -1,0 +1,133 @@
+<!-- client_portal/templates/client_portal/profile.html -->
+{% extends 'client_portal/base.html' %}
+
+{% block title %}My Profile - Client Portal{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h2 class="mb-4">My Profile</h2>
+    
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Profile Information</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="{{ form.first_name.id_for_label }}" class="form-label">First Name</label>
+                                    {{ form.first_name }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="{{ form.last_name.id_for_label }}" class="form-label">Last Name</label>
+                                    {{ form.last_name }}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.email.id_for_label }}" class="form-label">Email Address</label>
+                            {{ form.email }}
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="{{ form.phone.id_for_label }}" class="form-label">Phone</label>
+                                    {{ form.phone }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="{{ form.mobile_phone.id_for_label }}" class="form-label">Mobile Phone</label>
+                                    {{ form.mobile_phone }}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="{{ form.position.id_for_label }}" class="form-label">Position</label>
+                                    {{ form.position }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="{{ form.department.id_for_label }}" class="form-label">Department</label>
+                                    {{ form.department }}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <h6 class="mb-3">Communication Preferences</h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-check mb-3">
+                                    {{ form.receive_emails }}
+                                    <label class="form-check-label" for="{{ form.receive_emails.id_for_label }}">
+                                        Receive email notifications
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check mb-3">
+                                    {{ form.receive_sms }}
+                                    <label class="form-check-label" for="{{ form.receive_sms.id_for_label }}">
+                                        Receive SMS notifications
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Save Changes
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <!-- Company Information -->
+            <div class="card mb-3">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">Company Information</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Company:</strong> {{ request.user.client_profile.company.company_name }}</p>
+                    <p><strong>Portal Access:</strong> 
+                        {% if request.user.client_profile.portal_access_enabled %}
+                            <span class="badge bg-success">Enabled</span>
+                        {% else %}
+                            <span class="badge bg-danger">Disabled</span>
+                        {% endif %}
+                    </p>
+                    <p><strong>Member Since:</strong> {{ request.user.date_joined|date:"F Y" }}</p>
+                </div>
+            </div>
+            
+            <!-- Security Settings -->
+            <div class="card">
+                <div class="card-header bg-warning">
+                    <h5 class="mb-0">Security</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Last Login:</strong><br>{{ request.user.client_profile.last_login_date|date:"M d, Y g:i A"|default:"Never" }}</p>
+                    <hr>
+                    <a href="#" class="btn btn-outline-warning w-100">
+                        <i class="fas fa-key"></i> Change Password
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+
+{% block title %}Certificate {{ certificate.certificate_number }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Certificate {{ certificate.certificate_number }}</h2>
+        <div class="btn-group">
+            <a href="{% url 'applications:certificate_list' %}" class="btn btn-outline-secondary">Back to List</a>
+            <button class="btn btn-primary" onclick="generatePDF()">Generate PDF</button>
+            <button class="btn btn-success" onclick="emailCertificate()">Email Certificate</button>
+            {% if certificate.certificate_status == 'draft' %}
+                <button class="btn btn-success" onclick="issueCertificate()">Issue Certificate</button>
+            {% elif certificate.certificate_status == 'issued' %}
+                <a href="{% url 'applications:certificate_revise' certificate.certificate_id %}" class="btn btn-warning">Create Revision</a>
+                <button class="btn btn-danger" onclick="cancelCertificate()">Cancel Certificate</button>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Certificate Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Certificate Number:</strong> {{ certificate.certificate_number }}</p>
+                            <p><strong>Template:</strong> {{ certificate.template.template_name }}</p>
+                            <p><strong>Status:</strong> 
+                                <span class="badge bg-{% if certificate.certificate_status == 'issued' %}success{% elif certificate.certificate_status == 'draft' %}warning{% else %}secondary{% endif %}">
+                                    {{ certificate.get_certificate_status_display }}
+                                </span>
+                            </p>
+                            <p><strong>Effective Date:</strong> {{ certificate.effective_date|date:"M d, Y" }}</p>
+                            <p><strong>Expiration Date:</strong> {{ certificate.expiration_date|date:"M d, Y" }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            {% if certificate.quote %}
+                            <p><strong>Related Quote:</strong> 
+                                <a href="{% url 'applications:quote_detail' certificate.quote.pk %}">{{ certificate.quote.quote_number }}</a>
+                            </p>
+                            {% endif %}
+                            <p><strong>Created:</strong> {{ certificate.created_at|date:"M d, Y g:i A" }}</p>
+                            <p><strong>Last Updated:</strong> {{ certificate.updated_at|date:"M d, Y g:i A" }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5>Certificate Holder</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>{{ certificate.certificate_holder_name }}</strong></p>
+                    <p>{{ certificate.certificate_holder_address|linebreaks }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Project Details</h5>
+                </div>
+                <div class="card-body">
+                    {% if certificate.project_location %}
+                    <p><strong>Location:</strong> {{ certificate.project_location }}</p>
+                    {% endif %}
+                    {% if certificate.project_description %}
+                    <p><strong>Description:</strong></p>
+                    <p>{{ certificate.project_description|linebreaks }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if certificate.special_provisions %}
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5>Special Provisions</h5>
+                </div>
+                <div class="card-body">
+                    <p>{{ certificate.special_provisions|linebreaks }}</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+function generatePDF() {
+    window.open('/certificates/{{ certificate.certificate_id }}/pdf/', '_blank');
+}
+
+function emailCertificate() {
+    const email = prompt('Enter recipient email address:');
+    if(email) {
+        fetch('/certificates/{{ certificate.certificate_id }}/email/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: 'email=' + encodeURIComponent(email)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if(data.success) {
+                alert('Certificate emailed successfully to ' + email);
+            } else {
+                alert('Error sending email: ' + data.error);
+            }
+        });
+    }
+}
+
+function issueCertificate() {
+    if(confirm('Issue this certificate? This will mark it as officially issued.')) {
+        fetch('/certificates/{{ certificate.certificate_id }}/issue/', {
+            method: 'POST',
+            headers: {'X-CSRFToken': '{{ csrf_token }}'},
+        })
+        .then(response => response.json())
+        .then(data => {
+            if(data.success) location.reload();
+            else alert('Error: ' + data.error);
+        });
+    }
+}
+
+function cancelCertificate() {
+    if(confirm('Cancel this certificate? This action cannot be undone.')) {
+        fetch('/certificates/{{ certificate.certificate_id }}/cancel/', {
+            method: 'POST',
+            headers: {'X-CSRFToken': '{{ csrf_token }}'},
+        })
+        .then(response => response.json())
+        .then(data => {
+            if(data.success) location.reload();
+            else alert('Error: ' + data.error);
+        });
+    }
+}
+
+</script>
+
+{% endblock %}
+

@@ -1,0 +1,69 @@
+﻿{% extends 'base.html' %}
+
+{% block title %}Certificate Management{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Certificate Management</h2>
+        <a href="{% url 'applications:certificate_create' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Create New Certificate
+        </a>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Certificate Number</th>
+                            <th>Certificate Holder</th>
+                            <th>Related Quote</th>
+                            <th>Status</th>
+                            <th>Effective Date</th>
+                            <th>Expiration Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for certificate in certificates %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'applications:certificate_detail' certificate.certificate_id %}">
+                                    {{ certificate.certificate_number }}
+                                </a>
+                            </td>
+                            <td>{{ certificate.certificate_holder_name }}</td>
+                            <td>
+                                {% if certificate.quote %}
+                                    <a href="{% url 'applications:quote_detail' certificate.quote.pk %}">{{ certificate.quote.quote_number }}</a>
+                                {% else %}
+                                    <span class="text-muted">Direct</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge bg-{% if certificate.certificate_status == 'issued' %}success{% elif certificate.certificate_status == 'draft' %}warning{% else %}secondary{% endif %}">
+                                    {{ certificate.get_certificate_status_display }}
+                                </span>
+                            </td>
+                            <td>{{ certificate.effective_date|date:"M d, Y" }}</td>
+                            <td>{{ certificate.expiration_date|date:"M d, Y" }}</td>
+                            <td>
+                                <a href="{% url 'applications:certificate_detail' certificate.certificate_id %}" class="btn btn-sm btn-outline-primary">View</a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center text-muted">
+                                No certificates found. <a href="{% url 'applications:certificate_create' %}">Create your first certificate</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

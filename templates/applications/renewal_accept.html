@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+
+{% block title %}Accept Renewal - {{ renewal.original_policy.policy_number }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2>Accept Policy Renewal</h2>
+            <p class="text-muted">Confirm acceptance and create new policy</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Renewal Confirmation</h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> 
+                        Accepting this renewal will:
+                        <ul class="mb-0 mt-2">
+                            <li>Create a new policy with number: <strong>{{ new_policy_number }}</strong></li>
+                            <li>Mark the current policy as expired</li>
+                            <li>Set the renewal status to accepted</li>
+                        </ul>
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h6>Current Policy</h6>
+                            <table class="table table-sm">
+                                <tr>
+                                    <th>Policy Number:</th>
+                                    <td>{{ renewal.original_policy.policy_number }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Premium:</th>
+                                    <td>${{ renewal.original_policy.annual_premium|floatformat:2 }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Expires:</th>
+                                    <td>{{ renewal.original_policy.expiration_date|date:"M d, Y" }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>New Policy (Renewal)</h6>
+                            <table class="table table-sm">
+                                <tr>
+                                    <th>Policy Number:</th>
+                                    <td class="fw-bold">{{ new_policy_number }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Premium:</th>
+                                    <td class="fw-bold text-primary">${{ renewal.proposed_premium|floatformat:2 }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Effective:</th>
+                                    <td>{{ renewal.renewal_quote.effective_date|date:"M d, Y" }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Expires:</th>
+                                    <td>{{ renewal.renewal_quote.expiration_date|date:"M d, Y" }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="confirmAccept" required>
+                            <label class="form-check-label" for="confirmAccept">
+                                I confirm that I want to accept this renewal and create the new policy
+                            </label>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'applications:renewal_detail' renewal.renewal_id %}" 
+                               class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Back to Renewal Detail
+                            </a>
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-check"></i> Accept Renewal & Create Policy
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,91 @@
+<!-- claims/templates/claims/add_document.html -->
+{% extends 'base.html' %}
+
+{% block title %}Upload Document - Claim {{ claim.claim_number }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <h2 class="mb-4">Upload Document for Claim {{ claim.claim_number }}</h2>
+        
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'applications:dashboard' %}">Home</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'claims:dashboard' %}">Claims</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'claims:claim_detail' claim.pk %}">{{ claim.claim_number }}</a></li>
+                <li class="breadcrumb-item active">Upload Document</li>
+            </ol>
+        </nav>
+        
+        <!-- Claim Summary -->
+        <div class="card mb-3 bg-light">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Claim:</strong> {{ claim.claim_number }}</p>
+                        <p><strong>Claimant:</strong> {{ claim.claimant_name }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Type:</strong> {{ claim.get_claim_type_display }}</p>
+                        <p><strong>Status:</strong> {{ claim.get_claim_status_display }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Upload Form -->
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">Document Details</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.document_type.id_for_label }}" class="form-label">Document Type</label>
+                        {{ form.document_type }}
+                        {% if form.document_type.errors %}
+                            <div class="text-danger">{{ form.document_type.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.document_name.id_for_label }}" class="form-label">Document Name</label>
+                        {{ form.document_name }}
+                        {% if form.document_name.errors %}
+                            <div class="text-danger">{{ form.document_name.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.file.id_for_label }}" class="form-label">Select File</label>
+                        {{ form.file }}
+                        {% if form.file.errors %}
+                            <div class="text-danger">{{ form.file.errors }}</div>
+                        {% endif %}
+                        <small class="text-muted">Accepted formats: PDF, JPG, PNG, DOC, DOCX, XLS, XLSX</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.description.id_for_label }}" class="form-label">Description (Optional)</label>
+                        {{ form.description }}
+                        {% if form.description.errors %}
+                            <div class="text-danger">{{ form.description.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-info">
+                            <i class="fas fa-upload"></i> Upload Document
+                        </button>
+                        <a href="{% url 'claims:claim_detail' claim.pk %}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

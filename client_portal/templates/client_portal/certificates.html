@@ -1,0 +1,92 @@
+﻿{% extends 'client_portal/base.html' %}
+
+{% block title %}Certificates - Client Portal{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h2 class="mb-4">Insurance Certificates</h2>
+    
+    <!-- Certificates Table -->
+    <div class="card">
+        <div class="card-header bg-success text-white">
+            <h5 class="mb-0">Your Certificates</h5>
+        </div>
+        <div class="card-body">
+            {% if page_obj.object_list %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Certificate #</th>
+                            <th>Holder</th>
+                            <th>Status</th>
+                            <th>Effective Date</th>
+                            <th>Expiration Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for certificate in page_obj.object_list %}
+                        <tr>
+                            <td>{{ certificate.certificate_number }}</td>
+                            <td>{{ certificate.certificate_holder_name }}</td>
+                            <td>
+                                {% if certificate.certificate_status == 'issued' %}
+                                    <span class="badge bg-success">Active</span>
+                                {% elif certificate.certificate_status == 'draft' %}
+                                    <span class="badge bg-secondary">Draft</span>
+                                {% elif certificate.certificate_status == 'cancelled' %}
+                                    <span class="badge bg-danger">Cancelled</span>
+                                {% else %}
+                                    <span class="badge bg-warning">{{ certificate.get_certificate_status_display }}</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ certificate.effective_date|date:"M d, Y" }}</td>
+                            <td>{{ certificate.expiration_date|date:"M d, Y" }}</td>
+                            <td>
+                                {% if certificate.pk %}
+
+                                    {% if certificate.certificate_status == 'issued' %}
+                                    <a href="{% url 'applications:certificate_pdf' certificate.pk %}" class="btn btn-sm btn-outline-success">
+                                        <i class="fas fa-download"></i> PDF
+                                    </a>
+                                    {% endif %}
+                                {% else %}
+                                <span class="text-muted">N/A</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            {% if page_obj.has_other_pages %}
+            <nav>
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                        </li>
+                    {% endif %}
+                    <li class="page-item active">
+                        <span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+                    </li>
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+            {% else %}
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> No certificates found. Certificates will appear here once your policies are active.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

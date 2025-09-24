@@ -1,0 +1,120 @@
+﻿{% extends 'base.html' %}
+
+{% block title %}Application {{ application.application_number }} - Skye OS{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Application {{ application.application_number }}</h1>
+    <div>
+        <a href="{% url 'applications:application_edit' application.pk %}" class="btn btn-warning">Edit</a>
+        <a href="{% url 'applications:quote_create' application.pk %}" class="btn btn-success">Create Quote</a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5>Application Details</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Company:</strong> {{ application.company.company_name }}</p>
+                        <p><strong>Broker:</strong> {{ application.broker.broker_name|default:"Direct" }}</p>
+                        <p><strong>Product:</strong> {{ application.product.product_name }}</p>
+                        <p><strong>Status:</strong> 
+                            <span class="badge bg-secondary">{{ application.get_application_status_display }}</span>
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Submission Date:</strong> {{ application.submission_date }}</p>
+                        <p><strong>Target Effective Date:</strong> {{ application.target_effective_date|default:"TBD" }}</p>
+                        <p><strong>Estimated Premium:</strong> 
+                            {% if application.estimated_premium %}
+                                ${{ application.estimated_premium|floatformat:2 }}
+                            {% else %}
+                                TBD
+                            {% endif %}
+                        </p>
+                        <p><strong>Quoted Premium:</strong> 
+                            {% if application.quoted_premium %}
+                                ${{ application.quoted_premium|floatformat:2 }}
+                            {% else %}
+                                Not quoted yet
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+                
+                {% if application.underwriting_notes %}
+                <div class="mt-3">
+                    <strong>Underwriting Notes:</strong>
+                    <p class="mt-2">{{ application.underwriting_notes|linebreaks }}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5>Company Information</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Type:</strong> {{ application.company.company_type|default:"Unknown" }}</p>
+                <p><strong>Industry:</strong> {{ application.company.industry_description|default:"Not specified" }}</p>
+                <p><strong>Employees:</strong> {{ application.company.employee_count|default:"Unknown" }}</p>
+                <p><strong>Revenue:</strong> 
+                    {% if application.company.annual_revenue %}
+                        ${{ application.company.annual_revenue|floatformat:0 }}
+                    {% else %}
+                        Not disclosed
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if quotes %}
+<div class="card mt-4">
+    <div class="card-header">
+        <h5>Quotes for this Application</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Quote Number</th>
+                        <th>Status</th>
+                        <th>Premium</th>
+                        <th>Effective Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for quote in quotes %}
+                    <tr>
+                        <td>{{ quote.quote_number }}</td>
+                        <td><span class="badge bg-info">{{ quote.get_quote_status_display }}</span></td>
+                        <td>${{ quote.total_premium|floatformat:2 }}</td>
+                        <td>{{ quote.effective_date }}</td>
+                        <td>
+                            <a href="{% url 'applications:quote_detail' quote.pk %}" class="btn btn-sm btn-outline-primary">View</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div class="mt-4">
+    <a href="{% url 'applications:application_list' %}" class="btn btn-secondary">Back to Applications</a>
+</div>
+{% endblock %}

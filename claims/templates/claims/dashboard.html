@@ -1,0 +1,293 @@
+<!-- claims/templates/claims/dashboard.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Claims Management Dashboard{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="h2">Claims Management Dashboard</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/">Home</a></li>
+                    <li class="breadcrumb-item active">Claims</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <a href="{% url 'claims:claim_fnol' %}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Report New Claim (FNOL)
+            </a>
+            <a href="{% url 'claims:claim_list' %}" class="btn btn-outline-primary">
+                <i class="fas fa-list"></i> View All Claims
+            </a>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-white bg-primary">
+                <div class="card-body">
+                    <h5 class="card-title">Total Claims</h5>
+                    <h2 class="mb-0">{{ total_claims }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-warning">
+                <div class="card-body">
+                    <h5 class="card-title">Open Claims</h5>
+                    <h2 class="mb-0">{{ open_claims }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-info">
+                <div class="card-body">
+                    <h5 class="card-title">Total Reserves</h5>
+                    <h2 class="mb-0">${{ financial_stats.total_reserves|floatformat:0|default:"0" }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-success">
+                <div class="card-body">
+                    <h5 class="card-title">Total Paid</h5>
+                    <h2 class="mb-0">${{ financial_stats.total_paid|floatformat:0|default:"0" }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Claims Needing Attention -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">Claims Needing Attention</h5>
+                </div>
+                <div class="card-body">
+                    {% if attention_claims %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Claim #</th>
+                                    <th>Company</th>
+                                    <th>Status</th>
+                                    <th>Severity</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for claim in attention_claims %}
+                                <tr>
+                                    <td>{{ claim.claim_number }}</td>
+                                    <td>{{ claim.quote.application.company.company_name|truncatechars:20 }}</td>
+                                    <td>
+                                        <span class="badge badge-warning">{{ claim.get_claim_status_display }}</span>
+                                    </td>
+                                    <td>
+                                        {% if claim.severity == 'HIGH' %}
+                                            <span class="badge badge-danger">High</span>
+                                        {% elif claim.severity == 'CATASTROPHIC' %}
+                                            <span class="badge badge-dark">Catastrophic</span>
+                                        {% else %}
+                                            <span class="badge badge-secondary">{{ claim.get_severity_display }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'claims:claim_detail' claim.pk %}" class="btn btn-sm btn-primary">View</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted">No claims require immediate attention.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Claims -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Recent Claims</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Claim #</th>
+                                    <th>Claimant</th>
+                                    <th>Type</th>
+                                    <th>Loss Date</th>
+                                    <th>Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for claim in recent_claims %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'claims:claim_detail' claim.pk %}">
+                                            {{ claim.claim_number }}
+                                        </a>
+                                    </td>
+                                    <td>{{ claim.claimant_name|truncatechars:20 }}</td>
+                                    <td>{{ claim.get_claim_type_display }}</td>
+                                    <td>{{ claim.date_of_loss|date:"m/d/Y" }}</td>
+                                    <td>${{ claim.estimated_loss|floatformat:0 }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row">
+        <!-- Claims by Status -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Claims by Status</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="statusChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Claims by Type -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Claims by Type</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="typeChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Payments -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Recent Payments</h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_payments %}
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Payment Date</th>
+                                    <th>Claim #</th>
+                                    <th>Type</th>
+                                    <th>Payee</th>
+                                    <th>Amount</th>
+                                    <th>Method</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for payment in recent_payments %}
+                                <tr>
+                                    <td>{{ payment.payment_date|date:"m/d/Y" }}</td>
+                                    <td>
+                                        <a href="{% url 'claims:claim_detail' payment.claim.pk %}">
+                                            {{ payment.claim.claim_number }}
+                                        </a>
+                                    </td>
+                                    <td>{{ payment.get_payment_type_display }}</td>
+                                    <td>{{ payment.payee_name }}</td>
+                                    <td>${{ payment.amount|floatformat:2 }}</td>
+                                    <td>{{ payment.get_payment_method_display }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted">No recent payments.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Claims by Status Chart
+if (document.getElementById('statusChart')) {
+    var statusCtx = document.getElementById('statusChart').getContext('2d');
+    var statusChart = new Chart(statusCtx, {
+        type: 'doughnut',
+        data: {
+            labels: [{% for item in claims_by_status %}'{{ item.claim_status }}'{% if not forloop.last %},{% endif %}{% endfor %}],
+            datasets: [{
+                data: [{% for item in claims_by_status %}{{ item.count }}{% if not forloop.last %},{% endif %}{% endfor %}],
+                backgroundColor: [
+                    '#007bff', '#28a745', '#ffc107', '#dc3545', '#6c757d',
+                    '#17a2b8', '#343a40', '#f8f9fa', '#e83e8c', '#fd7e14'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+}
+
+// Claims by Type Chart
+if (document.getElementById('typeChart')) {
+    var typeCtx = document.getElementById('typeChart').getContext('2d');
+    var typeChart = new Chart(typeCtx, {
+        type: 'bar',
+        data: {
+            labels: [{% for item in claims_by_type %}'{{ item.claim_type }}'{% if not forloop.last %},{% endif %}{% endfor %}],
+            datasets: [{
+                label: 'Number of Claims',
+                data: [{% for item in claims_by_type %}{{ item.count }}{% if not forloop.last %},{% endif %}{% endfor %}],
+                backgroundColor: '#007bff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+}
+</script>
+{% endblock %}
