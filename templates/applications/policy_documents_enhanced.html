@@ -687,25 +687,65 @@
 
             async loadAvailableTemplates() {
                 try {
+                    console.log('Loading templates for policy:', POLICY_ID);
+                    
                     const response = await fetch(`/documents/get-available-templates/?policy_id=${POLICY_ID}`);
                     const data = await response.json();
                     
-                    if (data.success) {
-                        const select = document.getElementById('templateSelect');
-                        if (select) {
-                            select.innerHTML = '<option value="">Choose template...</option>';
+                    console.log('Template API response:', data);
+                    
+                    if (data.success && data.templates) {
+                        // Populate the Add Component dropdown
+                        const addComponentSelect = document.getElementById('addComponentTemplateSelect');
+                        if (addComponentSelect) {
+                            addComponentSelect.innerHTML = '<option value="">Choose template...</option>';
+                            
+                            data.templates.forEach(template => {
+                                const option = document.createElement('option');
+                                option.value = template.id;
+                                option.textContent = template.description;
+                                
+                                // Don't disable any templates - allow duplicates
+                                // Just show usage count if any
+                                if (template.usage_count > 0) {
+                                    option.style.fontStyle = 'italic';
+                                    option.style.color = '#6f42c1';
+                                }
+                                
+                                addComponentSelect.appendChild(option);
+                            });
+                            
+                            console.log(`✅ Loaded ${data.templates.length} templates into Add Component dropdown`);
+                        }
+                        
+                        // Also populate the template selector dropdown
+                        const templateSelect = document.getElementById('templateSelect');
+                        if (templateSelect) {
+                            templateSelect.innerHTML = '<option value="">Choose template...</option>';
                             
                             data.templates.forEach(template => {
                                 const option = document.createElement('option');
                                 option.value = template.id;
                                 option.textContent = template.description;
                                 option.dataset.template = JSON.stringify(template);
-                                select.appendChild(option);
+                                templateSelect.appendChild(option);
                             });
+                            
+                            console.log(`✅ Loaded ${data.templates.length} templates into Template Selector dropdown`);
                         }
+                        
+                        // Show success message
+                        if (data.templates.length === 0) {
+                            this.showToast('Info', 'No templates available for this product', 'info');
+                        }
+                        
+                    } else {
+                        console.error('❌ Failed to load templates:', data);
+                        this.showToast('Warning', data.message || 'No templates found', 'warning');
                     }
                 } catch (error) {
-                    console.error('Error loading templates:', error);
+                    console.error('❌ Error loading templates:', error);
+                    this.showToast('Error', 'Failed to load templates', 'error');
                 }
             }
 
@@ -1029,9 +1069,13 @@
 
             // UI Panel Management
             showAddComponentPanel() {
+                // Show the panel first
                 document.getElementById('addComponentPanel').style.display = 'block';
                 document.getElementById('templateSelector').style.display = 'none';
                 document.getElementById('bulkPanel').style.display = 'none';
+                
+                // Reload templates to get fresh list
+                this.loadAvailableTemplates();
             }
 
             hideAddComponentPanel() {

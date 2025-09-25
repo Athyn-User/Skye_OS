@@ -276,36 +276,56 @@ def bulk_document_generation(request):
 @login_required
 @require_http_methods(["GET"])
 def get_available_templates(request):
-    """Get available templates for document generation - API endpoint"""
+    """Get available templates - ALLOWS DUPLICATE COMPONENTS"""
     try:
-        product_id = request.GET.get('product_id')
+        policy_id = request.GET.get('policy_id')
         template_type = request.GET.get('type')
         state_code = request.GET.get('state', 'CA')
-        policy_id = request.GET.get('policy_id')
         
-        templates = DocumentTemplate.objects.filter(is_active=True)
+        if not policy_id:
+            return JsonResponse({
+                'success': False,
+                'message': 'Policy ID is required'
+            }, status=400)
         
-        if product_id:
-            templates = templates.filter(
-                Q(product_id=product_id) | Q(product__isnull=True)
-            )
-        elif policy_id:
-            # Get product from policy
-            policy = get_object_or_404(Policy, policy_id=policy_id)
-            templates = templates.filter(
-                Q(product=policy.quote.application.product) | Q(product__isnull=True)
-            )
+        # Get policy and product
+        policy = get_object_or_404(Policy, policy_id=policy_id)
+        templates = DocumentTemplate.objects.filter(
+            Q(product=policy.quote.application.product) | Q(product__isnull=True),
+            is_active=True
+        )
         
         if template_type:
             templates = templates.filter(template_type=template_type)
         
-        # Filter by state applicability and exclude already used templates
+        # Get existing components count (for reference only)
+        existing_component_counts = {}
+        current_package = PolicyDocumentPackage.objects.filter(
+            policy=policy,
+            is_current=True
+        ).first()
+        
+        if current_package:
+            from django.db.models import Count
+            component_counts = current_package.components.values('template_id').annotate(
+                count=Count('template_id')
+            )
+            existing_component_counts = {
+                item['template_id']: item['count'] 
+                for item in component_counts
+            }
+        
+        # Build template list - ALLOW ALL TEMPLATES
         applicable_templates = []
-        for template in templates:
-            # Check if template is applicable to state (you'd implement this method)
+        for template in templates.order_by('template_type', 'template_name'):
+            # Check state applicability
             if hasattr(template, 'is_applicable_to_state'):
                 if not template.is_applicable_to_state(state_code):
                     continue
+            
+            # Count how many times this template is already used
+            usage_count = existing_component_counts.get(template.template_id, 0)
+            usage_text = f" (Used {usage_count}x)" if usage_count > 0 else ""
             
             applicable_templates.append({
                 'id': template.template_id,
@@ -313,20 +333,38 @@ def get_available_templates(request):
                 'code': template.template_code,
                 'type': template.template_type,
                 'format': template.template_format,
-                'description': f"{template.template_name} - {template.get_template_type_display()}",
-                'has_file': bool(getattr(template, 'storage_path', None))
+                'description': f"{template.template_name} - {template.get_template_type_display()}{usage_text}",
+                'has_file': bool(getattr(template, 'storage_path', None)),
+                'usage_count': usage_count,
+                'disabled': False  # NEVER DISABLE - allow duplicates
             })
         
         return JsonResponse({
             'success': True,
-            'templates': applicable_templates
+            'templates': applicable_templates,
+            'total_count': len(applicable_templates),
+            'debug': {
+                'policy_id': policy_id,
+                'total_active_templates': DocumentTemplate.objects.filter(is_active=True).count(),
+                'product_templates': templates.count(),
+                'existing_components': sum(existing_component_counts.values())
+            }
         })
         
     except Exception as e:
         logger.error(f"Error getting available templates: {str(e)}")
         return JsonResponse({
             'success': False,
-            'message': 'Error loading templates'
+            'message': 'Error loading templates',
+            'error': str(e)
+        }, status=500)
+        
+    except Exception as e:
+        logger.error(f"Error getting available templates: {str(e)}")
+        return JsonResponse({
+            'success': False,
+            'message': 'Error loading templates',
+            'error': str(e)  # Include error for debugging
         }, status=500)
 
 @login_required
@@ -367,7 +405,7 @@ def create_document_package(request, policy_id):
 @login_required
 @require_http_methods(["POST"])
 def add_component(request, policy_id):
-    """Add a new component to policy document package - API endpoint"""
+    """Add a new component to policy document package - ALLOWS DUPLICATES"""
     try:
         policy = get_object_or_404(Policy, policy_id=policy_id)
         
@@ -394,32 +432,35 @@ def add_component(request, policy_id):
                 'message': 'No document package found for this policy'
             }, status=400)
         
-        # Check if component already exists
-        existing_component = DocumentComponent.objects.filter(
+        # REMOVE the duplicate check - allow multiple components from same template
+        # Count existing components of this type for naming
+        existing_count = DocumentComponent.objects.filter(
             package=package,
             template=template
-        ).first()
+        ).count()
         
-        if existing_component:
-            return JsonResponse({
-                'success': False,
-                'message': f'Component for template "{template.template_name}" already exists'
-            }, status=400)
+        # Create component name with sequence if duplicate
+        if existing_count > 0:
+            component_name = f"{template.template_name} ({existing_count + 1})"
+        else:
+            component_name = template.template_name
         
         # Get next sequence order
         max_sequence = package.components.aggregate(
             max_seq=Max('sequence_order')
         )['max_seq'] or 0
         
-        # Create new component
+        # Create new component - ALWAYS ALLOW
         component = DocumentComponent.objects.create(
             package=package,
             template=template,
             component_type=template.template_type,
-            component_name=template.template_name,
+            component_name=component_name,  # Use the potentially modified name
             sequence_order=max_sequence + 1,
             component_status='pending'
         )
+        
+        logger.info(f"Created component {component.component_id}: {component_name} (Template: {template.template_code})")
         
         # Generate the component
         service = EnhancedDocumentService()
@@ -429,7 +470,7 @@ def add_component(request, policy_id):
             component.refresh_from_db()
             return JsonResponse({
                 'success': True,
-                'message': f'Component "{template.template_name}" added successfully',
+                'message': f'Component "{component_name}" added successfully',
                 'component': {
                     'id': component.component_id,
                     'name': component.component_name,
@@ -438,7 +479,8 @@ def add_component(request, policy_id):
                     'pages': component.page_count or 0,
                     'file_size': component.file_size or 0,
                     'sequence_order': component.sequence_order,
-                    'template_name': template.template_name
+                    'template_name': template.template_name,
+                    'template_code': template.template_code
                 }
             })
         else:
@@ -456,7 +498,7 @@ def add_component(request, policy_id):
         logger.error(f"Error adding component to policy {policy_id}: {str(e)}")
         return JsonResponse({
             'success': False,
-            'message': 'An error occurred while adding the component'
+            'message': f'An error occurred while adding the component: {str(e)}'
         }, status=500)
 
 @login_required
@@ -581,29 +623,187 @@ def get_bulk_policies(request):
 # Existing functions continue below...
 
 def download_policy_package(request, package_id):
-    """Download policy PDF package"""
+    """Download policy PDF package - combines all components into one PDF"""
     package = get_object_or_404(PolicyDocumentPackage, package_id=package_id)
     
-    # Get file path
-    combined_pdf_path = getattr(package, 'combined_pdf_path', None)
-    if not combined_pdf_path:
-        messages.error(request, 'Package file not available.')
-        return redirect('applications:policy_detail', policy_id=package.policy.policy_id)
+    try:
+        # Check if combined PDF already exists
+        combined_pdf_path = getattr(package, 'combined_pdf_path', None)
+        if combined_pdf_path:
+            file_path = os.path.join(settings.MEDIA_ROOT, 'documents', combined_pdf_path)
+            if os.path.exists(file_path):
+                # Return existing combined file
+                response = FileResponse(
+                    open(file_path, 'rb'),
+                    content_type='application/pdf'
+                )
+                response['Content-Disposition'] = f'attachment; filename="{package.package_number}_Complete.pdf"'
+                return response
+        
+        # Need to create combined PDF from components
+        components = package.components.filter(
+            component_status='generated'
+        ).order_by('sequence_order')
+        
+        if not components.exists():
+            messages.error(request, 'No generated components available for download.')
+            return redirect('applications:view_policy_documents', policy_id=package.policy.policy_id)
+        
+        # Combine PDFs using PyPDF2 or similar
+        combined_pdf = combine_component_pdfs(components)
+        
+        if combined_pdf:
+            # Save combined PDF
+            combined_filename = f"{package.package_number}_Complete_{timezone.now().strftime('%Y%m%d_%H%M%S')}.pdf"
+            combined_dir = os.path.join(settings.MEDIA_ROOT, 'documents', 'combined')
+            os.makedirs(combined_dir, exist_ok=True)
+            combined_file_path = os.path.join(combined_dir, combined_filename)
+            
+            with open(combined_file_path, 'wb') as output_file:
+                output_file.write(combined_pdf)
+            
+            # Update package with combined PDF path
+            if hasattr(package, 'combined_pdf_path'):
+                package.combined_pdf_path = f'combined/{combined_filename}'
+                package.save()
+            
+            # Return combined file
+            response = FileResponse(
+                open(combined_file_path, 'rb'),
+                content_type='application/pdf'
+            )
+            response['Content-Disposition'] = f'attachment; filename="{package.package_number}_Complete.pdf"'
+            return response
+        else:
+            messages.error(request, 'Failed to combine PDF components.')
+            return redirect('applications:view_policy_documents', policy_id=package.policy.policy_id)
     
-    file_path = os.path.join(settings.MEDIA_ROOT, 'documents', combined_pdf_path)
-    
-    if not os.path.exists(file_path):
-        messages.error(request, 'Document file not found.')
-        return redirect('applications:policy_detail', policy_id=package.policy.policy_id)
-    
-    # Return file
-    response = FileResponse(
-        open(file_path, 'rb'),
-        content_type='application/pdf'
-    )
-    response['Content-Disposition'] = f'attachment; filename="{package.package_number}.pdf"'
-    
-    return response
+    except Exception as e:
+        logger.error(f"Error downloading package {package_id}: {str(e)}")
+        messages.error(request, f'Error downloading package: {str(e)}')
+        return redirect('applications:view_policy_documents', policy_id=package.policy.policy_id)
+
+def combine_component_pdfs(components):
+    """Combine multiple PDF components into one PDF - FIXED to preserve headers"""
+    try:
+        from PyPDF2 import PdfWriter, PdfReader
+        import io
+        import os
+        from django.conf import settings
+        
+        logger.info(f"Combining {len(components)} PDF components into package")
+        
+        writer = PdfWriter()
+        total_pages_added = 0
+        
+        for component in components:
+            if not hasattr(component, 'file_path') or not component.file_path:
+                logger.warning(f"Component {component.component_name} has no file path, skipping")
+                continue
+                
+            file_path = os.path.join(settings.MEDIA_ROOT, 'documents', component.file_path)
+            if not os.path.exists(file_path):
+                logger.warning(f"Component file not found: {file_path}, skipping")
+                continue
+            
+            try:
+                logger.info(f"Adding component: {component.component_name} ({component.component_type})")
+                
+                with open(file_path, 'rb') as pdf_file:
+                    reader = PdfReader(pdf_file)
+                    
+                    # Add all pages from this component
+                    pages_in_component = len(reader.pages)
+                    for page_num, page in enumerate(reader.pages):
+                        try:
+                            # Create a copy of the page to avoid reference issues
+                            writer.add_page(page)
+                            total_pages_added += 1
+                            
+                            logger.debug(f"Added page {page_num + 1}/{pages_in_component} from {component.component_name}")
+                            
+                        except Exception as page_error:
+                            logger.error(f"Error adding page {page_num + 1} from {component.component_name}: {str(page_error)}")
+                            continue
+                    
+                    logger.info(f"Successfully added {pages_in_component} pages from {component.component_name}")
+                    
+            except Exception as component_error:
+                logger.error(f"Error reading component PDF {component.component_name}: {str(component_error)}")
+                continue
+        
+        if total_pages_added == 0:
+            logger.error("No pages were successfully added to the combined PDF")
+            return None
+        
+        # Write combined PDF to bytes
+        output_buffer = io.BytesIO()
+        writer.write(output_buffer)
+        output_buffer.seek(0)
+        
+        logger.info(f"Successfully combined PDF with {total_pages_added} total pages")
+        
+        return output_buffer.getvalue()
+        
+    except ImportError:
+        logger.error("PyPDF2 not available for PDF combining")
+        # Fallback if PyPDF2 not available - use reportlab to create a simple combined document
+        return create_simple_combined_pdf(components)
+    except Exception as e:
+        logger.error(f"Error combining PDFs: {str(e)}")
+        return None
+
+def create_simple_combined_pdf(components):
+    """Create a simple combined PDF using reportlab as fallback - UPDATED"""
+    try:
+        from reportlab.pdfgen import canvas
+        from reportlab.lib.pagesizes import letter
+        import io
+        
+        logger.info("Using fallback PDF creation method")
+        
+        buffer = io.BytesIO()
+        p = canvas.Canvas(buffer, pagesize=letter)
+        
+        # Title page
+        p.setFont("Helvetica-Bold", 20)
+        p.drawString(72, 750, "Policy Document Package")
+        
+        y = 700
+        p.setFont("Helvetica", 12)
+        
+        # List components
+        p.drawString(72, y, "This package contains the following components:")
+        y -= 30
+        
+        for i, component in enumerate(components, 1):
+            p.drawString(90, y, f"{i}. {component.component_name}")
+            y -= 20
+            
+            if hasattr(component, 'file_path') and component.file_path:
+                file_path = os.path.join(settings.MEDIA_ROOT, 'documents', component.file_path)
+                if os.path.exists(file_path):
+                    p.drawString(110, y, f"✓ File available: {component.file_path}")
+                else:
+                    p.drawString(110, y, "✗ File not found")
+            else:
+                p.drawString(110, y, "✗ No file generated")
+            
+            y -= 25
+            
+            if y < 100:  # Start new page if needed
+                p.showPage()
+                y = 750
+        
+        p.showPage()
+        p.save()
+        
+        buffer.seek(0)
+        return buffer.getvalue()
+        
+    except Exception as e:
+        logger.error(f"Error creating simple combined PDF: {str(e)}")
+        return None
 
 def manage_templates(request):
     """Manage document templates"""

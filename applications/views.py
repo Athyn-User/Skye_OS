@@ -2,6 +2,7 @@
 from django.contrib import messages
 from django.db.models import Count, Q
 from .models import Application, Quote, Company, Broker, Product
+from .endorsement_generator import EndorsementGenerator
 
 def dashboard(request):
     # Dashboard statistics
@@ -509,3 +510,81 @@ def quote_accept_and_certificate(request, pk):
         'application': quote.application,
     }
     return render(request, 'applications/quote_accept.html', context)
+
+def create_endorsement(request, policy_id):
+    """Create an endorsement for a policy with standard header variables"""
+    policy = get_object_or_404(Policy, policy_id=policy_id)
+    
+    if request.method == 'POST':
+        template_code = request.POST.get('template_code')
+        effective_date = request.POST.get('effective_date')
+        description = request.POST.get('description', '')
+        
+        # Collect ALL endorsement data from form
+        endorsement_data = {
+            'additional_insured_name': request.POST.get('additional_insured_name', ''),
+            'additional_insured_address': request.POST.get('additional_insured_address', ''),
+            'waiver_party': request.POST.get('waiver_party', ''),
+            'description': description,
+            # Add any other fields from your form
+            'special_conditions': request.POST.get('special_conditions', ''),
+            'project_description': request.POST.get('project_description', ''),
+            'coverage_territory': request.POST.get('coverage_territory', ''),
+        }
+        
+        try:
+            # Use the enhanced endorsement generator
+            generator = EndorsementGenerator()
+            endorsement = generator.create_endorsement(
+                policy=policy,
+                template_code=template_code,
+                endorsement_data=endorsement_data,
+                effective_date=datetime.strptime(effective_date, '%Y-%m-%d').date() if effective_date else None
+            )
+            
+            messages.success(request, f'Endorsement {endorsement.endorsement_number} created successfully! Header variables automatically populated.')
+            return redirect('applications:view_endorsements', policy_id=policy_id)
+            
+        except Exception as e:
+            messages.error(request, f'Error creating endorsement: {str(e)}')
+    
+    # Get available endorsement templates for this product
+    endorsement_templates = DocumentTemplate.objects.filter(
+        template_type='endorsement',
+        product=policy.quote.application.product,
+        is_active=True
+    ).order_by('template_name')
+    
+    context = {
+        'policy': policy,
+        'templates': endorsement_templates,
+        'today': datetime.now().date().isoformat(),
+        # Show the user what header variables will be populated
+        'header_preview': {
+            'named_insured': policy.quote.application.company.company_name,
+            'policy_number': policy.policy_number,
+            'effective_date_preview': datetime.now().date().strftime('%B %d, %Y')
+        }
+    }
+    
+    return render(request, 'applications/create_endorsement.html', context)
+
+def test_endorsement_generation(request, policy_id):
+    """Test endorsement generation with sample data"""
+    policy = get_object_or_404(Policy, policy_id=policy_id)
+    
+    try:
+        generator = EndorsementGenerator()
+        sample_endorsements = generator.create_sample_endorsements(policy)
+        
+        if sample_endorsements:
+            endorsement_numbers = [e.endorsement_number for e in sample_endorsements]
+            messages.success(request, f'Created {len(sample_endorsements)} sample endorsements: {", ".join(endorsement_numbers)}')
+        else:
+            messages.warning(request, 'No endorsement templates found for testing.')
+            
+        return redirect('applications:view_endorsements', policy_id=policy_id)
+        
+    except Exception as e:
+        messages.error(request, f'Error creating test endorsements: {str(e)}')
+        return redirect('applications:policy_detail', policy_id=policy_id)

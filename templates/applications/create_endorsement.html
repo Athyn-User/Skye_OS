@@ -1,4 +1,4 @@
-<!-- File: applications/templates/applications/create_endorsement.html -->
+<!-- File: applications/templates/applications/create_endorsement.html - UPDATED -->
 {% extends 'base.html' %}
 
 {% block title %}Create Endorsement - {{ policy.policy_number }}{% endblock %}
@@ -17,6 +17,45 @@
         </div>
     </div>
 
+    <!-- Header Preview Card -->
+    <div class="card mb-4 border-info">
+        <div class="card-header bg-info text-white">
+            <h5 class="mb-0"><i class="fas fa-eye"></i> Standard Header Preview</h5>
+            <small>This header will automatically appear at the top of every endorsement:</small>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <div style="border: 2px solid #333; padding: 12px; background-color: #f8f9fa;">
+                        <strong>NAMED INSURED:</strong><br>
+                        {{ header_preview.named_insured }}<br>
+                        <small class="text-muted">Address from company record</small>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div style="border: 2px solid #333; padding: 12px; background-color: #f8f9fa;">
+                        <div class="mb-2">
+                            <strong>POLICY NUMBER:</strong><br>
+                            {{ header_preview.policy_number }}
+                        </div>
+                        <div class="mb-2">
+                            <strong>ENDORSEMENT NUMBER:</strong><br>
+                            <span class="text-muted">Auto-generated (e.g., END-WCP-000001-01)</span>
+                        </div>
+                        <div>
+                            <strong>ENDORSEMENT EFFECTIVE DATE:</strong><br>
+                            <span class="text-muted">{{ header_preview.effective_date_preview }} (from form below)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="alert alert-success mt-3 mb-0">
+                <i class="fas fa-check-circle"></i> <strong>Automatic Population:</strong> 
+                These four fields will be automatically filled by the system - no manual entry required!
+            </div>
+        </div>
+    </div>
+
     <form method="POST">
         {% csrf_token %}
         
@@ -28,24 +67,30 @@
                     </div>
                     <div class="card-body">
                         <div class="mb-3">
-                            <label class="form-label">Endorsement Type</label>
+                            <label class="form-label">Endorsement Type <span class="text-danger">*</span></label>
                             <select name="template_code" class="form-select" required onchange="showEndorsementFields(this.value)">
                                 <option value="">Select endorsement type...</option>
                                 {% for template in templates %}
-                                <option value="{{ template.template_code }}">{{ template.template_name }}</option>
+                                <option value="{{ template.template_code }}" data-format="{{ template.template_format }}">
+                                    {{ template.template_name }}
+                                    <small>({{ template.get_template_format_display }})</small>
+                                </option>
                                 {% endfor %}
                             </select>
+                            <div class="form-text">Standard header will be automatically added to all types</div>
                         </div>
                         
                         <div class="mb-3">
-                            <label class="form-label">Effective Date</label>
+                            <label class="form-label">Endorsement Effective Date <span class="text-danger">*</span></label>
                             <input type="date" name="effective_date" class="form-control" 
                                    value="{{ today }}" required>
+                            <div class="form-text">This date will appear in the header</div>
                         </div>
                         
                         <div class="mb-3">
-                            <label class="form-label">Description</label>
-                            <textarea name="description" class="form-control" rows="3"></textarea>
+                            <label class="form-label">General Description</label>
+                            <textarea name="description" class="form-control" rows="3" 
+                                      placeholder="Brief description of the endorsement purpose..."></textarea>
                         </div>
                     </div>
                 </div>
@@ -53,35 +98,54 @@
             
             <div class="col-md-6">
                 <div class="card">
-                    <div class="card-header bg-info text-white">
-                        <h5 class="mb-0">Endorsement Information</h5>
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">Endorsement-Specific Information</h5>
                     </div>
                     <div class="card-body">
                         <!-- Additional Insured Fields -->
                         <div id="additional-insured-fields" style="display:none;">
-                            <h6>Additional Insured Information</h6>
+                            <h6><i class="fas fa-users"></i> Additional Insured Information</h6>
                             <div class="mb-3">
-                                <label class="form-label">Name</label>
-                                <input type="text" name="additional_insured_name" class="form-control">
+                                <label class="form-label">Additional Insured Name</label>
+                                <input type="text" name="additional_insured_name" class="form-control" 
+                                       placeholder="Company or Person Name">
                             </div>
                             <div class="mb-3">
-                                <label class="form-label">Address</label>
-                                <textarea name="additional_insured_address" class="form-control" rows="3"></textarea>
+                                <label class="form-label">Additional Insured Address</label>
+                                <textarea name="additional_insured_address" class="form-control" rows="3"
+                                         placeholder="Complete mailing address"></textarea>
                             </div>
                         </div>
                         
                         <!-- Waiver of Subrogation Fields -->
                         <div id="waiver-fields" style="display:none;">
-                            <h6>Waiver of Subrogation</h6>
+                            <h6><i class="fas fa-handshake"></i> Waiver of Subrogation</h6>
                             <div class="mb-3">
                                 <label class="form-label">Waiving Rights Against</label>
-                                <input type="text" name="waiver_party" class="form-control">
+                                <input type="text" name="waiver_party" class="form-control"
+                                       placeholder="Entity name for waiver">
+                            </div>
+                        </div>
+
+                        <!-- Primary & Non-Contributory Fields -->
+                        <div id="primary-fields" style="display:none;">
+                            <h6><i class="fas fa-star"></i> Primary & Non-Contributory</h6>
+                            <div class="mb-3">
+                                <label class="form-label">Additional Information</label>
+                                <textarea name="special_conditions" class="form-control" rows="2"
+                                         placeholder="Any special conditions or requirements..."></textarea>
                             </div>
                         </div>
                         
                         <!-- Generic Fields (always shown) -->
                         <div id="generic-fields">
-                            <p class="text-muted">Select an endorsement type to see specific fields.</p>
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle"></i> 
+                                <strong>Reminder:</strong> The standard header with Named Insured, Policy Number, 
+                                Endorsement Number, and Effective Date will be automatically added to this endorsement.
+                                <br><br>
+                                Select an endorsement type above to see specific input fields for that endorsement.
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -90,12 +154,22 @@
         
         <div class="row mt-3">
             <div class="col-12">
-                <button type="submit" class="btn btn-success btn-lg">
-                    <i class="fas fa-file-medical"></i> Generate Endorsement
-                </button>
-                <a href="{% url 'applications:policy_detail' policy.policy_id %}" class="btn btn-secondary btn-lg">
-                    Cancel
-                </a>
+                <div class="card">
+                    <div class="card-body">
+                        <button type="submit" class="btn btn-success btn-lg me-3">
+                            <i class="fas fa-file-medical"></i> Generate Endorsement
+                        </button>
+                        <a href="{% url 'applications:policy_detail' policy.policy_id %}" class="btn btn-secondary btn-lg me-3">
+                            Cancel
+                        </a>
+                        {% if templates.count > 0 %}
+                        <a href="{% url 'applications:test_endorsement_generation' policy.policy_id %}" 
+                           class="btn btn-outline-info btn-lg">
+                            <i class="fas fa-flask"></i> Create Sample Endorsements
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
             </div>
         </div>
     </form>
@@ -106,18 +180,83 @@ function showEndorsementFields(templateCode) {
     // Hide all specific field groups
     document.getElementById('additional-insured-fields').style.display = 'none';
     document.getElementById('waiver-fields').style.display = 'none';
-    document.getElementById('generic-fields').style.display = 'none';
+    document.getElementById('primary-fields').style.display = 'none';
     
     // Show relevant fields based on template code
-    if (templateCode.includes('ADD-INSURED')) {
+    if (templateCode.includes('ADD-INSURED') || templateCode.includes('ADDITIONAL')) {
         document.getElementById('additional-insured-fields').style.display = 'block';
-    } else if (templateCode.includes('WAIVER')) {
+        document.getElementById('generic-fields').innerHTML = `
+            <div class="alert alert-success">
+                <i class="fas fa-users"></i> <strong>Additional Insured Endorsement</strong><br>
+                Complete the information above. The standard header will show the Named Insured, 
+                Policy Number, and auto-generated Endorsement Number.
+            </div>
+        `;
+    } else if (templateCode.includes('WAIVER') || templateCode.includes('SUB')) {
         document.getElementById('waiver-fields').style.display = 'block';
+        document.getElementById('generic-fields').innerHTML = `
+            <div class="alert alert-warning">
+                <i class="fas fa-handshake"></i> <strong>Waiver of Subrogation Endorsement</strong><br>
+                Specify the party for which subrogation rights are waived. Standard header variables 
+                will be automatically populated.
+            </div>
+        `;
+    } else if (templateCode.includes('PRIMARY') || templateCode.includes('NON-CONTRIB')) {
+        document.getElementById('primary-fields').style.display = 'block';
+        document.getElementById('generic-fields').innerHTML = `
+            <div class="alert alert-primary">
+                <i class="fas fa-star"></i> <strong>Primary & Non-Contributory Endorsement</strong><br>
+                This endorsement will automatically include standard header information with 
+                Named Insured and Policy details.
+            </div>
+        `;
     } else if (templateCode) {
-        document.getElementById('generic-fields').style.display = 'block';
+        document.getElementById('generic-fields').innerHTML = `
+            <div class="alert alert-info">
+                <i class="fas fa-file-alt"></i> <strong>Standard Endorsement Selected</strong><br>
+                The system will automatically populate:<br>
+                • Named Insured: {{ header_preview.named_insured }}<br>
+                • Policy Number: {{ header_preview.policy_number }}<br>
+                • Endorsement Number: (auto-generated)<br>
+                • Effective Date: (from date field above)
+            </div>
+        `;
     } else {
-        document.getElementById('generic-fields').style.display = 'block';
+        document.getElementById('generic-fields').innerHTML = `
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> 
+                Select an endorsement type to see specific fields. All endorsements automatically 
+                include the standard header with Named Insured, Policy Number, Endorsement Number, 
+                and Effective Date.
+            </div>
+        `;
     }
 }
+
+// Show template format info
+document.addEventListener('DOMContentLoaded', function() {
+    const templateSelect = document.querySelector('select[name="template_code"]');
+    if (templateSelect) {
+        templateSelect.addEventListener('change', function() {
+            const option = this.selectedOptions[0];
+            if (option && option.dataset.format) {
+                const format = option.dataset.format;
+                let formatInfo = '';
+                
+                if (format === 'dynamic') {
+                    formatInfo = '<small class="text-success">✓ Dynamic template - header will be seamlessly integrated</small>';
+                } else if (format === 'hybrid') {
+                    formatInfo = '<small class="text-warning">⚡ Hybrid template - header added to existing PDF form</small>';
+                } else if (format === 'static') {
+                    formatInfo = '<small class="text-info">📄 Static template - header overlaid on PDF</small>';
+                }
+                
+                const helpText = this.parentNode.querySelector('.form-text');
+                helpText.innerHTML = 'Standard header will be automatically added to all types. ' + formatInfo;
+            }
+        });
+    }
+});
 </script>
+
 {% endblock %}

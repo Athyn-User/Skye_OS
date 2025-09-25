@@ -175,4 +175,8 @@ urlpatterns = [
     path('templates/<int:template_id>/upload/', 
          document_views.upload_template_file, 
          name='upload_template_file'),
+
+     path('policies/<int:policy_id>/endorsements/test/', 
+          views.test_endorsement_generation, 
+          name='test_endorsement_generation'),
 ]
