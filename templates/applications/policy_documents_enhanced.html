@@ -1,0 +1,1388 @@
+<!-- File: applications/templates/applications/policy_documents_enhanced.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% csrf_token %}
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Policy Documents - Enhanced</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --success-color: #16a34a;
+            --warning-color: #d97706;
+            --danger-color: #dc2626;
+            --info-color: #0ea5e9;
+        }
+
+        .document-header {
+            background: linear-gradient(135deg, var(--primary-color), #1e40af);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+        }
+
+        .action-toolbar {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .component-card {
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            transition: all 0.2s ease;
+            background: white;
+        }
+
+        .component-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transform: translateY(-1px);
+        }
+
+        .component-card.generating {
+            border-left: 4px solid var(--warning-color);
+            background: #fefce8;
+        }
+
+        .component-card.generated {
+            border-left: 4px solid var(--success-color);
+        }
+
+        .component-card.error {
+            border-left: 4px solid var(--danger-color);
+            background: #fef2f2;
+        }
+
+        .status-badge {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-weight: 500;
+        }
+
+        .status-pending { background: #f3f4f6; color: #6b7280; }
+        .status-generated { background: #d1fae5; color: #065f46; }
+        .status-error { background: #fee2e2; color: #991b1b; }
+
+        .template-selector {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            display: none;
+        }
+
+        .add-component-panel {
+            background: #f0f9ff;
+            border: 1px solid #0ea5e9;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            display: none;
+        }
+
+        .bulk-panel {
+            background: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            display: none;
+        }
+
+        .progress-container {
+            display: none;
+            margin-top: 1rem;
+        }
+
+        .component-actions {
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .component-card:hover .component-actions {
+            opacity: 1;
+        }
+
+        .package-stats {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 0.5rem;
+        }
+
+        .stat-number {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .loading-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .version-history-table {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            margin-top: 2rem;
+        }
+
+        .drag-handle {
+            cursor: move;
+            color: #9ca3af;
+        }
+
+        .drag-handle:hover {
+            color: #374151;
+        }
+
+        .component-card.dragging {
+            opacity: 0.5;
+            transform: rotate(2deg);
+        }
+
+        .drop-zone {
+            border: 2px dashed #d1d5db;
+            background: #f9fafb;
+            min-height: 50px;
+            margin: 0.5rem 0;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .drop-zone.active {
+            display: block;
+            border-color: var(--primary-color);
+            background: #eff6ff;
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2 mb-0">Processing...</p>
+        </div>
+    </div>
+
+    <div class="container-fluid">
+        <!-- Document Header -->
+        <div class="document-header">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h1 class="mb-1">Policy Documents</h1>
+                        <p class="mb-0 opacity-75">{{ policy.policy_number }} - {{ policy.quote.application.company.company_name }}</p>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <a href="{% url 'applications:policy_detail' policy.policy_id %}" class="btn btn-light me-2">
+                            <i class="fas fa-arrow-left"></i> Back to Policy
+                        </a>
+                        {% if package %}
+                        <a href="{% url 'applications:download_policy_package' package.package_id %}" class="btn btn-success">
+                            <i class="fas fa-download"></i> Download Package
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="container">
+            <!-- Package Information Card -->
+            {% if package %}
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Current Document Package</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <strong>Package Number:</strong><br>
+                            {{ package.package_number }}
+                        </div>
+                        <div class="col-md-2">
+                            <strong>Version:</strong><br>
+                            {{ package.package_version }}
+                        </div>
+                        <div class="col-md-2">
+                            <strong>Generated:</strong><br>
+                            {% if package.generated_date %}
+                                {{ package.generated_date|date:"M d, Y H:i" }}
+                            {% else %}
+                                {{ package.created_at|date:"M d, Y H:i" }}
+                            {% endif %}
+                        </div>
+                        <div class="col-md-2">
+                            <strong>Status:</strong><br>
+                            <span class="badge bg-{% if package.package_status == 'generated' %}success{% elif package.package_status == 'draft' %}warning{% else %}secondary{% endif %}">
+                                {{ package.package_status|title }}
+                            </span>
+                        </div>
+                        <div class="col-md-1">
+                            <strong>Total Pages:</strong><br>
+                            <span id="packageTotalPages">{{ package.total_pages|default:0 }}</span>
+                        </div>
+                        <div class="col-md-2">
+                            <strong>Actions:</strong><br>
+                            <button type="button" class="btn btn-sm btn-warning" onclick="createNewPackage()">
+                                <i class="fas fa-sync"></i> Regenerate
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Package Statistics -->
+            <div class="package-stats">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="stat-item">
+                            <div class="stat-number" id="totalComponents">{{ components|length }}</div>
+                            <div class="text-muted small">Total Components</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-item">
+                            <div class="stat-number text-success" id="generatedComponents">
+                                {% for component in components %}
+                                    {% if component.component_status == 'generated' %}{{ forloop.counter }}{% endif %}
+                                {% empty %}0{% endfor %}
+                            </div>
+                            <div class="text-muted small">Generated</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-item">
+                            <div class="stat-number text-danger" id="errorComponents">
+                                {% for component in components %}
+                                    {% if component.component_status == 'error' %}{{ forloop.counter }}{% endif %}
+                                {% empty %}0{% endfor %}
+                            </div>
+                            <div class="text-muted small">Errors</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-item">
+                            <div class="stat-number text-info" id="totalPages">
+                                {% for component in components %}
+                                    {% if component.component_status == 'generated' %}{{ component.page_count|default:0|add:0 }}{% endif %}
+                                {% empty %}0{% endfor %}
+                            </div>
+                            <div class="text-muted small">Total Pages</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Toolbar -->
+            <div class="action-toolbar">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <div class="btn-group" role="group">
+                            <button type="button" class="btn btn-success" onclick="generateMissingDocuments()">
+                                <i class="fas fa-plus-circle"></i> Generate Missing
+                            </button>
+                            <button type="button" class="btn btn-primary" onclick="regenerateAllDocuments()">
+                                <i class="fas fa-redo"></i> Regenerate All
+                            </button>
+                            <button type="button" class="btn btn-info" onclick="createNewPackage()">
+                                <i class="fas fa-file-plus"></i> New Package
+                            </button>
+                            <button type="button" class="btn btn-secondary" onclick="showAddComponentPanel()">
+                                <i class="fas fa-plus"></i> Add Component
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-md-6 text-end">
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown">
+                                <i class="fas fa-magic"></i> Advanced
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="#" onclick="showTemplateSelector()">
+                                    <i class="fas fa-file-contract"></i> Generate from Template
+                                </a></li>
+                                <li><a class="dropdown-item" href="#" onclick="showBulkPanel()">
+                                    <i class="fas fa-layer-group"></i> Bulk Operations
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{% url 'applications:manage_templates' %}">
+                                    <i class="fas fa-cog"></i> Manage Templates
+                                </a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add Component Panel -->
+            <div class="add-component-panel" id="addComponentPanel">
+                <h5><i class="fas fa-plus"></i> Add Document Component</h5>
+                <div class="row">
+                    <div class="col-md-6">
+                        <label class="form-label">Select Template</label>
+                        <select class="form-select" id="addComponentTemplateSelect">
+                            <option value="">Choose template...</option>
+                            {% for template in available_templates %}
+                                <option value="{{ template.template_id }}">
+                                    {{ template.template_name }} ({{ template.get_template_type_display }})
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">&nbsp;</label>
+                        <div>
+                            <button type="button" class="btn btn-success" onclick="addComponent()">
+                                <i class="fas fa-plus"></i> Add Component
+                            </button>
+                            <button type="button" class="btn btn-secondary" onclick="hideAddComponentPanel()">
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Template Selector -->
+            <div class="template-selector" id="templateSelector">
+                <h5><i class="fas fa-file-contract"></i> Generate Document from Template</h5>
+                <div class="row">
+                    <div class="col-md-4">
+                        <label class="form-label">Select Template</label>
+                        <select class="form-select" id="templateSelect" onchange="updateTemplatePreview()">
+                            <option value="">Choose template...</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Custom Data (JSON)</label>
+                        <textarea class="form-control" id="customData" rows="2" placeholder='{"additional_insured": "ABC Corp"}'></textarea>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">&nbsp;</label>
+                        <div>
+                            <button type="button" class="btn btn-success" onclick="generateFromTemplate()">
+                                <i class="fas fa-magic"></i> Generate Document
+                            </button>
+                            <button type="button" class="btn btn-secondary" onclick="hideTemplateSelector()">
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="templatePreview" class="mt-3" style="display: none;">
+                    <div class="alert alert-info">
+                        <strong id="previewTitle">Template Preview</strong>
+                        <p class="mb-0" id="previewDescription">Select a template to see details</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bulk Operations Panel -->
+            <div class="bulk-panel" id="bulkPanel">
+                <h5><i class="fas fa-layer-group"></i> Bulk Operations</h5>
+                <div class="row">
+                    <div class="col-md-3">
+                        <label class="form-label">Operation Type</label>
+                        <select class="form-select" id="bulkOperationType">
+                            <option value="missing">Generate Missing Only</option>
+                            <option value="all">Generate All Documents</option>
+                            <option value="regenerate">Regenerate Existing</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Select Policies</label>
+                        <select multiple class="form-select" id="bulkPolicySelect" style="height: 100px;">
+                            <!-- Will be populated dynamically -->
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Options</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="overwriteExisting">
+                            <label class="form-check-label" for="overwriteExisting">
+                                Overwrite existing files
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="emailOnComplete">
+                            <label class="form-check-label" for="emailOnComplete">
+                                Email when complete
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">&nbsp;</label>
+                        <div>
+                            <button type="button" class="btn btn-primary" onclick="startBulkOperation()">
+                                <i class="fas fa-play"></i> Start Operation
+                            </button>
+                            <button type="button" class="btn btn-secondary" onclick="hideBulkPanel()">
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="progress-container" id="bulkProgress">
+                    <h6>Operation Progress</h6>
+                    <div class="progress mb-2" style="height: 25px;">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" 
+                             style="width: 0%" id="bulkProgressBar">0%</div>
+                    </div>
+                    <div id="bulkProgressDetails" class="small text-muted">Preparing...</div>
+                </div>
+            </div>
+
+            <!-- Document Components -->
+            <div class="row">
+                <div class="col-12">
+                    <h4 class="mb-3">Document Components</h4>
+                    <div id="componentsList">
+                        {% for component in components %}
+                        <div class="component-card {% if component.component_status == 'generated' %}generated{% elif component.component_status == 'error' %}error{% else %}generating{% endif %}" 
+                             id="component-{{ component.component_id }}" data-component-id="{{ component.component_id }}">
+                            <div class="card-body">
+                                <div class="row align-items-center">
+                                    <div class="col-md-1">
+                                        <i class="fas fa-grip-vertical drag-handle me-2"></i>
+                                        <span class="badge bg-secondary">{{ forloop.counter }}</span>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <h6 class="mb-1">{{ component.component_name }}</h6>
+                                        <small class="text-muted">
+                                            {% if component.template %}Template: {{ component.template.template_name }}{% else %}No template{% endif %}
+                                        </small>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <span class="badge bg-{% if component.component_type == 'declaration' %}primary{% elif component.component_type == 'policy_form' %}info{% elif component.component_type == 'endorsement' %}warning{% else %}secondary{% endif %}">
+                                            {{ component.component_type }}
+                                        </span>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <span class="status-badge status-{{ component.component_status }}">
+                                            {{ component.component_status }}
+                                        </span>
+                                    </div>
+                                    <div class="col-md-1">
+                                        <span class="component-pages">{{ component.page_count|default:0 }}</span> pages
+                                    </div>
+                                    <div class="col-md-2">
+                                        <div class="component-actions">
+                                            <div class="btn-group btn-group-sm" role="group">
+                                                {% if component.component_status == 'generated' %}
+                                                <button type="button" class="btn btn-outline-primary" 
+                                                        onclick="viewComponent({{ component.component_id }})" title="View">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                                {% endif %}
+                                                <button type="button" class="btn btn-outline-warning" 
+                                                        onclick="regenerateComponent({{ component.component_id }})" title="Regenerate">
+                                                    <i class="fas fa-redo"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-outline-info dropdown-toggle" data-bs-toggle="dropdown" title="More">
+                                                    <i class="fas fa-ellipsis-h"></i>
+                                                </button>
+                                                <ul class="dropdown-menu">
+                                                    <li><a class="dropdown-item" href="#" onclick="replaceComponent({{ component.component_id }})">
+                                                        <i class="fas fa-upload"></i> Replace File
+                                                    </a></li>
+                                                    <li><a class="dropdown-item" href="#" onclick="showComponentHistory({{ component.component_id }})">
+                                                        <i class="fas fa-history"></i> Version History
+                                                    </a></li>
+                                                    <li><hr class="dropdown-divider"></li>
+                                                    <li><a class="dropdown-item text-danger" href="#" onclick="deleteComponent({{ component.component_id }})">
+                                                        <i class="fas fa-trash"></i> Delete
+                                                    </a></li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i> No document components found. Use "Generate Missing" to create standard components.
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Version History -->
+            {% if all_packages %}
+            <div class="version-history-table">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">Version History</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Version</th>
+                                    <th>Package Number</th>
+                                    <th>Generated</th>
+                                    <th>Status</th>
+                                    <th>Components</th>
+                                    <th>Total Pages</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for pkg in all_packages %}
+                                <tr{% if pkg.is_current %} class="table-success"{% endif %}>
+                                    <td>
+                                        <strong>{{ pkg.package_version }}</strong>
+                                        {% if pkg.is_current %}<span class="badge bg-success ms-2">Current</span>{% endif %}
+                                    </td>
+                                    <td>{{ pkg.package_number }}</td>
+                                    <td>
+                                        {% if pkg.generated_date %}
+                                            {{ pkg.generated_date|date:"M d, Y H:i" }}
+                                        {% else %}
+                                            {{ pkg.created_at|date:"M d, Y H:i" }}
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{% if pkg.package_status == 'generated' %}success{% elif pkg.package_status == 'draft' %}warning{% else %}secondary{% endif %}">
+                                            {{ pkg.package_status|title }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">{{ pkg.components.count }}</span>
+                                        <small class="text-muted">
+                                            ({{ pkg.components.filter_with_status__generated__count|default:0 }} generated)
+                                        </small>
+                                    </td>
+                                    <td>{{ pkg.total_pages|default:0 }}</td>
+                                    <td>
+                                        {% if pkg.package_status == 'generated' and pkg.combined_pdf_path %}
+                                        <a href="{% url 'applications:download_policy_package' pkg.package_id %}" 
+                                           class="btn btn-sm btn-outline-success" title="Download">
+                                            <i class="fas fa-download"></i>
+                                        </a>
+                                        {% endif %}
+                                        {% if not pkg.is_current %}
+                                        <button type="button" class="btn btn-sm btn-outline-primary" 
+                                                onclick="makePackageCurrent({{ pkg.package_id }})" title="Make Current">
+                                            <i class="fas fa-arrow-up"></i>
+                                        </button>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" id="toastContainer">
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+    <script>
+        // Configuration from Django template context
+        const POLICY_ID = {{ policy.policy_id }};
+        const POLICY_NUMBER = '{{ policy.policy_number }}';
+
+        // Enhanced Document Management System
+        class DocumentManager {
+            constructor() {
+                this.loadingOverlay = document.getElementById('loadingOverlay');
+                this.init();
+                this.setupDragAndDrop();
+            }
+
+            async init() {
+                await this.loadDocumentStatus();
+                await this.loadAvailableTemplates();
+                this.startAutoRefresh();
+            }
+
+            setupDragAndDrop() {
+                const componentsList = document.getElementById('componentsList');
+                if (componentsList) {
+                    Sortable.create(componentsList, {
+                        handle: '.drag-handle',
+                        animation: 150,
+                        onEnd: (evt) => {
+                            this.updateComponentOrder(evt.oldIndex, evt.newIndex);
+                        }
+                    });
+                }
+            }
+
+            showLoading() {
+                this.loadingOverlay.style.display = 'flex';
+            }
+
+            hideLoading() {
+                this.loadingOverlay.style.display = 'none';
+            }
+
+            async loadDocumentStatus() {
+                try {
+                    this.showLoading();
+                    const response = await fetch(`/policies/${POLICY_ID}/documents/status/`);
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        this.renderComponents(data.components);
+                        this.updateStats(data.components);
+                        this.updatePackageInfo(data.package);
+                    }
+                } catch (error) {
+                    console.error('Error loading document status:', error);
+                    this.showToast('Error', 'Failed to load document status', 'error');
+                } finally {
+                    this.hideLoading();
+                }
+            }
+
+            async loadAvailableTemplates() {
+                try {
+                    const response = await fetch(`/documents/get-available-templates/?policy_id=${POLICY_ID}`);
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        const select = document.getElementById('templateSelect');
+                        if (select) {
+                            select.innerHTML = '<option value="">Choose template...</option>';
+                            
+                            data.templates.forEach(template => {
+                                const option = document.createElement('option');
+                                option.value = template.id;
+                                option.textContent = template.description;
+                                option.dataset.template = JSON.stringify(template);
+                                select.appendChild(option);
+                            });
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error loading templates:', error);
+                }
+            }
+
+            renderComponents(components) {
+                // This method updates the existing components displayed on page load
+                // The template already renders components, so we update their status and stats
+                this.updateStats(components);
+                
+                // Update individual component displays if needed
+                components.forEach(component => {
+                    const componentEl = document.getElementById(`component-${component.id}`);
+                    if (componentEl) {
+                        // Update status classes
+                        componentEl.className = `component-card ${component.status}`;
+                        
+                        // Update status badge
+                        const statusBadge = componentEl.querySelector('.status-badge');
+                        if (statusBadge) {
+                            statusBadge.className = `status-badge status-${component.status}`;
+                            statusBadge.textContent = component.status;
+                        }
+                        
+                        // Update pages
+                        const pagesEl = componentEl.querySelector('.component-pages');
+                        if (pagesEl) {
+                            pagesEl.textContent = component.pages || 0;
+                        }
+                    }
+                });
+            }
+
+            updateStats(components) {
+                const total = components.length;
+                const generated = components.filter(c => c.status === 'generated').length;
+                const errors = components.filter(c => c.status === 'error').length;
+                const totalPages = components.reduce((sum, c) => sum + (c.pages || 0), 0);
+                
+                document.getElementById('totalComponents').textContent = total;
+                document.getElementById('generatedComponents').textContent = generated;
+                document.getElementById('errorComponents').textContent = errors;
+                document.getElementById('totalPages').textContent = totalPages;
+                
+                // Update package total pages
+                const packageTotalPages = document.getElementById('packageTotalPages');
+                if (packageTotalPages) {
+                    packageTotalPages.textContent = totalPages;
+                }
+            }
+
+            updatePackageInfo(packageInfo) {
+                if (packageInfo) {
+                    console.log('Package info:', packageInfo);
+                }
+            }
+
+            // Component Management Functions
+            async regenerateComponent(componentId) {
+                try {
+                    this.showLoading();
+                    
+                    const response = await fetch(`/policies/${POLICY_ID}/components/${componentId}/regenerate/`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': this.getCsrfToken()
+                        }
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        this.showToast('Success', result.message, 'success');
+                        await this.loadDocumentStatus();
+                    } else {
+                        this.showToast('Error', result.message, 'error');
+                    }
+                    
+                } catch (error) {
+                    console.error('Error regenerating component:', error);
+                    this.showToast('Error', 'Failed to regenerate component', 'error');
+                } finally {
+                    this.hideLoading();
+                }
+            }
+
+            async deleteComponent(componentId) {
+                if (!confirm('Are you sure you want to delete this component? This action cannot be undone.')) {
+                    return;
+                }
+                
+                try {
+                    this.showLoading();
+                    
+                    const response = await fetch(`/policies/${POLICY_ID}/components/${componentId}/delete/`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': this.getCsrfToken()
+                        }
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        // Remove component from DOM
+                        const componentEl = document.getElementById(`component-${componentId}`);
+                        if (componentEl) {
+                            componentEl.remove();
+                        }
+                        
+                        this.showToast('Success', result.message, 'success');
+                        await this.loadDocumentStatus(); // Refresh stats
+                    } else {
+                        this.showToast('Error', result.message, 'error');
+                    }
+                    
+                } catch (error) {
+                    console.error('Error deleting component:', error);
+                    this.showToast('Error', 'Failed to delete component', 'error');
+                } finally {
+                    this.hideLoading();
+                }
+            }
+
+            async addComponent() {
+                const templateId = document.getElementById('addComponentTemplateSelect').value;
+                
+                if (!templateId) {
+                    this.showToast('Warning', 'Please select a template', 'warning');
+                    return;
+                }
+                
+                try {
+                    this.showLoading();
+                    
+                    const response = await fetch(`/policies/${POLICY_ID}/components/add/`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': this.getCsrfToken()
+                        },
+                        body: JSON.stringify({
+                            template_id: templateId
+                        })
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        this.showToast('Success', result.message, 'success');
+                        this.hideAddComponentPanel();
+                        // Reload the page to show the new component
+                        window.location.reload();
+                    } else {
+                        this.showToast('Error', result.message, 'error');
+                    }
+                    
+                } catch (error) {
+                    console.error('Error adding component:', error);
+                    this.showToast('Error', 'Failed to add component', 'error');
+                } finally {
+                    this.hideLoading();
+                }
+            }
+
+            async generateMissingDocuments() {
+                try {
+                    this.showLoading();
+                    
+                    const response = await fetch(`/policies/${POLICY_ID}/generate-missing/`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': this.getCsrfToken()
+                        }
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        this.showToast('Success', result.message, 'success');
+                        await this.loadDocumentStatus();
+                    } else {
+                        this.showToast('Error', result.message, 'error');
+                    }
+                    
+                } catch (error) {
+                    console.error('Error generating missing documents:', error);
+                    this.showToast('Error', 'Failed to generate missing documents', 'error');
+                } finally {
+                    this.hideLoading();
+                }
+            }
+
+            async regenerateAllDocuments() {
+                if (!confirm('This will regenerate all documents. Continue?')) {
+                    return;
+                }
+                
+                try {
+                    this.showLoading();
+                    
+                    const response = await fetch('/documents/bulk-generate/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': this.getCsrfToken()
+                        },
+                        body: JSON.stringify({
+                            policy_ids: [POLICY_ID],
+                            type: 'regenerate'
+                        })
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        this.showToast('Success', result.message, 'success');
+                        await this.loadDocumentStatus();
+                    } else {
+                        this.showToast('Error', result.message, 'error');
+                    }
+                    
+                } catch (error) {
+                    console.error('Error regenerating all documents:', error);
+                    this.showToast('Error', 'Failed to regenerate all documents', 'error');
+                } finally {
+                    this.hideLoading();
+                }
+            }
+
+            async createNewPackage() {
+                if (!confirm('Create a new document package version? This will mark the current package as superseded.')) {
+                    return;
+                }
+                
+                try {
+                    this.showLoading();
+                    
+                    const response = await fetch(`/policies/${POLICY_ID}/create-document-package/`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': this.getCsrfToken()
+                        },
+                        body: JSON.stringify({
+                            force_regenerate: true
+                        })
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        this.showToast('Success', result.message, 'success');
+                        // Reload page to show new package
+                        window.location.reload();
+                    } else {
+                        this.showToast('Error', result.message, 'error');
+                    }
+                    
+                } catch (error) {
+                    console.error('Error creating new package:', error);
+                    this.showToast('Error', 'Failed to create new package', 'error');
+                } finally {
+                    this.hideLoading();
+                }
+            }
+
+            async generateFromTemplate() {
+                const templateId = document.getElementById('templateSelect').value;
+                const customDataText = document.getElementById('customData').value;
+                
+                if (!templateId) {
+                    this.showToast('Warning', 'Please select a template', 'warning');
+                    return;
+                }
+                
+                let customData = {};
+                if (customDataText.trim()) {
+                    try {
+                        customData = JSON.parse(customDataText);
+                    } catch (e) {
+                        this.showToast('Warning', 'Invalid JSON in custom data field', 'warning');
+                        return;
+                    }
+                }
+                
+                try {
+                    this.showLoading();
+                    
+                    const response = await fetch('/documents/generate-from-template/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': this.getCsrfToken()
+                        },
+                        body: JSON.stringify({
+                            policy_id: POLICY_ID,
+                            template_id: templateId,
+                            data: customData
+                        })
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        this.showToast('Success', result.message, 'success');
+                        this.hideTemplateSelector();
+                        await this.loadDocumentStatus();
+                    } else {
+                        this.showToast('Error', result.message, 'error');
+                    }
+                    
+                } catch (error) {
+                    console.error('Error generating from template:', error);
+                    this.showToast('Error', 'Failed to generate document from template', 'error');
+                } finally {
+                    this.hideLoading();
+                }
+            }
+
+            // UI Panel Management
+            showAddComponentPanel() {
+                document.getElementById('addComponentPanel').style.display = 'block';
+                document.getElementById('templateSelector').style.display = 'none';
+                document.getElementById('bulkPanel').style.display = 'none';
+            }
+
+            hideAddComponentPanel() {
+                document.getElementById('addComponentPanel').style.display = 'none';
+            }
+
+            showTemplateSelector() {
+                document.getElementById('templateSelector').style.display = 'block';
+                document.getElementById('addComponentPanel').style.display = 'none';
+                document.getElementById('bulkPanel').style.display = 'none';
+            }
+
+            hideTemplateSelector() {
+                document.getElementById('templateSelector').style.display = 'none';
+            }
+
+            updateTemplatePreview() {
+                const select = document.getElementById('templateSelect');
+                const preview = document.getElementById('templatePreview');
+                
+                if (select.value && select.selectedOptions[0].dataset.template) {
+                    const template = JSON.parse(select.selectedOptions[0].dataset.template);
+                    preview.style.display = 'block';
+                    document.getElementById('previewTitle').textContent = template.name;
+                    document.getElementById('previewDescription').textContent = 
+                        `${template.type} template - ${template.format} format` + 
+                        (template.has_file ? ' (Has PDF file)' : ' (Dynamic generation)');
+                } else {
+                    preview.style.display = 'none';
+                }
+            }
+
+            showBulkPanel() {
+                document.getElementById('bulkPanel').style.display = 'block';
+                document.getElementById('templateSelector').style.display = 'none';
+                document.getElementById('addComponentPanel').style.display = 'none';
+                this.loadBulkPolicies();
+            }
+
+            hideBulkPanel() {
+                document.getElementById('bulkPanel').style.display = 'none';
+                document.getElementById('bulkProgress').style.display = 'none';
+            }
+
+            async loadBulkPolicies() {
+                try {
+                    const response = await fetch('/documents/bulk/policies/');
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        const select = document.getElementById('bulkPolicySelect');
+                        select.innerHTML = '';
+                        
+                        data.policies.forEach(policy => {
+                            const option = document.createElement('option');
+                            option.value = policy.id;
+                            option.textContent = `${policy.policy_number} - ${policy.insured_name}`;
+                            if (policy.id == POLICY_ID) {
+                                option.selected = true;
+                            }
+                            select.appendChild(option);
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error loading bulk policies:', error);
+                }
+            }
+
+            async startBulkOperation() {
+                const operationType = document.getElementById('bulkOperationType').value;
+                const selectedPolicies = Array.from(document.getElementById('bulkPolicySelect').selectedOptions)
+                    .map(option => option.value);
+                
+                if (selectedPolicies.length === 0) {
+                    this.showToast('Warning', 'Please select at least one policy', 'warning');
+                    return;
+                }
+                
+                document.getElementById('bulkProgress').style.display = 'block';
+                
+                try {
+                    const response = await fetch('/documents/bulk-generate/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': this.getCsrfToken()
+                        },
+                        body: JSON.stringify({
+                            policy_ids: selectedPolicies,
+                            type: operationType
+                        })
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        this.animateProgress(result);
+                        this.showToast('Success', result.message, 'success');
+                        
+                        // Refresh if current policy was included
+                        if (selectedPolicies.includes(POLICY_ID.toString())) {
+                            setTimeout(() => this.loadDocumentStatus(), 2000);
+                        }
+                    } else {
+                        this.showToast('Error', result.message, 'error');
+                    }
+                    
+                } catch (error) {
+                    console.error('Error in bulk operation:', error);
+                    this.showToast('Error', 'Failed to start bulk operation', 'error');
+                }
+            }
+
+            animateProgress(result) {
+                const progressBar = document.getElementById('bulkProgressBar');
+                const progressDetails = document.getElementById('bulkProgressDetails');
+                
+                let progress = 0;
+                const interval = setInterval(() => {
+                    progress += 10;
+                    progressBar.style.width = progress + '%';
+                    progressBar.textContent = progress + '%';
+                    
+                    if (progress >= 100) {
+                        clearInterval(interval);
+                        progressDetails.innerHTML = `
+                            <div class="text-success">
+                                <i class="fas fa-check-circle"></i> 
+                                Operation Complete: ${result.successful_policies || 0}/${result.total_policies || 0} policies processed
+                                <br>Total documents generated: ${result.total_documents_generated || 0}
+                            </div>
+                        `;
+                        
+                        setTimeout(() => {
+                            this.hideBulkPanel();
+                        }, 3000);
+                    } else {
+                        progressDetails.textContent = 
+                            `Processing policies... ${Math.floor(progress/100 * (result.total_policies || 1))}/${result.total_policies || 1}`;
+                    }
+                }, 200);
+            }
+
+            // Component interaction functions
+            viewComponent(componentId) {
+                window.open(`/documents/components/${componentId}/view/`, '_blank');
+            }
+
+            replaceComponent(componentId) {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = '.pdf';
+                input.onchange = (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                        this.uploadReplacementFile(componentId, file);
+                    }
+                };
+                input.click();
+            }
+
+            async uploadReplacementFile(componentId, file) {
+                const formData = new FormData();
+                formData.append('file', file);
+                
+                try {
+                    this.showLoading();
+                    
+                    const response = await fetch(`/documents/components/${componentId}/replace/`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': this.getCsrfToken()
+                        },
+                        body: formData
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        this.showToast('Success', 'Component file replaced successfully', 'success');
+                        await this.loadDocumentStatus();
+                    } else {
+                        this.showToast('Error', result.message, 'error');
+                    }
+                } catch (error) {
+                    console.error('Error uploading replacement file:', error);
+                    this.showToast('Error', 'Failed to replace component file', 'error');
+                } finally {
+                    this.hideLoading();
+                }
+            }
+
+            showComponentHistory(componentId) {
+                this.showToast('Info', 'Component version history feature coming soon', 'info');
+            }
+
+            async updateComponentOrder(oldIndex, newIndex) {
+                // This would implement component reordering
+                console.log(`Move component from ${oldIndex} to ${newIndex}`);
+                this.showToast('Info', 'Component reordering saved', 'info');
+            }
+
+            downloadPackage() {
+                {% if package %}
+                window.open(`{% url 'applications:download_policy_package' package.package_id %}`, '_blank');
+                {% else %}
+                this.showToast('Warning', 'No package available for download', 'warning');
+                {% endif %}
+            }
+
+            startAutoRefresh() {
+                setInterval(() => {
+                    this.loadDocumentStatus();
+                }, 30000); // Refresh every 30 seconds
+            }
+
+            getCsrfToken() {
+                const token = document.querySelector('[name=csrfmiddlewaretoken]')?.value || 
+                             document.querySelector('meta[name="csrf-token"]')?.content || '';
+                return token;
+            }
+
+            showToast(title, message, type = 'info') {
+                const toastContainer = document.getElementById('toastContainer');
+                const toastId = 'toast_' + Date.now();
+                
+                const bgClass = {
+                    'success': 'bg-success',
+                    'error': 'bg-danger', 
+                    'warning': 'bg-warning',
+                    'info': 'bg-info'
+                }[type] || 'bg-info';
+                
+                const icon = {
+                    'success': 'fas fa-check-circle',
+                    'error': 'fas fa-exclamation-circle',
+                    'warning': 'fas fa-exclamation-triangle',
+                    'info': 'fas fa-info-circle'
+                }[type] || 'fas fa-info-circle';
+                
+                const toastHtml = `
+                    <div id="${toastId}" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+                        <div class="toast-header ${bgClass} text-white">
+                            <i class="${icon} me-2"></i>
+                            <strong class="me-auto">${title}</strong>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+                        </div>
+                        <div class="toast-body">
+                            ${message}
+                        </div>
+                    </div>
+                `;
+                
+                toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+                
+                const toastElement = document.getElementById(toastId);
+                const toast = new bootstrap.Toast(toastElement, {
+                    autohide: true,
+                    delay: type === 'error' ? 8000 : 5000
+                });
+                
+                toast.show();
+                
+                toastElement.addEventListener('hidden.bs.toast', () => {
+                    toastElement.remove();
+                });
+            }
+        }
+
+        // Global functions for template use
+        function regenerateComponent(componentId) {
+            documentManager.regenerateComponent(componentId);
+        }
+
+        function deleteComponent(componentId) {
+            documentManager.deleteComponent(componentId);
+        }
+
+        function viewComponent(componentId) {
+            documentManager.viewComponent(componentId);
+        }
+
+        function replaceComponent(componentId) {
+            documentManager.replaceComponent(componentId);
+        }
+
+        function showComponentHistory(componentId) {
+            documentManager.showComponentHistory(componentId);
+        }
+
+        function addComponent() {
+            documentManager.addComponent();
+        }
+
+        function generateMissingDocuments() {
+            documentManager.generateMissingDocuments();
+        }
+
+        function regenerateAllDocuments() {
+            documentManager.regenerateAllDocuments();
+        }
+
+        function createNewPackage() {
+            documentManager.createNewPackage();
+        }
+
+        function downloadPackage() {
+            documentManager.downloadPackage();
+        }
+
+        function showAddComponentPanel() {
+            documentManager.showAddComponentPanel();
+        }
+
+        function hideAddComponentPanel() {
+            documentManager.hideAddComponentPanel();
+        }
+
+        function showTemplateSelector() {
+            documentManager.showTemplateSelector();
+        }
+
+        function hideTemplateSelector() {
+            documentManager.hideTemplateSelector();
+        }
+
+        function updateTemplatePreview() {
+            documentManager.updateTemplatePreview();
+        }
+
+        function generateFromTemplate() {
+            documentManager.generateFromTemplate();
+        }
+
+        function showBulkPanel() {
+            documentManager.showBulkPanel();
+        }
+
+        function hideBulkPanel() {
+            documentManager.hideBulkPanel();
+        }
+
+        function startBulkOperation() {
+            documentManager.startBulkOperation();
+        }
+
+        // Initialize when page loads
+        let documentManager;
+        document.addEventListener('DOMContentLoaded', function() {
+            documentManager = new DocumentManager();
+        });
+    </script>
+</body>
+</html>

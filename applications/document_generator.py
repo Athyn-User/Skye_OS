@@ -8,6 +8,7 @@ from datetime import datetime, date
 from decimal import Decimal
 from typing import Dict, List, Optional, Tuple
 
+from django.db import models
 from django.conf import settings
 from django.template.loader import render_to_string
 from django.core.files.base import ContentFile

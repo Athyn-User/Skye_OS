@@ -87,16 +87,28 @@ def policy_list(request):
     return render(request, 'applications/policy_list.html', context)
 
 def policy_detail(request, policy_id):
-    """Display detailed information about a policy"""
+    """Display detailed information about a policy with document management"""
     policy = get_object_or_404(Policy, policy_id=policy_id)
+    
+    # Get related documents
+    from applications.document_models import PolicyDocumentPackage, EndorsementDocument
+    
+    # Get latest document package
+    latest_package = PolicyDocumentPackage.objects.filter(
+        policy=policy,
+        is_current=True
+    ).first()
+    
+    # Get all endorsements
+    endorsements = EndorsementDocument.objects.filter(
+        policy=policy
+    ).order_by('-endorsement_sequence')
     
     # Get related certificates
     certificates = Certificate.objects.filter(quote=policy.quote)
     
     # Calculate days until expiration
     days_until_exp = (policy.expiration_date - timezone.now().date()).days
-    
-    # Calculate days expired (positive number if expired)
     days_expired = abs(days_until_exp) if days_until_exp < 0 else 0
     
     # Determine if renewal is needed
@@ -106,9 +118,14 @@ def policy_detail(request, policy_id):
         'policy': policy,
         'certificates': certificates,
         'days_until_expiration': days_until_exp,
-        'days_expired': days_expired,  # Add this line
+        'days_expired': days_expired,
         'needs_renewal': needs_renewal,
+        'has_documents': latest_package is not None,
+        'latest_package': latest_package,
+        'endorsements': endorsements,
     }
+    
+    # Use the enhanced template
     return render(request, 'applications/policy_detail.html', context)
 
 def policy_from_quote(request, quote_id):

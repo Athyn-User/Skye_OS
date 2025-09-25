@@ -1,0 +1,924 @@
+{% csrf_token %}
+<meta name="csrf-token" content="{{ csrf_token }}">
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Document Management</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .document-actions {
+            position: sticky;
+            top: 0;
+            background: white;
+            z-index: 100;
+            border-bottom: 1px solid #dee2e6;
+            padding: 1rem 0;
+            margin-bottom: 1rem;
+        }
+        
+        .component-row {
+            transition: all 0.3s ease;
+            border-left: 4px solid transparent;
+        }
+        
+        .component-row.generating {
+            border-left-color: #ffc107;
+            background-color: #fff8e1;
+        }
+        
+        .component-row.success {
+            border-left-color: #28a745;
+            background-color: #f0f9f0;
+        }
+        
+        .component-row.error {
+            border-left-color: #dc3545;
+            background-color: #fdf2f2;
+        }
+        
+        .bulk-selection {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .progress-container {
+            display: none;
+            margin-top: 1rem;
+        }
+        
+        .template-selector {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .action-button {
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 0.5rem;
+        }
+        
+        .status-pending { background-color: #6c757d; }
+        .status-generating { background-color: #ffc107; }
+        .status-generated { background-color: #28a745; }
+        .status-error { background-color: #dc3545; }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <!-- Enhanced Document Actions Bar -->
+        <div class="document-actions">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h4 class="mb-0">
+                        <i class="fas fa-file-alt text-primary"></i>
+                        Policy Documents - POL-COM-00002-00
+                    </h4>
+                    <small class="text-muted">Tech Solutions Corp</small>
+                </div>
+                <div class="col-md-6 text-end">
+                    <div class="btn-group me-2" role="group">
+                        <button type="button" class="btn btn-outline-success" onclick="generateMissingDocuments()">
+                            <i class="fas fa-plus"></i> Generate Missing
+                        </button>
+                        <button type="button" class="btn btn-outline-primary" onclick="regenerateAllDocuments()">
+                            <i class="fas fa-redo"></i> Regenerate All
+                        </button>
+                    </div>
+                    
+                    <div class="btn-group me-2" role="group">
+                        <button type="button" class="btn btn-outline-info dropdown-toggle" data-bs-toggle="dropdown">
+                            <i class="fas fa-magic"></i> Templates
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#" onclick="showTemplateSelector()">
+                                <i class="fas fa-file-contract"></i> Generate from Template
+                            </a></li>
+                            <li><a class="dropdown-item" href="#" onclick="showBulkGeneration()">
+                                <i class="fas fa-layer-group"></i> Bulk Generation
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="/documents/templates/">
+                                <i class="fas fa-cog"></i> Manage Templates
+                            </a></li>
+                        </ul>
+                    </div>
+                    
+                    <button type="button" class="btn btn-primary" onclick="downloadPackage()">
+                        <i class="fas fa-download"></i> Download Package
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Template Selector Modal -->
+        <div class="template-selector" id="templateSelector" style="display: none;">
+            <h5><i class="fas fa-file-contract"></i> Generate Document from Template</h5>
+            <div class="row">
+                <div class="col-md-4">
+                    <label class="form-label">Select Template</label>
+                    <select class="form-select" id="templateSelect" onchange="updateTemplatePreview()">
+                        <option value="">Choose template...</option>
+                        <option value="1">Commercial Property Endorsement</option>
+                        <option value="2">Additional Insured Form</option>
+                        <option value="3">Waiver of Subrogation</option>
+                        <option value="4">Primary Non-Contributory</option>
+                        <option value="5">Custom Certificate</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Document Type</label>
+                    <select class="form-select" id="documentType">
+                        <option value="endorsement">Endorsement</option>
+                        <option value="certificate">Certificate</option>
+                        <option value="notice">Notice</option>
+                        <option value="custom">Custom</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">&nbsp;</label>
+                    <div>
+                        <button type="button" class="btn btn-success" onclick="generateFromTemplate()">
+                            <i class="fas fa-magic"></i> Generate Document
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="hideTemplateSelector()">
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Template Preview -->
+            <div id="templatePreview" style="display: none; margin-top: 1rem;">
+                <h6>Template Preview</h6>
+                <div class="alert alert-info">
+                    <strong>Commercial Property Endorsement</strong><br>
+                    Generates additional insured endorsement for commercial property policies.
+                    <br><small class="text-muted">Variables: Policy Number, Insured Name, Effective Date, Additional Insured Details</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bulk Generation Panel -->
+        <div class="bulk-selection" id="bulkSelection" style="display: none;">
+            <h5><i class="fas fa-layer-group"></i> Bulk Document Generation</h5>
+            <div class="row">
+                <div class="col-md-3">
+                    <label class="form-label">Generation Type</label>
+                    <select class="form-select" id="bulkGenerationType">
+                        <option value="missing">Generate Missing Only</option>
+                        <option value="all">Generate All Documents</option>
+                        <option value="regenerate">Regenerate Existing</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Select Policies</label>
+                    <select multiple class="form-select" id="bulkPolicySelect" style="height: 100px;">
+                        <option value="1" selected>POL-COM-00002-00</option>
+                        <option value="2">POL-COM-00003-00</option>
+                        <option value="3">POL-COM-00004-00</option>
+                        <option value="4">POL-AUTO-00001-00</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Options</label>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="emailAfterGeneration">
+                        <label class="form-check-label" for="emailAfterGeneration">
+                            Email when complete
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="overwriteExisting">
+                        <label class="form-check-label" for="overwriteExisting">
+                            Overwrite existing
+                        </label>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">&nbsp;</label>
+                    <div>
+                        <button type="button" class="btn btn-primary" onclick="startBulkGeneration()">
+                            <i class="fas fa-play"></i> Start Generation
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="hideBulkSelection()">
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Progress Bar -->
+            <div class="progress-container" id="bulkProgress">
+                <h6>Generation Progress</h6>
+                <div class="progress mb-2" style="height: 25px;">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" 
+                         style="width: 0%" id="progressBar">0%</div>
+                </div>
+                <div id="progressDetails" class="small text-muted">Preparing...</div>
+            </div>
+        </div>
+
+        <!-- Enhanced Document Components Table -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Document Components</h5>
+                <div class="badge bg-success">Package Status: Generated</div>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 40px;">
+                                    <input type="checkbox" class="form-check-input" id="selectAll" onchange="toggleAllComponents()">
+                                </th>
+                                <th>Order</th>
+                                <th>Component</th>
+                                <th>Type</th>
+                                <th>Status</th>
+                                <th>Pages</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="component-row" data-component-id="1">
+                                <td>
+                                    <input type="checkbox" class="form-check-input component-checkbox" value="1">
+                                </td>
+                                <td><span class="badge bg-secondary">1</span></td>
+                                <td>
+                                    <div>
+                                        <strong>Commercial Property Declaration Page</strong>
+                                        <br><small class="text-muted">Last generated: Sep 25, 2025 11:40</small>
+                                    </div>
+                                </td>
+                                <td><span class="badge bg-primary">declaration</span></td>
+                                <td>
+                                    <span class="status-indicator status-generated"></span>
+                                    <span class="badge bg-success">Generated</span>
+                                </td>
+                                <td>2</td>
+                                <td>
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <button type="button" class="btn btn-outline-primary" onclick="viewComponent(1)" title="View">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-outline-warning" onclick="regenerateComponent(1)" title="Regenerate">
+                                            <i class="fas fa-redo"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-outline-info dropdown-toggle" data-bs-toggle="dropdown" title="More Options">
+                                            <i class="fas fa-ellipsis-h"></i>
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                            <li><a class="dropdown-item" href="#" onclick="editComponent(1)">
+                                                <i class="fas fa-edit"></i> Edit Details
+                                            </a></li>
+                                            <li><a class="dropdown-item" href="#" onclick="duplicateComponent(1)">
+                                                <i class="fas fa-copy"></i> Duplicate
+                                            </a></li>
+                                            <li><a class="dropdown-item" href="#" onclick="replaceComponent(1)">
+                                                <i class="fas fa-upload"></i> Replace File
+                                            </a></li>
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li><a class="dropdown-item text-danger" href="#" onclick="deleteComponent(1)">
+                                                <i class="fas fa-trash"></i> Delete
+                                            </a></li>
+                                        </ul>
+                                    </div>
+                                </td>
+                            </tr>
+                            
+                            <tr class="component-row" data-component-id="2">
+                                <td>
+                                    <input type="checkbox" class="form-check-input component-checkbox" value="2">
+                                </td>
+                                <td><span class="badge bg-secondary">2</span></td>
+                                <td>
+                                    <div>
+                                        <strong>Commercial Property Standard Policy Form</strong>
+                                        <br><small class="text-muted text-danger">Generation failed</small>
+                                    </div>
+                                </td>
+                                <td><span class="badge bg-info">policy_form</span></td>
+                                <td>
+                                    <span class="status-indicator status-error"></span>
+                                    <span class="badge bg-danger">Error</span>
+                                </td>
+                                <td>0</td>
+                                <td>
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <button type="button" class="btn btn-outline-danger" onclick="regenerateComponent(2)" title="Retry Generation">
+                                            <i class="fas fa-redo"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-outline-secondary" onclick="viewError(2)" title="View Error">
+                                            <i class="fas fa-exclamation-triangle"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            
+                            <tr class="component-row" data-component-id="3">
+                                <td>
+                                    <input type="checkbox" class="form-check-input component-checkbox" value="3">
+                                </td>
+                                <td><span class="badge bg-secondary">3</span></td>
+                                <td>
+                                    <div>
+                                        <strong>Additional Insured - Commercial Property</strong>
+                                        <br><small class="text-muted text-warning">Pending generation</small>
+                                    </div>
+                                </td>
+                                <td><span class="badge bg-warning">endorsement</span></td>
+                                <td>
+                                    <span class="status-indicator status-pending"></span>
+                                    <span class="badge bg-secondary">Pending</span>
+                                </td>
+                                <td>0</td>
+                                <td>
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <button type="button" class="btn btn-outline-success" onclick="generateComponent(3)" title="Generate Now">
+                                            <i class="fas fa-play"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-outline-info" onclick="configureComponent(3)" title="Configure">
+                                            <i class="fas fa-cog"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Results Toast Container -->
+        <div class="toast-container position-fixed bottom-0 end-0 p-3" id="toastContainer">
+            <!-- Toast messages will be inserted here -->
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Enhanced Document Management Functions
+        
+        let currentPolicyId = 1; // This would come from the template context
+        let bulkGenerationInProgress = false;
+
+        // Individual Component Actions
+        async function regenerateComponent(componentId) {
+            const row = document.querySelector(`tr[data-component-id="${componentId}"]`);
+            const statusCell = row.querySelector('.status-indicator');
+            const statusBadge = row.querySelector('.badge');
+            const actionsCell = row.querySelector('.btn-group');
+            
+            // Update UI to show generating state
+            row.classList.add('generating');
+            statusCell.className = 'status-indicator status-generating';
+            statusBadge.className = 'badge bg-warning';
+            statusBadge.textContent = 'Generating...';
+            
+            // Disable action buttons
+            actionsCell.querySelectorAll('button').forEach(btn => btn.disabled = true);
+            
+            try {
+                const response = await fetch(`/policies/${currentPolicyId}/components/${componentId}/regenerate/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCsrfToken()
+                    }
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Update success state
+                    row.classList.remove('generating');
+                    row.classList.add('success');
+                    statusCell.className = 'status-indicator status-generated';
+                    statusBadge.className = 'badge bg-success';
+                    statusBadge.textContent = 'Generated';
+                    
+                    // Update pages count
+                    const pagesCell = row.cells[5];
+                    pagesCell.textContent = result.component.pages || 0;
+                    
+                    // Update last generated time
+                    const componentCell = row.cells[2];
+                    const timeElement = componentCell.querySelector('small');
+                    timeElement.textContent = `Last generated: ${new Date(result.component.generated_at).toLocaleString()}`;
+                    timeElement.className = 'text-muted';
+                    
+                    showToast('Success', result.message, 'success');
+                } else {
+                    // Update error state
+                    row.classList.remove('generating');
+                    row.classList.add('error');
+                    statusCell.className = 'status-indicator status-error';
+                    statusBadge.className = 'badge bg-danger';
+                    statusBadge.textContent = 'Error';
+                    
+                    showToast('Error', result.message, 'error');
+                }
+                
+            } catch (error) {
+                console.error('Error regenerating component:', error);
+                row.classList.remove('generating');
+                row.classList.add('error');
+                statusCell.className = 'status-indicator status-error';
+                statusBadge.className = 'badge bg-danger';
+                statusBadge.textContent = 'Error';
+                
+                showToast('Error', 'Failed to regenerate component', 'error');
+            } finally {
+                // Re-enable action buttons
+                actionsCell.querySelectorAll('button').forEach(btn => btn.disabled = false);
+                
+                // Remove visual state after delay
+                setTimeout(() => {
+                    row.classList.remove('generating', 'success', 'error');
+                }, 3000);
+            }
+        }
+
+        // Generate Missing Documents
+        async function generateMissingDocuments() {
+            const button = event.target.closest('button');
+            const originalText = button.innerHTML;
+            button.disabled = true;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+            
+            try {
+                const response = await fetch(`/policies/${currentPolicyId}/generate-missing/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCsrfToken()
+                    }
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showToast('Success', `Generated ${result.generated_count} missing documents`, 'success');
+                    
+                    // Refresh the page or update component statuses
+                    setTimeout(() => location.reload(), 2000);
+                } else {
+                    showToast('Error', result.message, 'error');
+                }
+                
+            } catch (error) {
+                console.error('Error generating missing documents:', error);
+                showToast('Error', 'Failed to generate missing documents', 'error');
+            } finally {
+                button.disabled = false;
+                button.innerHTML = originalText;
+            }
+        }
+
+        // Regenerate All Documents
+        async function regenerateAllDocuments() {
+            if (!confirm('This will regenerate all documents in the package. Continue?')) {
+                return;
+            }
+            
+            const button = event.target.closest('button');
+            const originalText = button.innerHTML;
+            button.disabled = true;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Regenerating...';
+            
+            try {
+                // Get all component IDs
+                const componentIds = Array.from(document.querySelectorAll('.component-checkbox'))
+                    .map(cb => cb.value);
+                
+                // Regenerate each component
+                for (const componentId of componentIds) {
+                    await regenerateComponent(componentId);
+                    // Small delay between requests
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                }
+                
+                showToast('Success', 'All documents regenerated successfully', 'success');
+                
+            } catch (error) {
+                console.error('Error regenerating all documents:', error);
+                showToast('Error', 'Failed to regenerate all documents', 'error');
+            } finally {
+                button.disabled = false;
+                button.innerHTML = originalText;
+            }
+        }
+
+        // Template Generation Functions
+        function showTemplateSelector() {
+            document.getElementById('templateSelector').style.display = 'block';
+            document.getElementById('bulkSelection').style.display = 'none';
+        }
+
+        function hideTemplateSelector() {
+            document.getElementById('templateSelector').style.display = 'none';
+        }
+
+        function updateTemplatePreview() {
+            const templateSelect = document.getElementById('templateSelect');
+            const preview = document.getElementById('templatePreview');
+            
+            if (templateSelect.value) {
+                preview.style.display = 'block';
+                // Update preview content based on selected template
+            } else {
+                preview.style.display = 'none';
+            }
+        }
+
+        async function generateFromTemplate() {
+            const templateId = document.getElementById('templateSelect').value;
+            const documentType = document.getElementById('documentType').value;
+            
+            if (!templateId) {
+                showToast('Warning', 'Please select a template', 'warning');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/documents/generate-from-template/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCsrfToken()
+                    },
+                    body: JSON.stringify({
+                        policy_id: currentPolicyId,
+                        template_id: templateId,
+                        component_type: documentType,
+                        data: {} // Additional custom data if needed
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showToast('Success', result.message, 'success');
+                    hideTemplateSelector();
+                    
+                    // Refresh page to show new component
+                    setTimeout(() => location.reload(), 2000);
+                } else {
+                    showToast('Error', result.message, 'error');
+                }
+                
+            } catch (error) {
+                console.error('Error generating from template:', error);
+                showToast('Error', 'Failed to generate document from template', 'error');
+            }
+        }
+
+        // Bulk Generation Functions
+        function showBulkGeneration() {
+            document.getElementById('bulkSelection').style.display = 'block';
+            document.getElementById('templateSelector').style.display = 'none';
+        }
+
+        function hideBulkSelection() {
+            document.getElementById('bulkSelection').style.display = 'none';
+            document.getElementById('bulkProgress').style.display = 'none';
+        }
+
+        async function startBulkGeneration() {
+            if (bulkGenerationInProgress) {
+                return;
+            }
+            
+            const generationType = document.getElementById('bulkGenerationType').value;
+            const selectedPolicies = Array.from(document.getElementById('bulkPolicySelect').selectedOptions)
+                .map(option => option.value);
+            
+            if (selectedPolicies.length === 0) {
+                showToast('Warning', 'Please select at least one policy', 'warning');
+                return;
+            }
+            
+            bulkGenerationInProgress = true;
+            document.getElementById('bulkProgress').style.display = 'block';
+            
+            const progressBar = document.getElementById('progressBar');
+            const progressDetails = document.getElementById('progressDetails');
+            
+            try {
+                const response = await fetch('/documents/bulk-generate/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCsrfToken()
+                    },
+                    body: JSON.stringify({
+                        policy_ids: selectedPolicies,
+                        type: generationType
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Animate progress
+                    let progress = 0;
+                    const totalPolicies = result.total_policies;
+                    const successfulPolicies = result.successful_policies;
+                    
+                    const interval = setInterval(() => {
+                        progress += 10;
+                        progressBar.style.width = progress + '%';
+                        progressBar.textContent = progress + '%';
+                        
+                        if (progress >= 100) {
+                            clearInterval(interval);
+                            progressDetails.innerHTML = `
+                                <div class="text-success">
+                                    <i class="fas fa-check-circle"></i> 
+                                    Generation Complete: ${successfulPolicies}/${totalPolicies} policies processed
+                                    <br>Total documents generated: ${result.total_documents_generated}
+                                </div>
+                            `;
+                            
+                            showToast('Success', result.message, 'success');
+                            
+                            setTimeout(() => {
+                                hideBulkSelection();
+                                location.reload();
+                            }, 3000);
+                        } else {
+                            progressDetails.textContent = `Processing policies... ${Math.floor(progress/100 * totalPolicies)}/${totalPolicies}`;
+                        }
+                    }, 200);
+                } else {
+                    progressBar.className = 'progress-bar bg-danger';
+                    progressBar.style.width = '100%';
+                    progressBar.textContent = 'Failed';
+                    progressDetails.innerHTML = `<div class="text-danger"><i class="fas fa-exclamation-triangle"></i> ${result.message}</div>`;
+                    
+                    showToast('Error', result.message, 'error');
+                }
+                
+            } catch (error) {
+                console.error('Error in bulk generation:', error);
+                progressBar.className = 'progress-bar bg-danger';
+                progressBar.style.width = '100%';
+                progressBar.textContent = 'Error';
+                progressDetails.innerHTML = `<div class="text-danger"><i class="fas fa-exclamation-triangle"></i> Failed to start bulk generation</div>`;
+                
+                showToast('Error', 'Failed to start bulk generation', 'error');
+            } finally {
+                bulkGenerationInProgress = false;
+            }
+        }
+
+        // Component Selection Functions
+        function toggleAllComponents() {
+            const selectAll = document.getElementById('selectAll');
+            const checkboxes = document.querySelectorAll('.component-checkbox');
+            
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = selectAll.checked;
+            });
+        }
+
+        function getSelectedComponents() {
+            return Array.from(document.querySelectorAll('.component-checkbox:checked'))
+                .map(cb => cb.value);
+        }
+
+        // Individual Component Actions
+        function viewComponent(componentId) {
+            // Open component in new tab or modal
+            window.open(`/documents/components/${componentId}/view/`, '_blank');
+        }
+
+        function generateComponent(componentId) {
+            regenerateComponent(componentId);
+        }
+
+        function viewError(componentId) {
+            // Show error details in modal
+            showToast('Error Details', 'Template not found for this component type', 'error');
+        }
+
+        function editComponent(componentId) {
+            showToast('Info', 'Component editing feature coming soon', 'info');
+        }
+
+        function duplicateComponent(componentId) {
+            if (confirm('Create a duplicate of this component?')) {
+                showToast('Info', 'Component duplication feature coming soon', 'info');
+            }
+        }
+
+        function replaceComponent(componentId) {
+            // Create file input for replacement
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.pdf';
+            input.onchange = function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    uploadReplacementFile(componentId, file);
+                }
+            };
+            input.click();
+        }
+
+        async function uploadReplacementFile(componentId, file) {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('component_id', componentId);
+            
+            try {
+                const response = await fetch(`/documents/components/${componentId}/replace/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': getCsrfToken()
+                    },
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showToast('Success', 'Component file replaced successfully', 'success');
+                    setTimeout(() => location.reload(), 2000);
+                } else {
+                    showToast('Error', result.message, 'error');
+                }
+            } catch (error) {
+                console.error('Error uploading replacement file:', error);
+                showToast('Error', 'Failed to replace component file', 'error');
+            }
+        }
+
+        function deleteComponent(componentId) {
+            if (confirm('Are you sure you want to delete this component? This action cannot be undone.')) {
+                // Implementation for component deletion
+                showToast('Info', 'Component deletion feature coming soon', 'info');
+            }
+        }
+
+        function configureComponent(componentId) {
+            // Show configuration modal for endorsements
+            showToast('Info', 'Component configuration feature coming soon', 'info');
+        }
+
+        // Package Actions
+        function downloadPackage() {
+            window.open(`/policies/${currentPolicyId}/documents/download/`, '_blank');
+        }
+
+        // Utility Functions
+        function getCsrfToken() {
+            return document.querySelector('[name=csrfmiddlewaretoken]')?.value || 
+                   document.querySelector('meta[name="csrf-token"]')?.content || '';
+        }
+
+        function showToast(title, message, type = 'info') {
+            const toastContainer = document.getElementById('toastContainer');
+            const toastId = 'toast_' + Date.now();
+            
+            const bgClass = {
+                'success': 'bg-success',
+                'error': 'bg-danger', 
+                'warning': 'bg-warning',
+                'info': 'bg-info'
+            }[type] || 'bg-info';
+            
+            const icon = {
+                'success': 'fas fa-check-circle',
+                'error': 'fas fa-exclamation-circle',
+                'warning': 'fas fa-exclamation-triangle',
+                'info': 'fas fa-info-circle'
+            }[type] || 'fas fa-info-circle';
+            
+            const toastHtml = `
+                <div id="${toastId}" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+                    <div class="toast-header ${bgClass} text-white">
+                        <i class="${icon} me-2"></i>
+                        <strong class="me-auto">${title}</strong>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+                    </div>
+                    <div class="toast-body">
+                        ${message}
+                    </div>
+                </div>
+            `;
+            
+            toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+            
+            const toastElement = document.getElementById(toastId);
+            const toast = new bootstrap.Toast(toastElement, {
+                autohide: true,
+                delay: type === 'error' ? 8000 : 5000
+            });
+            
+            toast.show();
+            
+            // Remove toast element after it's hidden
+            toastElement.addEventListener('hidden.bs.toast', () => {
+                toastElement.remove();
+            });
+        }
+
+        // Auto-refresh component statuses
+        function startAutoRefresh() {
+            setInterval(async () => {
+                try {
+                    const response = await fetch(`/policies/${currentPolicyId}/documents/status/`);
+                    const data = await response.json();
+                    
+                    if (data.components) {
+                        updateComponentStatuses(data.components);
+                    }
+                } catch (error) {
+                    // Silently fail auto-refresh
+                    console.debug('Auto-refresh failed:', error);
+                }
+            }, 30000); // Refresh every 30 seconds
+        }
+
+        function updateComponentStatuses(components) {
+            components.forEach(component => {
+                const row = document.querySelector(`tr[data-component-id="${component.id}"]`);
+                if (row) {
+                    const statusCell = row.querySelector('.status-indicator');
+                    const statusBadge = row.querySelector('.badge');
+                    const pagesCell = row.cells[5];
+                    
+                    // Update status indicator
+                    statusCell.className = `status-indicator status-${component.status}`;
+                    
+                    // Update status badge
+                    const statusClasses = {
+                        'pending': 'badge bg-secondary',
+                        'generating': 'badge bg-warning',
+                        'generated': 'badge bg-success',
+                        'error': 'badge bg-danger'
+                    };
+                    
+                    statusBadge.className = statusClasses[component.status] || 'badge bg-secondary';
+                    statusBadge.textContent = component.status.charAt(0).toUpperCase() + component.status.slice(1);
+                    
+                    // Update pages count
+                    pagesCell.textContent = component.pages || 0;
+                }
+            });
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            startAutoRefresh();
+            
+            // Initialize tooltips
+            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            // Ctrl+G for generate missing
+            if (e.ctrlKey && e.key === 'g') {
+                e.preventDefault();
+                generateMissingDocuments();
+            }
+            
+            // Ctrl+R for regenerate all
+            if (e.ctrlKey && e.key === 'r') {
+                e.preventDefault();
+                regenerateAllDocuments();
+            }
+            
+            // Escape to close modals
+            if (e.key === 'Escape') {
+                hideTemplateSelector();
+                hideBulkSelection();
+            }
+        });
+    </script>
+</body>
+</html>

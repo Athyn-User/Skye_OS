@@ -84,12 +84,12 @@ def view_policy_documents(request, policy_id):
     # Get components for current package
     components = package.components.all().order_by('sequence_order') if package else []
     
-    # Get available templates for adding components - using template_id instead of id
+    # Get available templates for adding components
     available_templates = DocumentTemplate.objects.filter(
         product=policy.quote.application.product,
         is_active=True
     ).exclude(
-        template_id__in=components.values_list('template_id', flat=True)
+        id__in=components.values_list('template_id', flat=True)
     ) if package and components else DocumentTemplate.objects.filter(
         product=policy.quote.application.product,
         is_active=True

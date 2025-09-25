@@ -1,0 +1,220 @@
+<!-- File: applications/templates/applications/document_dashboard.html -->
+{% extends 'base.html' %}
+
+{% block title %}Document Management Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col">
+            <h2>Document Management Dashboard</h2>
+            <p class="text-muted">Manage policy documents, endorsements, and templates</p>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-2">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h3 class="text-primary">{{ total_templates }}</h3>
+                    <small>Templates</small>
+                </div>
+                <div class="card-footer p-2">
+                    <a href="{% url 'applications:manage_templates' %}" class="btn btn-sm btn-outline-primary">Manage</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-2">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h3 class="text-success">{{ total_packages }}</h3>
+                    <small>Policy Packages</small>
+                </div>
+                <div class="card-footer p-2">
+                    <small>{{ packages_this_month }} this month</small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-2">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h3 class="text-info">{{ total_endorsements }}</h3>
+                    <small>Endorsements</small>
+                </div>
+                <div class="card-footer p-2">
+                    <a href="#" class="btn btn-sm btn-outline-info">View All</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-2">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h3 class="text-warning">{{ policies_without_docs|length }}</h3>
+                    <small>Need Documents</small>
+                </div>
+                <div class="card-footer p-2">
+                    <a href="#policies-need-docs" class="btn btn-sm btn-outline-warning">Generate</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5>Quick Actions</h5>
+                    <div class="btn-group-vertical w-100">
+                        <a href="{% url 'applications:upload_templates_page' %}" class="btn btn-outline-primary">
+                            <i class="fas fa-upload"></i> Upload Templates
+                        </a>
+                        <a href="{% url 'applications:manage_templates' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-file-alt"></i> Manage Templates
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Recent Document Packages -->
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Recent Policy Packages</h5>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-sm table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Package #</th>
+                                <th>Policy</th>
+                                <th>Generated</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for package in recent_packages %}
+                            <tr>
+                                <td>{{ package.package_number }}</td>
+                                <td>
+                                    <a href="{% url 'applications:policy_detail' package.policy.policy_id %}">
+                                        {{ package.policy.policy_number }}
+                                    </a>
+                                </td>
+                                <td>{{ package.generated_date|date:"M d, H:i" }}</td>
+                                <td>
+                                    <a href="{% url 'applications:view_policy_documents' package.policy.policy_id %}" 
+                                       class="btn btn-sm btn-outline-primary">View</a>
+                                    <a href="{% url 'applications:download_policy_package' package.package_id %}" 
+                                       class="btn btn-sm btn-outline-secondary">
+                                        <i class="fas fa-download"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center text-muted">No packages generated yet</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Endorsements -->
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">Recent Endorsements</h5>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-sm table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Endorsement #</th>
+                                <th>Policy</th>
+                                <th>Type</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for endorsement in recent_endorsements %}
+                            <tr>
+                                <td>{{ endorsement.endorsement_number }}</td>
+                                <td>
+                                    <a href="{% url 'applications:policy_detail' endorsement.policy.policy_id %}">
+                                        {{ endorsement.policy.policy_number }}
+                                    </a>
+                                </td>
+                                <td>{{ endorsement.endorsement_title|truncatewords:3 }}</td>
+                                <td>
+                                    <a href="{% url 'applications:download_endorsement' endorsement.endorsement_id %}" 
+                                       class="btn btn-sm btn-outline-info">
+                                        <i class="fas fa-download"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center text-muted">No endorsements created yet</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Policies Needing Documents -->
+    <div class="card" id="policies-need-docs">
+        <div class="card-header bg-warning">
+            <h5 class="mb-0">Active Policies Without Documents</h5>
+        </div>
+        <div class="card-body">
+            <table class="table table-sm">
+                <thead>
+                    <tr>
+                        <th>Policy Number</th>
+                        <th>Company</th>
+                        <th>Product</th>
+                        <th>Effective Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for policy in policies_without_docs %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'applications:policy_detail' policy.policy_id %}">
+                                {{ policy.policy_number }}
+                            </a>
+                        </td>
+                        <td>{{ policy.quote.application.company.company_name }}</td>
+                        <td>{{ policy.quote.application.product.product_name }}</td>
+                        <td>{{ policy.effective_date|date:"M d, Y" }}</td>
+                        <td>
+                            <a href="{% url 'applications:generate_policy_documents' policy.policy_id %}" 
+                               class="btn btn-sm btn-success">
+                                <i class="fas fa-file-pdf"></i> Generate Documents
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center text-success">
+                            <i class="fas fa-check-circle"></i> All active policies have documents
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

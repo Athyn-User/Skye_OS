@@ -1,0 +1,123 @@
+<!-- File: applications/templates/applications/create_endorsement.html -->
+{% extends 'base.html' %}
+
+{% block title %}Create Endorsement - {{ policy.policy_number }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2>Create Endorsement</h2>
+            <p class="text-muted">Policy: {{ policy.policy_number }} - {{ policy.quote.application.company.company_name }}</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{% url 'applications:policy_detail' policy.policy_id %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Policy
+            </a>
+        </div>
+    </div>
+
+    <form method="POST">
+        {% csrf_token %}
+        
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">Endorsement Details</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label">Endorsement Type</label>
+                            <select name="template_code" class="form-select" required onchange="showEndorsementFields(this.value)">
+                                <option value="">Select endorsement type...</option>
+                                {% for template in templates %}
+                                <option value="{{ template.template_code }}">{{ template.template_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Effective Date</label>
+                            <input type="date" name="effective_date" class="form-control" 
+                                   value="{{ today }}" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Description</label>
+                            <textarea name="description" class="form-control" rows="3"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0">Endorsement Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <!-- Additional Insured Fields -->
+                        <div id="additional-insured-fields" style="display:none;">
+                            <h6>Additional Insured Information</h6>
+                            <div class="mb-3">
+                                <label class="form-label">Name</label>
+                                <input type="text" name="additional_insured_name" class="form-control">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Address</label>
+                                <textarea name="additional_insured_address" class="form-control" rows="3"></textarea>
+                            </div>
+                        </div>
+                        
+                        <!-- Waiver of Subrogation Fields -->
+                        <div id="waiver-fields" style="display:none;">
+                            <h6>Waiver of Subrogation</h6>
+                            <div class="mb-3">
+                                <label class="form-label">Waiving Rights Against</label>
+                                <input type="text" name="waiver_party" class="form-control">
+                            </div>
+                        </div>
+                        
+                        <!-- Generic Fields (always shown) -->
+                        <div id="generic-fields">
+                            <p class="text-muted">Select an endorsement type to see specific fields.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mt-3">
+            <div class="col-12">
+                <button type="submit" class="btn btn-success btn-lg">
+                    <i class="fas fa-file-medical"></i> Generate Endorsement
+                </button>
+                <a href="{% url 'applications:policy_detail' policy.policy_id %}" class="btn btn-secondary btn-lg">
+                    Cancel
+                </a>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+function showEndorsementFields(templateCode) {
+    // Hide all specific field groups
+    document.getElementById('additional-insured-fields').style.display = 'none';
+    document.getElementById('waiver-fields').style.display = 'none';
+    document.getElementById('generic-fields').style.display = 'none';
+    
+    // Show relevant fields based on template code
+    if (templateCode.includes('ADD-INSURED')) {
+        document.getElementById('additional-insured-fields').style.display = 'block';
+    } else if (templateCode.includes('WAIVER')) {
+        document.getElementById('waiver-fields').style.display = 'block';
+    } else if (templateCode) {
+        document.getElementById('generic-fields').style.display = 'block';
+    } else {
+        document.getElementById('generic-fields').style.display = 'block';
+    }
+}
+</script>
+{% endblock %}

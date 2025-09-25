@@ -1,0 +1,189 @@
+<!-- File: applications/templates/applications/policy_detail_enhanced.html -->
+<!-- This replaces or enhances your existing policy_detail.html -->
+{% extends 'base.html' %}
+
+{% block title %}Policy {{ policy.policy_number }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2>Policy Details</h2>
+            <h4>{{ policy.policy_number }}</h4>
+        </div>
+        <div class="col-md-4 text-end">
+            <div class="btn-group">
+                <button class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown">
+                    <i class="fas fa-file-pdf"></i> Documents
+                </button>
+                <ul class="dropdown-menu">
+                    {% if has_documents %}
+                        <li><a class="dropdown-item" href="{% url 'applications:view_policy_documents' policy.policy_id %}">
+                            <i class="fas fa-folder-open"></i> View Documents</a></li>
+                        <li><a class="dropdown-item" href="{% url 'applications:download_policy_package' latest_package.package_id %}">
+                            <i class="fas fa-download"></i> Download Package</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="{% url 'applications:generate_policy_documents' policy.policy_id %}?regenerate=1">
+                            <i class="fas fa-redo"></i> Regenerate Documents</a></li>
+                    {% else %}
+                        <li><a class="dropdown-item" href="{% url 'applications:generate_policy_documents' policy.policy_id %}">
+                            <i class="fas fa-file-medical"></i> Generate Documents</a></li>
+                    {% endif %}
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="{% url 'applications:create_endorsement' policy.policy_id %}">
+                        <i class="fas fa-plus-circle"></i> Create Endorsement</a></li>
+                </ul>
+            </div>
+            <a href="{% url 'applications:policy_list' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back
+            </a>
+        </div>
+    </div>
+
+    <!-- Document Status Alert -->
+    {% if not has_documents %}
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-triangle"></i> 
+        <strong>Documents Not Generated</strong> - This policy needs its document package generated.
+        <a href="{% url 'applications:generate_policy_documents' policy.policy_id %}" class="btn btn-sm btn-success ms-3">
+            Generate Now
+        </a>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endif %}
+
+    <div class="row">
+        <!-- Policy Information (existing content) -->
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Policy Information</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm">
+                        <tr>
+                            <th width="40%">Policy Number:</th>
+                            <td><strong>{{ policy.policy_number }}</strong></td>
+                        </tr>
+                        <tr>
+                            <th>Status:</th>
+                            <td>
+                                {% if policy.policy_status == 'active' %}
+                                    <span class="badge bg-success">{{ policy.get_policy_status_display }}</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">{{ policy.get_policy_status_display }}</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Effective Date:</th>
+                            <td>{{ policy.effective_date|date:"M d, Y" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Expiration Date:</th>
+                            <td>{{ policy.expiration_date|date:"M d, Y" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Annual Premium:</th>
+                            <td>${{ policy.annual_premium|floatformat:2 }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Document Status Card -->
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">Document Status</h5>
+                </div>
+                <div class="card-body">
+                    {% if latest_package %}
+                    <table class="table table-sm">
+                        <tr>
+                            <th>Package Number:</th>
+                            <td>{{ latest_package.package_number }}</td>
+                        </tr>
+                        <tr>
+                            <th>Version:</th>
+                            <td>{{ latest_package.package_version }}</td>
+                        </tr>
+                        <tr>
+                            <th>Generated:</th>
+                            <td>{{ latest_package.generated_date|date:"M d, Y H:i" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Total Pages:</th>
+                            <td>{{ latest_package.total_pages }}</td>
+                        </tr>
+                        <tr>
+                            <th>Components:</th>
+                            <td>{{ latest_package.components.count }}</td>
+                        </tr>
+                    </table>
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'applications:view_policy_documents' policy.policy_id %}" 
+                           class="btn btn-info">
+                            <i class="fas fa-folder-open"></i> View All Documents
+                        </a>
+                        <a href="{% url 'applications:download_policy_package' latest_package.package_id %}" 
+                           class="btn btn-outline-info">
+                            <i class="fas fa-download"></i> Download Package
+                        </a>
+                    </div>
+                    {% else %}
+                    <p class="text-muted">No documents generated yet.</p>
+                    <a href="{% url 'applications:generate_policy_documents' policy.policy_id %}" 
+                       class="btn btn-success">
+                        <i class="fas fa-file-pdf"></i> Generate Documents
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Endorsements Section -->
+    <div class="card mb-4">
+        <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Endorsements</h5>
+            <a href="{% url 'applications:create_endorsement' policy.policy_id %}" class="btn btn-sm btn-light">
+                <i class="fas fa-plus"></i> Add Endorsement
+            </a>
+        </div>
+        <div class="card-body">
+            {% if endorsements %}
+            <table class="table table-sm">
+                <thead>
+                    <tr>
+                        <th>Number</th>
+                        <th>Title</th>
+                        <th>Effective Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for endorsement in endorsements %}
+                    <tr>
+                        <td>{{ endorsement.endorsement_number }}</td>
+                        <td>{{ endorsement.endorsement_title }}</td>
+                        <td>{{ endorsement.effective_date|date:"M d, Y" }}</td>
+                        <td>
+                            <a href="{% url 'applications:download_endorsement' endorsement.endorsement_id %}" 
+                               class="btn btn-sm btn-outline-secondary">
+                                <i class="fas fa-download"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p class="text-muted">No endorsements added yet.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

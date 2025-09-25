@@ -107,7 +107,7 @@
                                 {% for policy in policies %}
                                 <tr>
                                     <td>
-                                        <a href="{% url 'applications:policy_detail' policy.policy_id %}">
+                                        <a href="{% url 'applications:policy_detail' policy.pk %}">
                                             {{ policy.policy_number }}
                                         </a>
                                     </td>
