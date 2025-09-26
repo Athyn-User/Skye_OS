@@ -305,7 +305,15 @@ class EnhancedDocumentService:
             return False, {'error': str(e)}
     
     def create_document_package(self, policy: Policy, force_regenerate: bool = False) -> PolicyDocumentPackage:
-        """Create a complete document package for a policy"""
+        """Create a complete document package for a policy
+        
+        Args:
+            policy: The policy to create documents for
+            force_regenerate: If True, create a new package even if one exists
+        
+        Returns:
+            PolicyDocumentPackage: The created or existing package
+        """
         try:
             # Check if we should create new package
             if not force_regenerate:
@@ -328,7 +336,7 @@ class EnhancedDocumentService:
                 policy=policy
             ).aggregate(max_version=Max('package_version'))['max_version'] or 0
             
-            new_version = latest_version + 1 if force_regenerate else latest_version
+            new_version = latest_version + 1 if force_regenerate else latest_version + 1
             
             # Create new package
             package = PolicyDocumentPackage.objects.create(
@@ -353,7 +361,7 @@ class EnhancedDocumentService:
             return package
             
         except Exception as e:
-            logger.error(f"Error creating document package for policy {policy.policy_id}: {str(e)}")
+            logger.error(f"Error creating document package: {str(e)}")
             raise
     
     def update_package_status(self, package: PolicyDocumentPackage):

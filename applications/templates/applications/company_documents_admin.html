@@ -1,0 +1,89 @@
+﻿{% extends "base.html" %}
+{% block title %}All Documents - {{ company.company_name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h2>Document Management - {{ company.company_name }}</h2>
+    
+    <div class="row mb-3">
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5>Total Documents</h5>
+                    <h3>{{ stats.total }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5>Client Visible</h5>
+                    <h3>{{ stats.visible }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5>Client Removed</h5>
+                    <h3>{{ stats.removed }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5>Archived</h5>
+                    <h3>{{ stats.archived }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Document Name</th>
+                <th>Type</th>
+                <th>Uploaded</th>
+                <th>Status</th>
+                <th>Client Visible</th>
+                <th>Archive Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for doc in page_obj %}
+            <tr>
+                <td>{{ doc.document_name }}</td>
+                <td>{{ doc.document_type }}</td>
+                <td>{{ doc.uploaded_at|date:"Y-m-d H:i" }}</td>
+                <td>{{ doc.status }}</td>
+                <td>
+                    {% if doc.client_visible %}
+                        <span class="badge bg-success">Visible</span>
+                    {% else %}
+                        <span class="badge bg-warning">Hidden</span>
+                        {% if doc.client_removed_date %}
+                            <br><small>Removed: {{ doc.client_removed_date|date:"Y-m-d" }}</small>
+                        {% endif %}
+                    {% endif %}
+                </td>
+                <td>
+                    {% if doc.archive_path %}
+                        <span class="badge bg-info">Archived</span>
+                    {% else %}
+                        <span class="badge bg-secondary">Not Archived</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="{{ doc.get_archive_path }}" class="btn btn-sm btn-primary">View</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    {% include "includes/pagination.html" %}
+</div>
+{% endblock %}

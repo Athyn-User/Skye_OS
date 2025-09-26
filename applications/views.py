@@ -5,6 +5,8 @@ from .models import Application, Quote, Company, Broker, Product, Policy
 from .endorsement_generator import EndorsementGenerator
 from django.contrib.auth.decorators import login_required
 
+from . import additional_insured_views
+
 def dashboard(request):
     # Dashboard statistics
     total_applications = Application.objects.count()
@@ -683,28 +685,28 @@ def policy_communications_placeholder(request, policy_id):
 # ==========================================
 
 @login_required
-def policy_additional_insureds(request, policy_id):
-    """View and manage additional insureds for a policy"""
-    policy = get_object_or_404(Policy, policy_id=policy_id)
+#def policy_additional_insureds(request, policy_id):
+ #   """View and manage additional insureds for a policy"""
+  #  policy = get_object_or_404(Policy, policy_id=policy_id)
     
     # For now, return a placeholder
     # Replace this with actual implementation when ready
-    context = {
-        'object': policy,
-        'object_type': 'policy',
-        'page_title': 'Additional Insureds',
-        'active_tab': 'additional_insureds',
-        'icon': 'fa-user-plus',
-        'description': 'Manage additional insureds for this policy.',
-        'features': [
-            'Add additional insured entities',
-            'Manage coverage specifications',
-            'Generate additional insured endorsements',
-            'Track additional insured certificates',
-            'Manage waiver of subrogation'
-        ]
-    }
-    return render(request, 'applications/placeholder_page.html', context)
+    #context = {
+     #   'object': policy,
+      #  'object_type': 'policy',
+       # 'page_title': 'Additional Insureds',
+        #'active_tab': 'additional_insureds',
+        #'icon': 'fa-user-plus',
+        #'description': 'Manage additional insureds for this policy.',
+        #'features': [
+         #   'Add additional insured entities',
+          #  'Manage coverage specifications',
+           # 'Generate additional insured endorsements',
+           # 'Track additional insured certificates',
+            #'Manage waiver of subrogation'
+        #]
+    #}
+    # return render(request, 'applications/placeholder_page.html', context)
 
 @login_required
 def quote_additional_insureds(request, quote_id):
@@ -850,26 +852,26 @@ def quote_history(request, quote_id):
 # (Replace these with actual implementations)
 # ==========================================
 
-@login_required
-def add_additional_insured(request, policy_id):
-    """Add an additional insured to a policy"""
-    # Implement actual functionality
-    pass
+#@login_required
+#def add_additional_insured(request, policy_id):
+#    """Add an additional insured to a policy"""
+#    # Implement actual functionality
+#    pass
 
-@login_required
-def edit_additional_insured(request, policy_id, insured_id):
-    """Edit an additional insured"""
-    # Implement actual functionality
-    pass
+#@login_required
+#def edit_additional_insured(request, policy_id, insured_id):
+#    """Edit an additional insured"""
+#    # Implement actual functionality
+#    pass
 
-@login_required
-def delete_additional_insured(request, policy_id, insured_id):
-    """Delete an additional insured"""
-    # Implement actual functionality
-    pass
+#@login_required
+#def delete_additional_insured(request, policy_id, insured_id):
+#    """Delete an additional insured"""
+#    # Implement actual functionality
+#    pass
 
-@login_required
-def add_quote_additional_insured(request, quote_id):
-    """Add an additional insured to a quote"""
-    # Implement actual functionality
-    pass
+#@login_required
+#def add_quote_additional_insured(request, quote_id):
+#    """Add an additional insured to a quote"""
+#    # Implement actual functionality
+#    pass

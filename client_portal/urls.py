@@ -25,6 +25,9 @@ urlpatterns = [
     # Documents
     path('documents/', views.documents_view, name='documents'),
     path('documents/<int:document_id>/download/', views.download_document_view, name='download_document'),
+    path('documents/upload/', views.upload_document_view, name='upload_document'),
+    path('documents/<int:document_id>/remove/', views.remove_document_view, name='remove_document'),
+    path('documents/portal/', views.portal_documents_view, name='portal_documents'),
     
     # Payments
     path('payments/', views.payments_view, name='payments'),

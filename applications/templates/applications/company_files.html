@@ -1,0 +1,186 @@
+﻿{% extends "base.html" %}
+{% block title %}Client Files - {{ company.company_name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h2>Client Uploaded Files - {{ company.company_name }}</h2>
+    
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-2">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">{{ stats.total }}</h5>
+                    <p class="card-text">Total Files</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">{{ stats.visible }}</h5>
+                    <p class="card-text">Client Visible</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">{{ stats.removed }}</h5>
+                    <p class="card-text">Client Removed</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">{{ stats.loss_runs }}</h5>
+                    <p class="card-text">Loss Runs</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">{{ stats.applications }}</h5>
+                    <p class="card-text">Applications</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">{{ stats.financial }}</h5>
+                    <p class="card-text">Financial Docs</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Filters -->
+    <div class="row mb-3">
+        <div class="col-md-4">
+            <select class="form-select" onchange="filterFiles()" id="typeFilter">
+                <option value="">All Types</option>
+                {% for value, label in document_types %}
+                    <option value="{{ value }}" {% if current_type == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-4">
+            <select class="form-select" onchange="filterFiles()" id="visibilityFilter">
+                <option value="all" {% if current_visibility == 'all' %}selected{% endif %}>All Files</option>
+                <option value="visible" {% if current_visibility == 'visible' %}selected{% endif %}>Client Visible Only</option>
+                <option value="removed" {% if current_visibility == 'removed' %}selected{% endif %}>Client Removed Only</option>
+            </select>
+        </div>
+    </div>
+    
+    <!-- Files Table -->
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>File Name</th>
+                    <th>Type</th>
+                    <th>Uploaded</th>
+                    <th>Status</th>
+                    <th>Client Visible</th>
+                    <th>Archive Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for doc in page_obj %}
+                <tr>
+                    <td>{{ doc.document_name }}</td>
+                    <td>
+                        <span class="badge bg-secondary">{{ doc.get_document_type_display|default:doc.document_type }}</span>
+                    </td>
+                    <td>
+                        {{ doc.uploaded_at|date:"M d, Y H:i" }}<br>
+                        <small class="text-muted">by {{ doc.uploaded_by.get_full_name|default:doc.uploaded_by.username|default:"Client" }}</small>
+                    </td>
+                    <td>
+                        {% if doc.status == 'verified' %}
+                            <span class="badge bg-success">Verified</span>
+                        {% elif doc.status == 'rejected' %}
+                            <span class="badge bg-danger">Rejected</span>
+                        {% else %}
+                            <span class="badge bg-warning">{{ doc.status|title }}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if doc.client_visible %}
+                            <span class="badge bg-success">Visible</span>
+                        {% else %}
+                            <span class="badge bg-secondary">Hidden</span>
+                            {% if doc.client_removed_date %}
+                                <br><small>Removed: {{ doc.client_removed_date|date:"M d, Y" }}</small>
+                            {% endif %}
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if doc.archive_path %}
+                            <i class="fas fa-check text-success"></i> Archived
+                        {% else %}
+                            <i class="fas fa-times text-danger"></i> Not Archived
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'applications:view_company_file' company.company_id doc.document_id %}" 
+                           target="_blank"
+                           class="btn btn-sm btn-info">
+                            <i class="fas fa-eye"></i> View
+                        </a>
+                        <a href="{% url 'applications:download_company_file' company.company_id doc.document_id %}" 
+                           class="btn btn-sm btn-primary">
+                            <i class="fas fa-download"></i> Download
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center">No files uploaded yet</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    {% if page_obj.has_other_pages %}
+    <nav>
+        <ul class="pagination">
+            {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                </li>
+            {% endif %}
+            {% for num in page_obj.paginator.page_range %}
+                <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                    <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                </li>
+            {% endfor %}
+            {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+
+<script>
+function filterFiles() {
+    const type = document.getElementById('typeFilter').value;
+    const visibility = document.getElementById('visibilityFilter').value;
+    
+    let url = window.location.pathname + '?';
+    if (type) url += 'type=' + type + '&';
+    if (visibility) url += 'visibility=' + visibility;
+    
+    window.location.href = url;
+}
+</script>
+{% endblock %}

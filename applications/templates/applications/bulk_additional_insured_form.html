@@ -1,0 +1,100 @@
+<!-- Path: applications/templates/applications/bulk_additional_insured_form.html -->
+{% extends 'base_with_sidebar.html' %}
+{% load static %}
+
+{% block title %}Bulk Add Additional Insureds - Policy {{ policy.policy_number }}{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item"><a href="{% url 'applications:policy_list' %}">Policies</a></li>
+<li class="breadcrumb-item"><a href="{% url 'applications:policy_detail' policy.policy_id %}">{{ policy.policy_number }}</a></li>
+<li class="breadcrumb-item"><a href="{% url 'applications:additional_insured_list' policy.policy_id %}">Additional Insureds</a></li>
+<li class="breadcrumb-item active">Bulk Add</li>
+{% endblock %}
+
+{% block page_header %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Bulk Add Additional Insureds</h2>
+    <a href="{% url 'applications:additional_insured_list' policy.policy_id %}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Back to List
+    </a>
+</div>
+{% endblock %}
+
+{% block page_content %}
+{% include 'includes/sidebar_navigation.html' with object=policy object_type='policy' active_tab='additional_insureds' %}
+
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">Add Multiple Additional Insureds</h5>
+    </div>
+    <div class="card-body">
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i> Enter additional insured details below. AI Numbers will be auto-generated if left blank. Empty rows will be ignored.
+        </div>
+        
+        <form method="post" novalidate>
+            {% csrf_token %}
+            {{ formset.management_form }}
+            
+            <div class="table-responsive">
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th width="8%">AI #</th>
+                            <th width="12%">Type</th>
+                            <th width="20%">Name</th>
+                            <th width="20%">Address</th>
+                            <th width="15%">City</th>
+                            <th width="8%">State</th>
+                            <th width="10%">ZIP</th>
+                            <th width="7%">Cert Req'd</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for form in formset %}
+                        <tr class="formset-row">
+                            {% for hidden in form.hidden_fields %}
+                                {{ hidden }}
+                            {% endfor %}
+                            <td>{{ form.ai_number }}</td>
+                            <td>{{ form.ai_type }}</td>
+                            <td>{{ form.name }}</td>
+                            <td>{{ form.address_line_1 }}</td>
+                            <td>{{ form.city }}</td>
+                            <td>{{ form.state }}</td>
+                            <td>{{ form.zip_code }}</td>
+                            <td class="text-center">{{ form.certificate_required }}</td>
+                        </tr>
+                        {% if form.errors %}
+                        <tr>
+                            <td colspan="8">
+                                <div class="alert alert-danger alert-sm">
+                                    {{ form.errors }}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            {% if formset.non_form_errors %}
+            <div class="alert alert-danger mt-3">
+                {{ formset.non_form_errors }}
+            </div>
+            {% endif %}
+            
+            <div class="mt-4">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Save All Additional Insureds
+                </button>
+                <a href="{% url 'applications:additional_insured_list' policy.policy_id %}" class="btn btn-secondary">
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}

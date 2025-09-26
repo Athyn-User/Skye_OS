@@ -78,7 +78,7 @@ def generate_missing_documents(request, policy_id):
         package = DocumentPackage.objects.filter(
             policy=policy,
             status__in=['draft', 'partial', 'error']
-        ).order_by('-created_at').first()
+        ).order_by('-generated_date').first()
         
         if not package:
             # Create new package if none exists
@@ -180,7 +180,7 @@ def bulk_document_generation(request):
                     # Regenerate all components in latest package
                     package = DocumentPackage.objects.filter(
                         policy=policy
-                    ).order_by('-created_at').first()
+                    ).order_by('-generated_date').first()
                     
                     if package:
                         success_count = 0
@@ -201,7 +201,7 @@ def bulk_document_generation(request):
                     # Generate only missing documents
                     package = DocumentPackage.objects.filter(
                         policy=policy
-                    ).order_by('-created_at').first()
+                    ).order_by('-generated_date').first()
                     
                     if not package:
                         package = doc_service.create_document_package(policy)
@@ -292,7 +292,7 @@ def generate_from_template(request):
         package = DocumentPackage.objects.filter(
             policy=policy,
             status__in=['draft', 'partial', 'complete']
-        ).order_by('-created_at').first()
+        ).order_by('-generated_date').first()
         
         if not package:
             doc_service = DocumentService()
@@ -405,7 +405,7 @@ def get_policy_document_stats(policy_ids: List[int]) -> Dict:
         }
         
         for policy in policies:
-            latest_package = policy.document_packages.order_by('-created_at').first()
+            latest_package = policy.document_packages.order_by('-generated_date').first()
             
             if latest_package:
                 stats['policies_with_documents'] += 1

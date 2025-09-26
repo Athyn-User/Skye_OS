@@ -331,38 +331,65 @@ def get_available_templates(request):
 
 @login_required
 @require_http_methods(["POST"])
-def create_document_package(request, policy_id):
-    """Create a complete document package for a policy - API endpoint"""
+def create_document_package(self, policy: Policy, force_regenerate: bool = False) -> PolicyDocumentPackage:
+    """Create a complete document package for a policy
+    
+    Args:
+        policy: The policy to create documents for
+        force_regenerate: If True, create a new package even if one exists
+    
+    Returns:
+        PolicyDocumentPackage: The created or existing package
+    """
     try:
-        policy = get_object_or_404(Policy, policy_id=policy_id)
+        # Check if we should create new package
+        if not force_regenerate:
+            existing_package = PolicyDocumentPackage.objects.filter(
+                policy=policy,
+                is_current=True,
+                package_status__in=['draft', 'generated']
+            ).first()
+            
+            if existing_package:
+                return existing_package
         
-        # Parse request data
-        data = json.loads(request.body) if request.body else {}
-        force_regenerate = data.get('force_regenerate', False)
+        # Mark old packages as not current
+        PolicyDocumentPackage.objects.filter(
+            policy=policy
+        ).update(is_current=False)
         
-        # Use enhanced document service
-        service = EnhancedDocumentService()
-        package = service.create_document_package(policy, force_regenerate)
+        # Determine package version
+        latest_version = PolicyDocumentPackage.objects.filter(
+            policy=policy
+        ).aggregate(max_version=Max('package_version'))['max_version'] or 0
         
-        return JsonResponse({
-            'success': True,
-            'message': f'Document package created: {package.package_number}',
-            'package': {
-                'id': package.package_id,
-                'number': package.package_number,
-                'status': package.package_status,
-                'version': package.package_version,
-                'component_count': package.components.count(),
-                'generated_count': package.components.filter(component_status='generated').count()
-            }
-        })
+        new_version = latest_version + 1 if force_regenerate else latest_version + 1
+        
+        # Create new package
+        package = PolicyDocumentPackage.objects.create(
+            policy=policy,
+            package_number=self._generate_package_number(policy, new_version),
+            package_version=new_version,
+            package_status='draft',
+            is_current=True,
+            state_code=getattr(policy, 'state_code', 'CA'),
+            created_by=None  # Set from request context if available
+        )
+        
+        # Create standard components
+        self._create_standard_components(package)
+        
+        # Generate all components
+        self._generate_all_components(package)
+        
+        # Update package status
+        self.update_package_status(package)
+        
+        return package
         
     except Exception as e:
-        logger.error(f"Error creating document package for policy {policy_id}: {str(e)}")
-        return JsonResponse({
-            'success': False,
-            'message': f'Error creating document package: {str(e)}'
-        }, status=500)
+        logger.error(f"Error creating document package: {str(e)}")
+        raise
 
 @login_required
 @require_http_methods(["POST"])

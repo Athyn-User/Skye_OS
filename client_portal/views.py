@@ -317,17 +317,12 @@ def submit_claim_view(request):
 
 @client_login_required
 def documents_view(request):
-    """View and download documents"""
+    """View and download documents - using PortalDocument for dual storage"""
     profile = request.user.client_profile
     company = profile.company
     
-    documents = ClientDocument.objects.filter(
-        company=company
-    ).filter(
-        Q(is_visible=True) &
-        (Q(visible_from__isnull=True) | Q(visible_from__lte=timezone.now().date())) &
-        (Q(visible_until__isnull=True) | Q(visible_until__gte=timezone.now().date()))
-    ).order_by('-uploaded_date')
+    # Get documents from PortalDocument (dual storage system)
+    documents = PortalDocument.objects.visible_to_client(company).order_by('-uploaded_at')
     
     # Filter by type
     doc_type = request.GET.get('type')
@@ -342,7 +337,7 @@ def documents_view(request):
     context = {
         'page_obj': page_obj,
         'current_type': doc_type,
-        'document_types': ClientDocument.DOCUMENT_TYPE,
+        'document_types': PortalDocument.DOCUMENT_TYPES,
     }
     
     return render(request, 'client_portal/documents.html', context)
@@ -355,34 +350,43 @@ def download_document_view(request, document_id):
     company = profile.company
     
     document = get_object_or_404(
-        ClientDocument,
-        id=document_id,
-        company=company
+        PortalDocument,
+        document_id=document_id,
+        company=company,
+        client_visible=True
     )
-    
-    if not document.is_currently_visible():
-        messages.error(request, 'This document is not available.')
-        return redirect('client_portal:documents')
     
     # Track activity
     track_activity(
         request.user, 'DOWNLOAD_DOCUMENT',
-        f'Downloaded {document.name}',
-        request,
-        document=document
+        f'Downloaded {document.document_name}',
+        request
     )
     
     # Serve the file
-    file_path = document.file.path
-    mime_type, _ = mimetypes.guess_type(file_path)
+    file_path = document.get_active_path()
     
-    response = FileResponse(
-        open(file_path, 'rb'),
-        content_type=mime_type or 'application/octet-stream'
-    )
-    response['Content-Disposition'] = f'attachment; filename="{document.name}"'
-    
-    return response
+    try:
+        # Ensure the document name has the correct extension
+        if '.' not in document.document_name:
+            # Try to get extension from the file path
+            import os
+            _, ext = os.path.splitext(file_path)
+            download_name = f"{document.document_name}{ext}"
+        else:
+            download_name = document.document_name
+            
+        mime_type, _ = mimetypes.guess_type(file_path)
+        
+        response = FileResponse(
+            open(file_path, 'rb'),
+            content_type=mime_type or 'application/octet-stream'
+        )
+        response['Content-Disposition'] = f'attachment; filename="{download_name}"'
+        return response
+    except FileNotFoundError:
+        messages.error(request, 'File not found.')
+        return redirect('client_portal:documents')
 
 
 @client_login_required
@@ -484,3 +488,111 @@ def profile_view(request):
 def test_view(request):
     from django.http import HttpResponse
     return HttpResponse("Client Portal is working!")
+# Add these imports for dual storage
+from documents.portal_models import PortalDocument
+from documents.services import DualStorageService
+
+@client_login_required
+def upload_document_view(request):
+    """Client uploads a document with dual storage"""
+    profile = request.user.client_profile  # Note: might be clientprofile not client_profile
+    company = profile.company
+    
+    if request.method == 'POST' and request.FILES.get('file'):
+        uploaded_file = request.FILES['file']
+        
+        # Prepare document data
+        document_data = {
+            'document_name': request.POST.get('document_name', uploaded_file.name),
+            'document_type': request.POST.get('document_type', 'general'),
+            'description': request.POST.get('description', ''),
+            'uploaded_by_id': request.user.id,
+        }
+        
+        # Add optional relationships if provided
+        if request.POST.get('application_id'):
+            document_data['application_id'] = request.POST.get('application_id')
+        if request.POST.get('quote_id'):
+            document_data['quote_id'] = request.POST.get('quote_id')
+        if request.POST.get('policy_id'):
+            document_data['policy_id'] = request.POST.get('policy_id')
+        
+        # Save with dual storage
+        try:
+            document = DualStorageService.save_with_dual_storage(
+                uploaded_file, 
+                company.company_id, 
+                document_data
+            )
+            
+            # Track activity
+            track_activity(
+                request.user, 'UPLOAD_DOCUMENT',
+                f'Uploaded document {document.document_name}',
+                request
+            )
+            
+            messages.success(request, f'Document "{document.document_name}" uploaded successfully!')
+            return redirect('client_portal:documents')
+        except Exception as e:
+            messages.error(request, f'Error uploading document: {str(e)}')
+    
+    return render(request, 'client_portal/upload_document.html')
+
+
+@client_login_required
+def remove_document_view(request, document_id):
+    """Client removes a document from their view (soft delete)"""
+    profile = request.user.client_profile
+    company = profile.company
+    
+    document = get_object_or_404(
+        PortalDocument,
+        document_id=document_id,
+        company=company,
+        client_visible=True
+    )
+    
+    if request.method == 'POST':
+        reason = request.POST.get('reason', 'Removed by client')
+        document.remove_from_client_view(reason)
+        
+        # Track activity
+        track_activity(
+            request.user, 'REMOVE_DOCUMENT',
+            f'Removed document {document.document_name}',
+            request
+        )
+        
+        messages.info(request, 'Document has been removed from your view.')
+        return redirect('client_portal:documents')
+    
+    return render(request, 'client_portal/confirm_remove.html', {'document': document})
+
+
+@client_login_required
+def portal_documents_view(request):
+    """View portal documents with dual storage (replacement for documents_view)"""
+    profile = request.user.client_profile
+    company = profile.company
+    
+    # Only show client-visible documents
+    documents = PortalDocument.objects.visible_to_client(company).order_by('-uploaded_at')
+    
+    # Filter by type if requested
+    doc_type = request.GET.get('type')
+    if doc_type:
+        documents = documents.filter(document_type=doc_type)
+    
+    # Pagination
+    paginator = Paginator(documents, 20)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'page_obj': page_obj,
+        'current_type': doc_type,
+        'document_types': PortalDocument.DOCUMENT_TYPES,
+    }
+    
+    return render(request, 'client_portal/documents.html', context)

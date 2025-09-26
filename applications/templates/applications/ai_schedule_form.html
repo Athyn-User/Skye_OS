@@ -1,0 +1,94 @@
+<!-- Path: applications/templates/applications/ai_schedule_form.html -->
+{% extends 'base_with_sidebar.html' %}
+{% load static %}
+
+{% block title %}Create Additional Insured Schedule - Policy {{ policy.policy_number }}{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item"><a href="{% url 'applications:policy_list' %}">Policies</a></li>
+<li class="breadcrumb-item"><a href="{% url 'applications:policy_detail' policy.policy_id %}">{{ policy.policy_number }}</a></li>
+<li class="breadcrumb-item"><a href="{% url 'applications:additional_insured_list' policy.policy_id %}">Additional Insureds</a></li>
+<li class="breadcrumb-item active">Create Schedule</li>
+{% endblock %}
+
+{% block page_header %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Create Additional Insured Schedule</h2>
+    <a href="{% url 'applications:additional_insured_list' policy.policy_id %}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Back to List
+    </a>
+</div>
+{% endblock %}
+
+{% block page_content %}
+{% include 'includes/sidebar_navigation.html' with object=policy object_type='policy' active_tab='additional_insureds' %}
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Schedule Details</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        {{ form.schedule_name.label_tag }}
+                        {{ form.schedule_name }}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.schedule_type.label_tag }}
+                        {{ form.schedule_type }}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.filter_types.label_tag }}
+                        {{ form.filter_types }}
+                        <small class="form-text text-muted">{{ form.filter_types.help_text }}</small>
+                    </div>
+                    
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {{ form.non_field_errors }}
+                    </div>
+                    {% endif %}
+                    
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Create Schedule
+                    </button>
+                    <a href="{% url 'applications:additional_insured_list' policy.policy_id %}" class="btn btn-secondary">
+                        Cancel
+                    </a>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Available Additional Insureds</h5>
+            </div>
+            <div class="card-body">
+                <p>This policy has <strong>{{ available_ais.count }}</strong> active additional insureds.</p>
+                
+                {% if available_ais %}
+                <small>
+                    <ul class="list-unstyled">
+                        {% for ai in available_ais|slice:":5" %}
+                        <li>{{ ai.ai_number }}: {{ ai.name }}</li>
+                        {% endfor %}
+                        {% if available_ais.count > 5 %}
+                        <li>... and {{ available_ais.count|add:"-5" }} more</li>
+                        {% endif %}
+                    </ul>
+                </small>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

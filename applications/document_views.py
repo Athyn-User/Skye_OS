@@ -370,7 +370,7 @@ def get_available_templates(request):
 @login_required
 @require_http_methods(["POST"])
 def create_document_package(request, policy_id):
-    """Create a complete document package for a policy - API endpoint"""
+    """Create a document package for a policy - API endpoint"""
     try:
         policy = get_object_or_404(Policy, policy_id=policy_id)
         

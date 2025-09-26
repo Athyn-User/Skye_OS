@@ -1,101 +1,90 @@
-<!-- client_portal/templates/client_portal/documents.html -->
-{% extends 'client_portal/base.html' %}
+﻿{% extends "client_portal/base.html" %}
+{% load static %}
 
-{% block title %}Documents - Client Portal{% endblock %}
+{% block title %}Document Center{% endblock %}
 
 {% block content %}
-<div class="container-fluid">
-    <h2 class="mb-4">Document Center</h2>
-    
-    <!-- Filter Bar -->
-    <div class="card mb-3">
-        <div class="card-body">
-            <form method="get" class="row g-3">
-                <div class="col-md-4">
-                    <select name="type" class="form-select">
-                        <option value="">All Document Types</option>
-                        {% for value, label in document_types %}
-                            <option value="{{ value }}" {% if current_type == value %}selected{% endif %}>{{ label }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="col-md-2">
-                    <button type="submit" class="btn btn-primary w-100">Filter</button>
-                </div>
-                <div class="col-md-2">
-                    <a href="{% url 'client_portal:documents' %}" class="btn btn-secondary w-100">Clear</a>
-                </div>
-            </form>
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col">
+            <h2>Document Center</h2>
+        </div>
+        <div class="col text-end">
+            <a href="{% url 'client_portal:upload_document' %}" class="btn btn-primary">
+                <i class="fas fa-upload"></i> Upload Document
+            </a>
         </div>
     </div>
     
-    <!-- Documents Grid -->
-    <div class="row">
-        {% if page_obj.object_list %}
-            {% for document in page_obj.object_list %}
-            <div class="col-md-4 mb-3">
-                <div class="card h-100">
-                    <div class="card-header bg-light">
-                        {% if document.document_type == 'POLICY' %}
-                            <i class="fas fa-file-contract text-primary"></i>
-                        {% elif document.document_type == 'CERTIFICATE' %}
-                            <i class="fas fa-certificate text-success"></i>
-                        {% elif document.document_type == 'INVOICE' %}
-                            <i class="fas fa-file-invoice text-warning"></i>
-                        {% elif document.document_type == 'CLAIM' %}
-                            <i class="fas fa-file-medical text-danger"></i>
-                        {% else %}
-                            <i class="fas fa-file text-secondary"></i>
-                        {% endif %}
-                        {{ document.get_document_type_display }}
-                    </div>
-                    <div class="card-body">
-                        <h6 class="card-title">{{ document.name }}</h6>
-                        <p class="card-text small text-muted">
-                            {{ document.description|truncatechars:100 }}
-                        </p>
-                        <p class="card-text">
-                            <small class="text-muted">
-                                <i class="fas fa-calendar"></i> {{ document.uploaded_date|date:"M d, Y" }}
-                            </small>
-                        </p>
-                    </div>
-                    <div class="card-footer bg-white">
-                        <a href="{% url 'client_portal:download_document' document.id %}" class="btn btn-sm btn-primary w-100">
-                            <i class="fas fa-download"></i> Download
-                        </a>
-                    </div>
-                </div>
-            </div>
-            {% endfor %}
-        {% else %}
-            <div class="col-12">
-                <div class="alert alert-info">
-                    <i class="fas fa-info-circle"></i> No documents available. Documents will appear here as they become available.
-                </div>
-            </div>
-        {% endif %}
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <select class="form-select" id="docTypeFilter">
+                <option value="">All Document Types</option>
+                <option value="loss_run">Loss Run</option>
+                <option value="application">Application</option>
+                <option value="financial">Financial Statement</option>
+                <option value="certificate">Certificate</option>
+                <option value="general">General</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <button class="btn btn-primary w-100" onclick="filterDocuments()">Filter</button>
+        </div>
+        <div class="col-md-3">
+            <button class="btn btn-secondary w-100" onclick="clearFilter()">Clear</button>
+        </div>
     </div>
     
-    <!-- Pagination -->
-    {% if page_obj.has_other_pages %}
-    <nav>
-        <ul class="pagination justify-content-center">
-            {% if page_obj.has_previous %}
-                <li class="page-item">
-                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if current_type %}&type={{ current_type }}{% endif %}">Previous</a>
-                </li>
-            {% endif %}
-            <li class="page-item active">
-                <span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
-            </li>
-            {% if page_obj.has_next %}
-                <li class="page-item">
-                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if current_type %}&type={{ current_type }}{% endif %}">Next</a>
-                </li>
-            {% endif %}
-        </ul>
-    </nav>
+    {% if page_obj.object_list %}
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Document Name</th>
+                    <th>Type</th>
+                    <th>Uploaded Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for doc in page_obj %}
+                <tr>
+                    <td>{{ doc.document_name }}</td>
+                    <td>{{ doc.get_document_type_display|default:doc.document_type }}</td>
+                    <td>{{ doc.uploaded_at|date:"M d, Y" }}</td>
+                    <td>
+                        <a href="{% url 'client_portal:download_document' doc.document_id %}" class="btn btn-sm btn-primary">
+                            <i class="fas fa-download"></i> Download
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="alert alert-info text-center">
+        <i class="fas fa-info-circle"></i> No documents available. Documents will appear here as they become available.
+        <hr>
+        <a href="{% url 'client_portal:upload_document' %}" class="btn btn-primary btn-lg">
+            <i class="fas fa-upload"></i> Upload Your First Document
+        </a>
+    </div>
     {% endif %}
 </div>
+
+<script>
+function filterDocuments() {
+    const docType = document.getElementById('docTypeFilter').value;
+    let url = window.location.pathname;
+    if (docType) {
+        url += '?type=' + docType;
+    }
+    window.location.href = url;
+}
+
+function clearFilter() {
+    window.location.href = window.location.pathname;
+}
+</script>
 {% endblock %}

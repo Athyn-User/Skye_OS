@@ -9,6 +9,8 @@ from .billing_views import billing_dashboard, payment_list, create_billing_sched
 
 from . import billing_views
 from . import location_views
+from . import additional_insured_views
+from . import file_views
 
 app_name = 'applications'
 
@@ -213,35 +215,62 @@ urlpatterns = [
          location_views.add_quote_location, 
          name='add_quote_location'),
     
-    # ==========================================
-    # ADDITIONAL INSUREDS URLs
-    # ==========================================
-    
-    # Policy Additional Insureds
+# ==========================================
+# ADDITIONAL INSURED MANAGEMENT URLs
+# ==========================================
+
+    # Main list view
     path('policies/<int:policy_id>/additional-insureds/', 
-         views.policy_additional_insureds, 
+         additional_insured_views.additional_insured_list, 
+         name='additional_insured_list'),
+    
+    # Also register as policy_additional_insureds for sidebar compatibility
+    path('policies/<int:policy_id>/additional-insureds/', 
+         additional_insured_views.additional_insured_list, 
          name='policy_additional_insureds'),
     
+    # Add single additional insured
     path('policies/<int:policy_id>/additional-insureds/add/', 
-         views.add_additional_insured, 
+         additional_insured_views.add_additional_insured, 
          name='add_additional_insured'),
     
-    path('policies/<int:policy_id>/additional-insureds/<int:insured_id>/edit/', 
-         views.edit_additional_insured, 
+    # Edit additional insured
+    path('policies/<int:policy_id>/additional-insureds/<int:ai_id>/edit/', 
+         additional_insured_views.edit_additional_insured, 
          name='edit_additional_insured'),
     
-    path('policies/<int:policy_id>/additional-insureds/<int:insured_id>/delete/', 
-         views.delete_additional_insured, 
+    # Delete (deactivate) additional insured
+    path('policies/<int:policy_id>/additional-insureds/<int:ai_id>/delete/', 
+         additional_insured_views.delete_additional_insured, 
          name='delete_additional_insured'),
     
-    # Quote Additional Insureds
-    path('quotes/<int:quote_id>/additional-insureds/', 
-         views.quote_additional_insureds, 
-         name='quote_additional_insureds'),
+    # Bulk add multiple additional insureds
+    path('policies/<int:policy_id>/additional-insureds/bulk-add/', 
+         additional_insured_views.bulk_add_additional_insureds, 
+         name='bulk_add_additional_insureds'),
     
-    path('quotes/<int:quote_id>/additional-insureds/add/', 
-         views.add_quote_additional_insured, 
-         name='add_quote_additional_insured'),
+    # Generate certificate for additional insured
+    path('policies/<int:policy_id>/additional-insureds/<int:ai_id>/certificate/', 
+         additional_insured_views.generate_ai_certificate, 
+         name='generate_ai_certificate'),
+    
+    # Create schedule of additional insureds
+    path('policies/<int:policy_id>/additional-insureds/schedules/create/', 
+         additional_insured_views.create_ai_schedule, 
+         name='create_ai_schedule'),
+    
+    # ==========================================
+    # QUOTE ADDITIONAL INSUREDS (Future Implementation)
+    # Comment these out for now since the views don't exist yet
+    # ==========================================
+    
+    # path('quotes/<int:quote_id>/additional-insureds/', 
+    #      additional_insured_views.quote_additional_insureds, 
+    #      name='quote_additional_insureds'),
+    
+    # path('quotes/<int:quote_id>/additional-insureds/add/', 
+    #      additional_insured_views.add_quote_additional_insured, 
+    #      name='add_quote_additional_insured'),
     
     # ==========================================
     # POLICY-SPECIFIC SIDEBAR URLs
@@ -358,4 +387,46 @@ urlpatterns = [
     path('quotes/<int:quote_id>/locations/add/', 
          location_views.add_quote_location, 
          name='add_quote_location'),
+
+     # Additional Insureds - Main views
+    path('policies/<int:policy_id>/additional-insureds/', 
+         additional_insured_views.additional_insured_list, 
+         name='additional_insured_list'),
+    
+    path('policies/<int:policy_id>/additional-insureds/add/', 
+         additional_insured_views.add_additional_insured, 
+         name='add_additional_insured'),
+    
+    path('policies/<int:policy_id>/additional-insureds/<int:ai_id>/edit/', 
+         additional_insured_views.edit_additional_insured, 
+         name='edit_additional_insured'),
+    
+    path('policies/<int:policy_id>/additional-insureds/<int:ai_id>/delete/', 
+         additional_insured_views.delete_additional_insured, 
+         name='delete_additional_insured'),
+    
+    # Bulk operations
+    path('policies/<int:policy_id>/additional-insureds/bulk-add/', 
+         additional_insured_views.bulk_add_additional_insureds, 
+         name='bulk_add_additional_insureds'),
+    
+    # Certificate generation
+    path('policies/<int:policy_id>/additional-insureds/<int:ai_id>/certificate/', 
+         additional_insured_views.generate_ai_certificate, 
+         name='generate_ai_certificate'),
+    
+    # Schedules
+    path('policies/<int:policy_id>/additional-insureds/schedules/create/', 
+         additional_insured_views.create_ai_schedule, 
+         name='create_ai_schedule'),
+    
+    # Placeholder for policy-level view (for sidebar)
+    path('policies/<int:policy_id>/additional-insureds/', 
+         additional_insured_views.additional_insured_list, 
+         name='policy_additional_insureds'),
+
+    path('company/<int:company_id>/files/', file_views.company_files_view, name='company_files'),
+    path('company/<int:company_id>/files/<int:document_id>/download/', file_views.download_company_file, name='download_company_file'),  
+
+    path('company/<int:company_id>/files/<int:document_id>/view/', file_views.view_company_file, name='view_company_file'),  
 ]

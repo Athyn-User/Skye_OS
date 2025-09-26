@@ -1,0 +1,223 @@
+<!-- Path: applications/templates/applications/additional_insured_list.html -->
+{% extends 'base_with_sidebar.html' %}
+{% load static %}
+
+{% block title %}Additional Insureds - Policy {{ policy.policy_number }}{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item"><a href="{% url 'applications:policy_list' %}">Policies</a></li>
+<li class="breadcrumb-item"><a href="{% url 'applications:policy_detail' policy.policy_id %}">{{ policy.policy_number }}</a></li>
+<li class="breadcrumb-item active">Additional Insureds</li>
+{% endblock %}
+
+{% block page_header %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Additional Insureds</h2>
+    <div>
+        <a href="{% url 'applications:add_additional_insured' policy.policy_id %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Add Additional Insured
+        </a>
+        <a href="{% url 'applications:bulk_add_additional_insureds' policy.policy_id %}" class="btn btn-outline-primary">
+            <i class="fas fa-file-import"></i> Bulk Add
+        </a>
+        <a href="{% url 'applications:create_ai_schedule' policy.policy_id %}" class="btn btn-outline-success">
+            <i class="fas fa-list"></i> Create Schedule
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block page_content %}
+<!-- Include sidebar with correct context -->
+{% include 'includes/sidebar_navigation.html' with object=policy object_type='policy' active_tab='additional_insureds' %}
+
+<!-- Summary Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body">
+                <h6 class="card-subtitle mb-2 text-muted">Total Additional Insureds</h6>
+                <h3 class="card-title">{{ total_ais }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body">
+                <h6 class="card-subtitle mb-2 text-muted">Certificate Required</h6>
+                <h3 class="card-title">{{ cert_required_count }}</h3>
+            </div>
+        </div>
+    </div>
+    {% for type_count in type_counts %}
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body">
+                <h6 class="card-subtitle mb-2 text-muted">
+                    {% if type_count.ai_type == 'landlord' %}Landlords
+                    {% elif type_count.ai_type == 'vendor' %}Vendors
+                    {% elif type_count.ai_type == 'lender' %}Lenders
+                    {% elif type_count.ai_type == 'general_contractor' %}General Contractors
+                    {% else %}Other
+                    {% endif %}
+                </h6>
+                <h3 class="card-title">{{ type_count.count }}</h3>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Search and Filters -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-4">
+                {{ search_form.search }}
+            </div>
+            <div class="col-md-2">
+                {{ search_form.ai_type }}
+            </div>
+            <div class="col-md-2">
+                {{ search_form.certificate_required }}
+            </div>
+            <div class="col-md-2">
+                <div class="form-check mt-2">
+                    {{ search_form.active_only }}
+                    <label class="form-check-label" for="{{ search_form.active_only.id_for_label }}">
+                        Active Only
+                    </label>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fas fa-search"></i> Search
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Additional Insureds Table -->
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">Additional Insureds ({{ additional_insureds.paginator.count }} total)</h5>
+    </div>
+    <div class="card-body">
+        {% if additional_insureds %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>AI #</th>
+                        <th>Name</th>
+                        <th>Type</th>
+                        <th>Address</th>
+                        <th>Certificate</th>
+                        <th>Coverage</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ai in additional_insureds %}
+                    <tr>
+                        <td><strong>{{ ai.ai_number }}</strong></td>
+                        <td>
+                            {{ ai.name }}
+                            {% if ai.contact_name %}
+                            <br><small class="text-muted">{{ ai.contact_name }}</small>
+                            {% endif %}
+                        </td>
+                        <td>{{ ai.get_ai_type_display }}</td>
+                        <td>
+                            {{ ai.city }}, {{ ai.state }}
+                        </td>
+                        <td>
+                            {% if ai.certificate_required %}
+                                {% if ai.get_latest_certificate %}
+                                <span class="badge bg-success">Issued</span>
+                                {% else %}
+                                <span class="badge bg-warning">Required</span>
+                                {% endif %}
+                            {% else %}
+                                <span class="badge bg-secondary">Not Required</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% for coverage in ai.coverage_types_list %}
+                            <span class="badge bg-info">{{ coverage }}</span>
+                            {% endfor %}
+                        </td>
+                        <td>
+                            {% if ai.is_active %}
+                            <span class="badge bg-success">Active</span>
+                            {% else %}
+                            <span class="badge bg-secondary">Inactive</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm" role="group">
+                                <a href="{% url 'applications:edit_additional_insured' policy.policy_id ai.additional_insured_id %}" 
+                                   class="btn btn-outline-primary" title="Edit">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                {% if ai.certificate_required and not ai.get_latest_certificate %}
+                                <a href="{% url 'applications:generate_ai_certificate' policy.policy_id ai.additional_insured_id %}" 
+                                   class="btn btn-outline-success" title="Generate Certificate">
+                                    <i class="fas fa-certificate"></i>
+                                </a>
+                                {% endif %}
+                                <form method="post" action="{% url 'applications:delete_additional_insured' policy.policy_id ai.additional_insured_id %}" 
+                                      style="display: inline;" onsubmit="return confirm('Deactivate this additional insured?');">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-outline-danger" title="Deactivate">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if additional_insureds.has_other_pages %}
+        <nav aria-label="Additional Insureds pagination">
+            <ul class="pagination justify-content-center">
+                {% if additional_insureds.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ additional_insureds.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Previous</a>
+                </li>
+                {% endif %}
+                
+                {% for num in additional_insureds.paginator.page_range %}
+                {% if additional_insureds.number == num %}
+                <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                {% elif num > additional_insureds.number|add:'-3' and num < additional_insureds.number|add:'3' %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ num }}</a>
+                </li>
+                {% endif %}
+                {% endfor %}
+                
+                {% if additional_insureds.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ additional_insureds.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Next</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+        {% else %}
+        <p class="text-muted text-center my-4">
+            No additional insureds found. 
+            <a href="{% url 'applications:add_additional_insured' policy.policy_id %}">Add your first additional insured</a>
+        </p>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

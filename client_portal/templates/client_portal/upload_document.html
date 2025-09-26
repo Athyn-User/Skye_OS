@@ -1,0 +1,41 @@
+﻿{% extends "client_portal/base.html" %}
+{% block title %}Upload Document{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2>Upload Document</h2>
+    
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        <div class="mb-3">
+            <label for="file" class="form-label">Select File *</label>
+            <input type="file" name="file" id="file" class="form-control" required>
+        </div>
+        
+        <div class="mb-3">
+            <label for="document_name" class="form-label">Document Name</label>
+            <input type="text" name="document_name" id="document_name" class="form-control">
+        </div>
+        
+        <div class="mb-3">
+            <label for="document_type" class="form-label">Document Type</label>
+            <select name="document_type" id="document_type" class="form-select">
+                <option value="general">General</option>
+                <option value="loss_run">Loss Run</option>
+                <option value="application">Application</option>
+                <option value="financial">Financial Statement</option>
+                <option value="certificate">Certificate</option>
+            </select>
+        </div>
+        
+        <div class="mb-3">
+            <label for="description" class="form-label">Description</label>
+            <textarea name="description" id="description" class="form-control" rows="3"></textarea>
+        </div>
+        
+        <button type="submit" class="btn btn-primary">Upload</button>
+        <a href="{% url 'client_portal:documents' %}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %}

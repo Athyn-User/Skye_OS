@@ -51,7 +51,8 @@
         {% endif %}
         
         <!-- Additional Insureds -->
-        <a href="#" 
+        {% if object_type == 'policy' %}
+        <a href="{% url 'applications:additional_insured_list' object.policy_id %}" 
            class="sidebar-item {% if active_tab == 'additional_insureds' %}active{% endif %}">
             <i class="fas fa-user-plus"></i>
             <span class="sidebar-text">Additional Insureds</span>
@@ -59,6 +60,13 @@
             <span class="sidebar-badge">{{ additional_insured_count }}</span>
             {% endif %}
         </a>
+        {% else %}
+        <a href="#" 
+           class="sidebar-item {% if active_tab == 'additional_insureds' %}active{% endif %}">
+            <i class="fas fa-user-plus"></i>
+            <span class="sidebar-text">Additional Insureds</span>
+        </a>
+        {% endif %}
         
         <!-- Documents -->
         {% if object_type == 'policy' %}
@@ -75,6 +83,24 @@
            class="sidebar-item {% if active_tab == 'documents' %}active{% endif %}">
             <i class="fas fa-file-alt"></i>
             <span class="sidebar-text">Documents</span>
+        </a>
+        {% endif %}
+
+        <!-- Client Files -->
+        {% if object_type == 'policy' %}
+        <a href="{% url 'applications:company_files' object.quote.application.company.company_id %}" 
+        class="sidebar-item {% if active_tab == 'client_files' %}active{% endif %}">
+            <i class="fas fa-folder-open"></i>
+            <span class="sidebar-text">Client Files</span>
+            {% if portal_document_count %}
+            <span class="sidebar-badge">{{ portal_document_count }}</span>
+            {% endif %}
+        </a>
+        {% else %}
+        <a href="#" 
+        class="sidebar-item disabled">
+            <i class="fas fa-folder-open"></i>
+            <span class="sidebar-text">Client Files</span>
         </a>
         {% endif %}
         

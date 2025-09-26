@@ -1,0 +1,222 @@
+<!-- Path: applications/templates/applications/additional_insured_form.html -->
+{% extends 'base_with_sidebar.html' %}
+{% load static %}
+
+{% block title %}{{ action }} Additional Insured - Policy {{ policy.policy_number }}{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item"><a href="{% url 'applications:policy_list' %}">Policies</a></li>
+<li class="breadcrumb-item"><a href="{% url 'applications:policy_detail' policy.policy_id %}">{{ policy.policy_number }}</a></li>
+<li class="breadcrumb-item"><a href="{% url 'applications:additional_insured_list' policy.policy_id %}">Additional Insureds</a></li>
+<li class="breadcrumb-item active">{{ action }} Additional Insured</li>
+{% endblock %}
+
+{% block page_header %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>{{ action }} Additional Insured</h2>
+    <a href="{% url 'applications:additional_insured_list' policy.policy_id %}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Back to List
+    </a>
+</div>
+{% endblock %}
+
+{% block page_content %}
+{% include 'includes/sidebar_navigation.html' with object=policy object_type='policy' active_tab='additional_insureds' %}
+
+<form method="post" novalidate>
+    {% csrf_token %}
+    <div class="row">
+        <div class="col-md-8">
+            <!-- Basic Information -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5 class="mb-0">Basic Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-3">
+                            {{ form.ai_number.label_tag }}
+                            {{ form.ai_number }}
+                            <small class="form-text text-muted">{{ form.ai_number.help_text }}</small>
+                            {% if form.ai_number.errors %}
+                            <div class="text-danger">{{ form.ai_number.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-3">
+                            {{ form.ai_type.label_tag }}
+                            {{ form.ai_type }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.name.label_tag }}
+                            {{ form.name }}
+                            {% if form.name.errors %}
+                            <div class="text-danger">{{ form.name.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Address Information -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5 class="mb-0">Address Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            {{ form.address_line_1.label_tag }}
+                            {{ form.address_line_1 }}
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            {{ form.address_line_2.label_tag }}
+                            {{ form.address_line_2 }}
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-5">
+                            {{ form.city.label_tag }}
+                            {{ form.city }}
+                        </div>
+                        <div class="col-md-3">
+                            {{ form.state.label_tag }}
+                            {{ form.state }}
+                        </div>
+                        <div class="col-md-4">
+                            {{ form.zip_code.label_tag }}
+                            {{ form.zip_code }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact Information -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5 class="mb-0">Contact Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            {{ form.contact_name.label_tag }}
+                            {{ form.contact_name }}
+                        </div>
+                        <div class="col-md-4">
+                            {{ form.contact_email.label_tag }}
+                            {{ form.contact_email }}
+                        </div>
+                        <div class="col-md-4">
+                            {{ form.contact_phone.label_tag }}
+                            {{ form.contact_phone }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Coverage Requirements -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5 class="mb-0">Coverage Requirements</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <h6>Coverage Types Required</h6>
+                            <div class="form-check form-check-inline">
+                                {{ form.coverage_gl }}
+                                {{ form.coverage_gl.label_tag }}
+                            </div>
+                            <div class="form-check form-check-inline">
+                                {{ form.coverage_auto }}
+                                {{ form.coverage_auto.label_tag }}
+                            </div>
+                            <div class="form-check form-check-inline">
+                                {{ form.coverage_property }}
+                                {{ form.coverage_property.label_tag }}
+                            </div>
+                            <div class="form-check form-check-inline">
+                                {{ form.coverage_umbrella }}
+                                {{ form.coverage_umbrella.label_tag }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="form-check">
+                                {{ form.waiver_of_subrogation }}
+                                {{ form.waiver_of_subrogation.label_tag }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-check">
+                                {{ form.primary_non_contributory }}
+                                {{ form.primary_non_contributory.label_tag }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            {{ form.additional_requirements.label_tag }}
+                            {{ form.additional_requirements }}
+                            <small class="form-text text-muted">{{ form.additional_requirements.help_text }}</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {% if form.non_field_errors %}
+            <div class="alert alert-danger">
+                {{ form.non_field_errors }}
+            </div>
+            {% endif %}
+
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Save Additional Insured
+            </button>
+            <a href="{% url 'applications:additional_insured_list' policy.policy_id %}" class="btn btn-secondary">
+                Cancel
+            </a>
+        </div>
+
+        <div class="col-md-4">
+            <!-- Certificate Settings -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5 class="mb-0">Certificate Settings</h5>
+                </div>
+                <div class="card-body">
+                    <div class="form-check mb-3">
+                        {{ form.certificate_required }}
+                        {{ form.certificate_required.label_tag }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.certificate_frequency.label_tag }}
+                        {{ form.certificate_frequency }}
+                        <small class="form-text text-muted">{{ form.certificate_frequency.help_text }}</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dates -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Dates</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        {{ form.effective_date.label_tag }}
+                        {{ form.effective_date }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.expiration_date.label_tag }}
+                        {{ form.expiration_date }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+{% endblock %}
