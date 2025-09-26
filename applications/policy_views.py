@@ -86,46 +86,103 @@ def policy_list(request):
     }
     return render(request, 'applications/policy_list.html', context)
 
+from django.shortcuts import render, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from .models import Policy
+
+@login_required
 def policy_detail(request, policy_id):
-    """Display detailed information about a policy with document management"""
+    """Display detailed policy information with sidebar navigation"""
     policy = get_object_or_404(Policy, policy_id=policy_id)
     
-    # Get related documents
-    from applications.document_models import PolicyDocumentPackage, EndorsementDocument
-    
-    # Get latest document package
-    latest_package = PolicyDocumentPackage.objects.filter(
-        policy=policy,
-        is_current=True
-    ).first()
-    
-    # Get all endorsements
-    endorsements = EndorsementDocument.objects.filter(
-        policy=policy
-    ).order_by('-endorsement_sequence')
-    
-    # Get related certificates
-    certificates = Certificate.objects.filter(quote=policy.quote)
-    
     # Calculate days until expiration
-    days_until_exp = (policy.expiration_date - timezone.now().date()).days
-    days_expired = abs(days_until_exp) if days_until_exp < 0 else 0
+    from datetime import date
+    today = date.today()
+    days_until_expiration = (policy.expiration_date - today).days
+    days_expired = abs(days_until_expiration) if days_until_expiration < 0 else 0
     
-    # Determine if renewal is needed
-    needs_renewal = days_until_exp <= 60 and policy.policy_status == 'active'
+    # Check if renewal is needed
+    needs_renewal = days_until_expiration <= 60 and policy.auto_renewal
+    
+    # Check if documents exist
+    has_documents = hasattr(policy, 'documentpackage_set') and policy.documentpackage_set.exists()
+    latest_package = None
+    if has_documents:
+        latest_package = policy.documentpackage_set.order_by('-generated_date').first()
+    
+    # Count related objects for sidebar badges (safe access)
+    location_count = 0
+    additional_insured_count = 0
+    endorsement_count = 0
+    certificate_count = 0
+    
+    # Try to get counts if the relationships exist
+    try:
+        if hasattr(policy, 'locations'):
+            location_count = policy.locations.count()
+    except:
+        pass
+        
+    try:
+        if hasattr(policy, 'additional_insureds'):
+            additional_insured_count = policy.additional_insureds.count()
+    except:
+        pass
+        
+    try:
+        if hasattr(policy, 'endorsements'):
+            endorsement_count = policy.endorsements.count()
+    except:
+        pass
+        
+    try:
+        # Certificates might be through quote
+        if hasattr(policy.quote, 'certificate_set'):
+            certificate_count = policy.quote.certificate_set.count()
+    except:
+        pass
+    
+    # Check for billing
+    has_billing = hasattr(policy, 'billingschedule')
+    pending_payments = 0
+    if has_billing:
+        try:
+            from .models import PaymentRecord
+            pending_payments = PaymentRecord.objects.filter(
+                policy=policy,
+                payment_status='pending'
+            ).count()
+        except:
+            pass
     
     context = {
         'policy': policy,
-        'certificates': certificates,
-        'days_until_expiration': days_until_exp,
+        'object': policy,  # For sidebar compatibility
+        'object_type': 'policy',  # For sidebar
+        'active_tab': 'overview',  # Current page for sidebar
+        'sidebar_title': 'Policy Navigation',
+        'icon_type': 'file-contract',
+        
+        # Days calculation
+        'days_until_expiration': days_until_expiration,
         'days_expired': days_expired,
         'needs_renewal': needs_renewal,
-        'has_documents': latest_package is not None,
+        
+        # Document status
+        'has_documents': has_documents,
         'latest_package': latest_package,
-        'endorsements': endorsements,
+        
+        # Billing status
+        'has_billing': has_billing,
+        
+        # Sidebar badge counts
+        'location_count': location_count,
+        'additional_insured_count': additional_insured_count,
+        'endorsement_count': endorsement_count,
+        'certificate_count': certificate_count,
+        'pending_payments': pending_payments,
     }
     
-    # Use the enhanced template
     return render(request, 'applications/policy_detail.html', context)
 
 def policy_from_quote(request, quote_id):

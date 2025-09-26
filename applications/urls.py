@@ -2,10 +2,13 @@
 # Updated URL patterns with enhanced API endpoints
 
 from django.urls import path
-from . import views, document_views
+from . import views, document_views, location_views
 from .certificate_views import certificate_list, certificate_detail, certificate_create, certificate_from_quote, certificate_pdf, certificate_issue, certificate_cancel, certificate_revise, certificate_email, certificate_pdf
 from .policy_views import policy_list, policy_detail, policy_from_quote, policy_renew, renewal_dashboard, renewal_process, renewal_detail, renewal_accept
 from .billing_views import billing_dashboard, payment_list, create_billing_schedule, record_payment, commission_report
+
+from . import billing_views
+from . import location_views
 
 app_name = 'applications'
 
@@ -179,4 +182,180 @@ urlpatterns = [
      path('policies/<int:policy_id>/endorsements/test/', 
           views.test_endorsement_generation, 
           name='test_endorsement_generation'),
+
+     # ==========================================
+    # LOCATION MANAGEMENT URLs
+    # ==========================================
+    
+    # Policy Locations
+    path('policies/<int:policy_id>/locations/', 
+         location_views.policy_locations, 
+         name='policy_locations'),
+    
+    path('policies/<int:policy_id>/locations/add/', 
+         location_views.add_location, 
+         name='add_location'),
+    
+    path('policies/<int:policy_id>/locations/<int:location_id>/edit/', 
+         location_views.edit_location, 
+         name='edit_location'),
+    
+    path('policies/<int:policy_id>/locations/<int:location_id>/delete/', 
+         location_views.delete_location, 
+         name='delete_location'),
+    
+    # Quote Locations
+    path('quotes/<int:quote_id>/locations/', 
+         location_views.quote_locations, 
+         name='quote_locations'),
+    
+    path('quotes/<int:quote_id>/locations/add/', 
+         location_views.add_quote_location, 
+         name='add_quote_location'),
+    
+    # ==========================================
+    # ADDITIONAL INSUREDS URLs
+    # ==========================================
+    
+    # Policy Additional Insureds
+    path('policies/<int:policy_id>/additional-insureds/', 
+         views.policy_additional_insureds, 
+         name='policy_additional_insureds'),
+    
+    path('policies/<int:policy_id>/additional-insureds/add/', 
+         views.add_additional_insured, 
+         name='add_additional_insured'),
+    
+    path('policies/<int:policy_id>/additional-insureds/<int:insured_id>/edit/', 
+         views.edit_additional_insured, 
+         name='edit_additional_insured'),
+    
+    path('policies/<int:policy_id>/additional-insureds/<int:insured_id>/delete/', 
+         views.delete_additional_insured, 
+         name='delete_additional_insured'),
+    
+    # Quote Additional Insureds
+    path('quotes/<int:quote_id>/additional-insureds/', 
+         views.quote_additional_insureds, 
+         name='quote_additional_insureds'),
+    
+    path('quotes/<int:quote_id>/additional-insureds/add/', 
+         views.add_quote_additional_insured, 
+         name='add_quote_additional_insured'),
+    
+    # ==========================================
+    # POLICY-SPECIFIC SIDEBAR URLs
+    # ==========================================
+    
+    # Policy Certificates (different from general certificates)
+    path('policies/<int:policy_id>/certificates/', 
+         views.policy_certificates, 
+         name='policy_certificates'),
+    
+    # Policy Billing (specific billing page for a policy)
+    path('policies/<int:policy_id>/billing/', 
+         billing_views.policy_billing, 
+         name='policy_billing'),
+    
+    # Policy Claims
+    path('policies/<int:policy_id>/claims/', 
+         views.policy_claims, 
+         name='policy_claims'),
+    
+    # Policy History/Timeline
+    path('policies/<int:policy_id>/history/', 
+         views.policy_history, 
+         name='policy_history'),
+    
+    # ==========================================
+    # QUOTE-SPECIFIC SIDEBAR URLs
+    # ==========================================
+    
+    # Quote Certificates
+    path('quotes/<int:quote_id>/certificates/', 
+         views.quote_certificates, 
+         name='quote_certificates'),
+    
+    # Quote History
+    path('quotes/<int:quote_id>/history/', 
+         views.quote_history, 
+         name='quote_history'),
+    
+    # ==========================================
+    # PLACEHOLDER VIEWS (For Future Development)
+    # ==========================================
+    
+    # Loss Runs (placeholder)
+    path('policies/<int:policy_id>/loss-runs/', 
+         views.policy_loss_runs_placeholder, 
+         name='policy_loss_runs'),
+    
+    # Audit Information (placeholder)
+    path('policies/<int:policy_id>/audit/', 
+         views.policy_audit_placeholder, 
+         name='policy_audit'),
+    
+    # Premium Finance (placeholder)
+    path('policies/<int:policy_id>/premium-finance/', 
+         views.policy_premium_finance_placeholder, 
+         name='policy_premium_finance'),
+    
+    # Communications (placeholder)
+    path('policies/<int:policy_id>/communications/', 
+         views.policy_communications_placeholder, 
+         name='policy_communications'),
+
+     # Main location views
+    path('policies/<int:policy_id>/locations/', 
+         location_views.policy_locations, 
+         name='policy_locations'),
+    
+    path('policies/<int:policy_id>/locations/add/', 
+         location_views.add_location, 
+         name='add_location'),
+    
+    path('policies/<int:policy_id>/locations/<int:location_id>/edit/', 
+         location_views.edit_location, 
+         name='edit_location'),
+    
+    path('policies/<int:policy_id>/locations/<int:location_id>/delete/', 
+         location_views.delete_location, 
+         name='delete_location'),
+    
+    # Bulk operations
+    path('policies/<int:policy_id>/locations/bulk-add/', 
+         location_views.bulk_add_locations, 
+         name='bulk_add_locations'),
+    
+    # Location API
+    path('policies/<int:policy_id>/locations/api/', 
+         location_views.location_api, 
+         name='location_api'),
+    
+    # Location Schedules
+    path('policies/<int:policy_id>/location-schedules/', 
+         location_views.location_schedule_list, 
+         name='location_schedule_list'),
+    
+    path('policies/<int:policy_id>/location-schedules/create/', 
+         location_views.create_location_schedule, 
+         name='create_location_schedule'),
+    
+    path('policies/<int:policy_id>/location-schedules/<int:schedule_id>/edit/', 
+         location_views.edit_location_schedule, 
+         name='edit_location_schedule'),
+    
+    # Location Schedule Endorsements
+    path('policies/<int:policy_id>/location-schedules/<int:schedule_id>/generate-endorsement/', 
+         location_views.generate_locations_schedule_endorsement, 
+         name='generate_locations_schedule_endorsement'),
+    
+    # Quote locations (if needed)
+    path('quotes/<int:quote_id>/locations/', 
+         location_views.quote_locations, 
+         name='quote_locations'),
+    
+    path('quotes/<int:quote_id>/locations/add/', 
+         location_views.add_quote_location, 
+         name='add_quote_location'),
 ]

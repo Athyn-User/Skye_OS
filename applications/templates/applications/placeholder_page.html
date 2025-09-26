@@ -1,0 +1,72 @@
+<!-- Path: applications/templates/applications/placeholder_page.html -->
+{% extends 'base_with_sidebar.html' %}
+
+{% block title %}{{ page_title }} - Coming Soon{% endblock %}
+
+{% block breadcrumb_items %}
+{% if object_type == 'policy' %}
+<li class="breadcrumb-item"><a href="{% url 'applications:policy_list' %}">Policies</a></li>
+<li class="breadcrumb-item"><a href="{% url 'applications:policy_detail' object.policy_id %}">{{ object.policy_number }}</a></li>
+{% else %}
+<li class="breadcrumb-item"><a href="{% url 'applications:quote_list' %}">Quotes</a></li>
+<li class="breadcrumb-item"><a href="{% url 'applications:quote_detail' object.quote_id %}">{{ object.quote_number }}</a></li>
+{% endif %}
+<li class="breadcrumb-item active">{{ page_title }}</li>
+{% endblock %}
+
+{% block page_header %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2>{{ page_title }}</h2>
+    </div>
+</div>
+{% endblock %}
+
+{% block page_content %}
+<!-- Pass context to sidebar -->
+{% include 'includes/sidebar_navigation.html' with object=object object_type=object_type active_tab=active_tab %}
+
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card">
+            <div class="card-body text-center py-5">
+                <div class="mb-4">
+                    <i class="fas {{ icon }} fa-5x text-muted"></i>
+                </div>
+                <h3 class="mb-3">{{ page_title }} - Coming Soon</h3>
+                <p class="text-muted mb-4">{{ description }}</p>
+                
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i>
+                    This feature is currently under development and will be available soon.
+                </div>
+                
+                {% if features %}
+                <div class="mt-4">
+                    <h5>Planned Features:</h5>
+                    <ul class="list-unstyled mt-3">
+                        {% for feature in features %}
+                        <li class="mb-2">
+                            <i class="fas fa-check-circle text-success"></i> {{ feature }}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+                
+                <div class="mt-5">
+                    {% if object_type == 'policy' %}
+                    <a href="{% url 'applications:policy_detail' object.policy_id %}" class="btn btn-primary">
+                        <i class="fas fa-arrow-left"></i> Back to Policy
+                    </a>
+                    {% else %}
+                    <a href="{% url 'applications:quote_detail' object.quote_id %}" class="btn btn-primary">
+                        <i class="fas fa-arrow-left"></i> Back to Quote
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

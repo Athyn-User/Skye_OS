@@ -474,7 +474,7 @@ class EnhancedDocumentService:
             return f"END-{timezone.now().strftime('%Y%m%d')}-001"
     
     def _prepare_template_data(self, policy: Policy, template: DocumentTemplate, custom_data: Dict = None) -> Dict:
-        """Prepare data for template rendering - UPDATED for endorsement headers"""
+        """Prepare data for template rendering - UPDATED for endorsement headers and location schedules"""
         try:
             # Get company information
             company = policy.quote.application.company
@@ -528,6 +528,9 @@ class EnhancedDocumentService:
                     # Additional endorsement context
                     'endorsement_title': template.template_name,
                     'endorsement_description': custom_data.get('description', '') if custom_data else '',
+                    
+                    # LOCATION SCHEDULE DATA - NEW
+                    'location_schedule': self._prepare_location_schedule_data(policy, template, custom_data),
                 })
             
             return data
@@ -535,6 +538,127 @@ class EnhancedDocumentService:
         except Exception as e:
             logger.error(f"Error preparing template data: {str(e)}")
             return {}
+    
+    def _prepare_location_schedule_data(self, policy: Policy, template: DocumentTemplate, custom_data: Dict = None) -> Dict:
+        """Prepare location schedule data for endorsements"""
+        try:
+            from .location_models import LocationSchedule, LocationScheduleItem
+            
+            location_data = {
+                'has_schedule': False,
+                'schedule_id': None,
+                'schedule_name': '',
+                'locations': [],
+                'totals': {
+                    'total_locations': 0,
+                    'total_building_limit': 0,
+                    'total_contents_limit': 0,
+                    'total_combined_limit': 0,
+                }
+            }
+            
+            # Check if this is a location schedule endorsement
+            is_location_endorsement = (
+                'LOCATION' in template.template_code.upper() or 
+                'SCHEDULE' in template.template_code.upper() or
+                (custom_data and custom_data.get('schedule_id'))
+            )
+            
+            if not is_location_endorsement:
+                return location_data
+            
+            # Get specific schedule if provided
+            if custom_data and custom_data.get('schedule_id'):
+                try:
+                    schedule = LocationSchedule.objects.get(
+                        schedule_id=custom_data['schedule_id'],
+                        policy=policy
+                    )
+                except LocationSchedule.DoesNotExist:
+                    logger.warning(f"Schedule {custom_data.get('schedule_id')} not found for policy {policy.policy_id}")
+                    return location_data
+            else:
+                # Get or create a default "All Locations" schedule
+                schedule, created = LocationSchedule.objects.get_or_create(
+                    policy=policy,
+                    schedule_name='All Locations Schedule',
+                    defaults={
+                        'schedule_type': 'all_locations',
+                        'show_building_limits': True,
+                        'show_contents_limits': True,
+                    }
+                )
+                
+                if created:
+                    schedule.add_locations_by_criteria()
+            
+            # Get schedule items with location details
+            schedule_items = schedule.items.select_related('location').filter(
+                location__is_active=True
+            ).order_by('sequence_order')
+            
+            locations = []
+            total_building = 0
+            total_contents = 0
+            
+            for item in schedule_items:
+                location = item.location
+                building_limit = location.building_limit or 0
+                contents_limit = location.contents_limit or 0
+                
+                location_info = {
+                    'location_number': location.location_number,
+                    'location_name': location.location_name or '',
+                    'full_address': location.full_address,
+                    'street_address': location.street_address,
+                    'city': location.city,
+                    'state': location.state,
+                    'zip_code': location.zip_code,
+                    'building_limit': building_limit,
+                    'contents_limit': contents_limit,
+                    'total_limit': building_limit + contents_limit,
+                    'building_limit_formatted': f"${building_limit:,.0f}" if building_limit > 0 else "None",
+                    'contents_limit_formatted': f"${contents_limit:,.0f}" if contents_limit > 0 else "None",
+                    'total_limit_formatted': f"${building_limit + contents_limit:,.0f}",
+                    'effective_date': location.effective_date,
+                    'construction_type': location.get_construction_type_display() if location.construction_type else '',
+                    'occupancy': location.get_primary_occupancy_display() if location.primary_occupancy else '',
+                }
+                
+                locations.append(location_info)
+                total_building += building_limit
+                total_contents += contents_limit
+            
+            location_data.update({
+                'has_schedule': True,
+                'schedule_id': schedule.schedule_id,
+                'schedule_name': schedule.schedule_name,
+                'schedule_type': schedule.get_schedule_type_display(),
+                'locations': locations,
+                'totals': {
+                    'total_locations': len(locations),
+                    'total_building_limit': total_building,
+                    'total_contents_limit': total_contents,
+                    'total_combined_limit': total_building + total_contents,
+                    'total_building_formatted': f"${total_building:,.0f}",
+                    'total_contents_formatted': f"${total_contents:,.0f}",
+                    'total_combined_formatted': f"${total_building + total_contents:,.0f}",
+                },
+                'display_options': {
+                    'show_building_limits': schedule.show_building_limits,
+                    'show_contents_limits': schedule.show_contents_limits,
+                    'show_deductibles': schedule.show_deductibles,
+                    'show_construction_details': schedule.show_construction_details,
+                }
+            })
+            
+            logger.info(f"Prepared location schedule data: {len(locations)} locations, ${total_building + total_contents:,.0f} total limits")
+            
+            return location_data
+            
+        except Exception as e:
+            logger.error(f"Error preparing location schedule data: {str(e)}")
+            return location_data
     
     def _generate_from_template(self, component: DocumentComponent) -> Tuple[bool, Dict]:
         """Generate document from template - UPDATED for endorsement headers"""
@@ -786,7 +910,7 @@ class EnhancedDocumentService:
             return False, {'error': str(e)}
     
     def _generate_basic_pdf(self, policy: Policy, document_name: str, template_data: dict = None) -> Tuple[bool, Dict]:
-        """Generate basic PDF with policy information - UPDATED for endorsement headers"""
+        """Generate basic PDF with policy information - UPDATED for endorsement headers and location schedules"""
         try:
             from reportlab.pdfgen import canvas
             from reportlab.lib.pagesizes import letter
@@ -806,8 +930,9 @@ class EnhancedDocumentService:
             
             # Check if this is an endorsement (has endorsement data)
             is_endorsement = template_data and 'endorsement_number' in template_data
+            has_locations = template_data and template_data.get('location_schedule', {}).get('has_schedule', False)
             
-            logger.info(f"Generating {'endorsement' if is_endorsement else 'standard'} PDF: {document_name}")
+            logger.info(f"Generating {'endorsement' if is_endorsement else 'standard'} PDF: {document_name} (locations: {has_locations})")
             
             if is_endorsement:
                 # CREATE ENDORSEMENT WITH HEADER
@@ -818,7 +943,7 @@ class EnhancedDocumentService:
                     [template_data['named_insured']['company_name'], template_data['policy_number']],
                     [f"{template_data['named_insured']['address']}", 'ENDORSEMENT NUMBER:'],
                     [f"{template_data['named_insured']['city']}, {template_data['named_insured']['state']} {template_data['named_insured']['zip_code']}", 
-                     template_data['endorsement_number']],
+                    template_data['endorsement_number']],
                     ['', 'ENDORSEMENT EFFECTIVE DATE:'],
                     ['', template_data['endorsement_effective_date']]
                 ]
@@ -846,74 +971,147 @@ class EnhancedDocumentService:
                 elements.append(title)
                 elements.append(Spacer(1, 0.2*inch))
                 
-                # Endorsement Content
-                content_style = styles['Normal']
-                
-                # Generate content based on endorsement type
-                endorsement_code = template_data.get('template', {}).get('code', '').upper()
-                
-                if 'ADD-INSURED' in endorsement_code or 'ADDITIONAL' in endorsement_code:
-                    content_text = f"""
+                # LOCATION SCHEDULE CONTENT - NEW
+                if has_locations:
+                    schedule_data = template_data['location_schedule']
+                    
+                    # Schedule description
+                    content_style = styles['Normal']
+                    intro_text = f"""
                     This endorsement modifies insurance provided under the following:
                     
                     <b>POLICY NUMBER:</b> {template_data['policy_number']}<br/>
                     <b>NAMED INSURED:</b> {template_data['named_insured']['company_name']}<br/>
                     <b>EFFECTIVE DATE:</b> {template_data['endorsement_effective_date']}<br/>
                     
-                    <b>ADDITIONAL INSURED INFORMATION:</b><br/>
-                    Name: [TO BE COMPLETED]<br/>
-                    Address: [TO BE COMPLETED]
-                    
-                    <br/><br/>
-                    This endorsement adds the above named person or organization as an additional insured 
-                    under the General Liability Coverage of this policy, but only with respect to liability 
-                    arising out of operations performed by or on behalf of the named insured.
+                    <b>SCHEDULE OF LOCATIONS</b><br/>
+                    The following locations are covered under this policy:
                     """
-                elif 'WAIVER' in endorsement_code or 'SUB' in endorsement_code:
-                    content_text = f"""
-                    This endorsement modifies insurance provided under the following:
                     
-                    <b>POLICY NUMBER:</b> {template_data['policy_number']}<br/>
-                    <b>NAMED INSURED:</b> {template_data['named_insured']['company_name']}<br/>
-                    <b>EFFECTIVE DATE:</b> {template_data['endorsement_effective_date']}<br/>
+                    intro = Paragraph(intro_text, content_style)
+                    elements.append(intro)
+                    elements.append(Spacer(1, 0.2*inch))
                     
-                    <b>WAIVER OF SUBROGATION:</b><br/>
-                    The insurer waives all rights of subrogation against: [TO BE COMPLETED]
+                    # Location table
+                    if schedule_data['locations']:
+                        # Table headers
+                        table_data = [['Location', 'Address', 'Building Limit', 'Contents Limit', 'Total Limit']]
+                        
+                        # Add location rows
+                        for location in schedule_data['locations']:
+                            row = [
+                                location['location_number'],
+                                f"{location['street_address']}\n{location['city']}, {location['state']} {location['zip_code']}",
+                                location['building_limit_formatted'],
+                                location['contents_limit_formatted'], 
+                                location['total_limit_formatted']
+                            ]
+                            table_data.append(row)
+                        
+                        # Add totals row
+                        totals = schedule_data['totals']
+                        table_data.append([
+                            'TOTALS:',
+                            f"{totals['total_locations']} Locations",
+                            totals['total_building_formatted'],
+                            totals['total_contents_formatted'],
+                            totals['total_combined_formatted']
+                        ])
+                        
+                        # Create and style table
+                        location_table = Table(table_data, colWidths=[0.8*inch, 2.5*inch, 1.2*inch, 1.2*inch, 1.2*inch])
+                        location_table.setStyle(TableStyle([
+                            # Header row
+                            ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+                            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                            ('FONTSIZE', (0, 0), (-1, 0), 9),
+                            
+                            # Data rows
+                            ('FONTNAME', (0, 1), (-1, -2), 'Helvetica'),
+                            ('FONTSIZE', (0, 1), (-1, -2), 8),
+                            ('GRID', (0, 0), (-1, -1), 1, colors.black),
+                            
+                            # Totals row
+                            ('BACKGROUND', (0, -1), (-1, -1), colors.lightgrey),
+                            ('FONTNAME', (0, -1), (-1, -1), 'Helvetica-Bold'),
+                            ('FONTSIZE', (0, -1), (-1, -1), 9),
+                            
+                            # Alignment
+                            ('ALIGN', (2, 0), (-1, -1), 'RIGHT'),
+                            ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+                            ('LEFTPADDING', (0, 0), (-1, -1), 6),
+                            ('RIGHTPADDING', (0, 0), (-1, -1), 6),
+                            ('TOPPADDING', (0, 0), (-1, -1), 6),
+                            ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+                        ]))
+                        
+                        elements.append(location_table)
+                        elements.append(Spacer(1, 0.2*inch))
                     
-                    <br/><br/>
-                    This waiver applies only to the extent that such waiver is permitted by law.
+                    # Schedule notes
+                    notes_text = f"""
+                    <b>SCHEDULE NOTES:</b><br/>
+                    • Total Locations: {schedule_data['totals']['total_locations']}<br/>
+                    • Combined Limits: {schedule_data['totals']['total_combined_formatted']}<br/>
+                    • This schedule supersedes any previously issued location schedules.<br/>
+                    • All other terms and conditions of the policy remain unchanged.
                     """
-                elif 'PRIMARY' in endorsement_code or 'NON-CONTRIB' in endorsement_code:
-                    content_text = f"""
-                    This endorsement modifies insurance provided under the following:
                     
-                    <b>POLICY NUMBER:</b> {template_data['policy_number']}<br/>
-                    <b>NAMED INSURED:</b> {template_data['named_insured']['company_name']}<br/>
-                    <b>EFFECTIVE DATE:</b> {template_data['endorsement_effective_date']}<br/>
+                    notes = Paragraph(notes_text, content_style)
+                    elements.append(notes)
                     
-                    <b>PRIMARY AND NON-CONTRIBUTORY:</b><br/>
-                    This insurance is primary and non-contributory with respect to any other insurance 
-                    available to the additional insured.
-                    
-                    <br/><br/>
-                    The insurance afforded by this policy is primary insurance. If other valid and 
-                    collectible insurance is available, this insurance is primary and non-contributory.
-                    """
                 else:
-                    # Generic endorsement
-                    content_text = f"""
-                    This endorsement modifies insurance provided under the following:
+                    # Standard endorsement content for non-location endorsements
+                    content_style = styles['Normal']
+                    endorsement_code = template_data.get('template', {}).get('code', '').upper()
                     
-                    <b>POLICY NUMBER:</b> {template_data['policy_number']}<br/>
-                    <b>NAMED INSURED:</b> {template_data['named_insured']['company_name']}<br/>
-                    <b>EFFECTIVE DATE:</b> {template_data['endorsement_effective_date']}<br/>
+                    if 'ADD-INSURED' in endorsement_code or 'ADDITIONAL' in endorsement_code:
+                        content_text = f"""
+                        This endorsement modifies insurance provided under the following:
+                        
+                        <b>POLICY NUMBER:</b> {template_data['policy_number']}<br/>
+                        <b>NAMED INSURED:</b> {template_data['named_insured']['company_name']}<br/>
+                        <b>EFFECTIVE DATE:</b> {template_data['endorsement_effective_date']}<br/>
+                        
+                        <b>ADDITIONAL INSURED INFORMATION:</b><br/>
+                        Name: [TO BE COMPLETED]<br/>
+                        Address: [TO BE COMPLETED]
+                        
+                        <br/><br/>
+                        This endorsement adds the above named person or organization as an additional insured 
+                        under the General Liability Coverage of this policy, but only with respect to liability 
+                        arising out of operations performed by or on behalf of the named insured.
+                        """
+                    elif 'WAIVER' in endorsement_code or 'SUB' in endorsement_code:
+                        content_text = f"""
+                        This endorsement modifies insurance provided under the following:
+                        
+                        <b>POLICY NUMBER:</b> {template_data['policy_number']}<br/>
+                        <b>NAMED INSURED:</b> {template_data['named_insured']['company_name']}<br/>
+                        <b>EFFECTIVE DATE:</b> {template_data['endorsement_effective_date']}<br/>
+                        
+                        <b>WAIVER OF SUBROGATION:</b><br/>
+                        The insurer waives all rights of subrogation against: [TO BE COMPLETED]
+                        
+                        <br/><br/>
+                        This waiver applies only to the extent that such waiver is permitted by law.
+                        """
+                    else:
+                        # Generic endorsement
+                        content_text = f"""
+                        This endorsement modifies insurance provided under the following:
+                        
+                        <b>POLICY NUMBER:</b> {template_data['policy_number']}<br/>
+                        <b>NAMED INSURED:</b> {template_data['named_insured']['company_name']}<br/>
+                        <b>EFFECTIVE DATE:</b> {template_data['endorsement_effective_date']}<br/>
+                        
+                        <br/>
+                        {template_data.get('endorsement_description', 'Endorsement details to be specified.')}
+                        """
                     
-                    <br/>
-                    {template_data.get('endorsement_description', 'Endorsement details to be specified.')}
-                    """
-                
-                content = Paragraph(content_text, content_style)
-                elements.append(content)
+                    content = Paragraph(content_text, content_style)
+                    elements.append(content)
                 
                 # Add footer
                 elements.append(Spacer(1, 0.5*inch))

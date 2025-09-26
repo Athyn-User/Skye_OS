@@ -1,0 +1,345 @@
+<!-- File: applications/templates/applications/policy_locations.html -->
+{% extends 'base.html' %}
+
+{% block title %}Locations - {{ policy.policy_number }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2>Policy Locations</h2>
+            <p class="text-muted">{{ policy.policy_number }} - {{ policy.quote.application.company.company_name }}</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <div class="btn-group" role="group">
+                <a href="{% url 'applications:add_location' policy.policy_id %}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Add Location
+                </a>
+                <a href="{% url 'applications:bulk_add_locations' policy.policy_id %}" class="btn btn-outline-primary">
+                    <i class="fas fa-layer-group"></i> Bulk Add
+                </a>
+                <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+                        <i class="fas fa-cog"></i> Manage
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="{% url 'applications:location_schedule_list' policy.policy_id %}">
+                            <i class="fas fa-list"></i> Location Schedules
+                        </a></li>
+                        <li><a class="dropdown-item" href="{% url 'applications:create_location_schedule' policy.policy_id %}">
+                            <i class="fas fa-plus-circle"></i> Create Schedule
+                        </a></li>
+                    </ul>
+                </div>
+                <a href="{% url 'applications:policy_detail' policy.policy_id %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Policy
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body text-center">
+                    <h3 class="mb-0">{{ total_locations }}</h3>
+                    <small>Total Locations</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body text-center">
+                    <h3 class="mb-0">${{ total_building_limit|floatformat:0 }}</h3>
+                    <small>Building Limits</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body text-center">
+                    <h3 class="mb-0">${{ total_contents_limit|floatformat:0 }}</h3>
+                    <small>Contents Limits</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body text-center">
+                    <h3 class="mb-0">{{ schedules.count }}</h3>
+                    <small>Active Schedules</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search and Filters -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="GET" class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">Search Locations</label>
+                    <input type="text" name="search" class="form-control" 
+                           value="{{ search }}" placeholder="Address, city, or location number...">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">State</label>
+                    <select name="state" class="form-select">
+                        <option value="">All States</option>
+                        {% for state in states %}
+                        <option value="{{ state }}" {% if state_filter == state %}selected{% endif %}>{{ state }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Occupancy</label>
+                    <select name="occupancy" class="form-select">
+                        <option value="">All Occupancies</option>
+                        {% for occupancy in occupancies %}
+                        <option value="{{ occupancy }}" {% if occupancy_filter == occupancy %}selected{% endif %}>
+                            {{ occupancy|title }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Status</label>
+                    <select name="active_only" class="form-select">
+                        <option value="true" {% if active_only %}selected{% endif %}>Active Only</option>
+                        <option value="false" {% if not active_only %}selected{% endif %}>All Locations</option>
+                    </select>
+                </div>
+                <div class="col-md-1">
+                    <label class="form-label">&nbsp;</label>
+                    <button type="submit" class="btn btn-outline-primary w-100">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Locations Table -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">
+                Policy Locations 
+                {% if locations.has_other_pages %}
+                    ({{ locations.start_index }}-{{ locations.end_index }} of {{ locations.paginator.count }})
+                {% endif %}
+            </h5>
+        </div>
+        <div class="card-body p-0">
+            {% if locations %}
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 80px;">Loc #</th>
+                            <th>Address</th>
+                            <th style="width: 120px;">Building Limit</th>
+                            <th style="width: 120px;">Contents Limit</th>
+                            <th style="width: 100px;">Effective</th>
+                            <th style="width: 80px;">Status</th>
+                            <th style="width: 120px;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for location in locations %}
+                        <tr {% if not location.is_active %}class="table-secondary"{% endif %}>
+                            <td>
+                                <strong>{{ location.location_number }}</strong>
+                            </td>
+                            <td>
+                                <div>
+                                    <strong>{{ location.street_address }}</strong>
+                                    {% if location.address_line_2 %}
+                                        <br><small class="text-muted">{{ location.address_line_2 }}</small>
+                                    {% endif %}
+                                </div>
+                                <div class="text-muted small">
+                                    {{ location.city }}, {{ location.state }} {{ location.zip_code }}
+                                </div>
+                                {% if location.location_name %}
+                                <div class="text-info small">{{ location.location_name }}</div>
+                                {% endif %}
+                            </td>
+                            <td class="text-end">
+                                {% if location.building_limit %}
+                                    ${{ location.building_limit|floatformat:0 }}
+                                {% else %}
+                                    <span class="text-muted">None</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end">
+                                {% if location.contents_limit %}
+                                    ${{ location.contents_limit|floatformat:0 }}
+                                {% else %}
+                                    <span class="text-muted">None</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {{ location.effective_date|date:"m/d/Y" }}
+                            </td>
+                            <td>
+                                {% if location.is_active %}
+                                    <span class="badge bg-success">Active</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Inactive</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <a href="{% url 'applications:edit_location' policy.policy_id location.location_id %}" 
+                                       class="btn btn-outline-primary" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    {% if location.is_active %}
+                                    <button type="button" class="btn btn-outline-danger" 
+                                            onclick="deleteLocation({{ location.location_id }})" title="Deactivate">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            {% if locations.has_other_pages %}
+            <div class="card-footer">
+                <nav aria-label="Locations pagination">
+                    <ul class="pagination pagination-sm justify-content-center mb-0">
+                        {% if locations.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?{% if search %}search={{ search }}&{% endif %}{% if state_filter %}state={{ state_filter }}&{% endif %}{% if occupancy_filter %}occupancy={{ occupancy_filter }}&{% endif %}active_only={{ active_only }}&page={{ locations.previous_page_number }}">Previous</a>
+                        </li>
+                        {% endif %}
+                        
+                        {% for num in locations.paginator.page_range %}
+                        {% if num == locations.number %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ num }}</span>
+                        </li>
+                        {% elif num > locations.number|add:'-3' and num < locations.number|add:'3' %}
+                        <li class="page-item">
+                            <a class="page-link" href="?{% if search %}search={{ search }}&{% endif %}{% if state_filter %}state={{ state_filter }}&{% endif %}{% if occupancy_filter %}occupancy={{ occupancy_filter }}&{% endif %}active_only={{ active_only }}&page={{ num }}">{{ num }}</a>
+                        </li>
+                        {% endif %}
+                        {% endfor %}
+                        
+                        {% if locations.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?{% if search %}search={{ search }}&{% endif %}{% if state_filter %}state={{ state_filter }}&{% endif %}{% if occupancy_filter %}occupancy={{ occupancy_filter }}&{% endif %}active_only={{ active_only }}&page={{ locations.next_page_number }}">Next</a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+            {% endif %}
+            
+            {% else %}
+            <div class="text-center py-5">
+                <div class="mb-4">
+                    <i class="fas fa-map-marker-alt fa-3x text-muted"></i>
+                </div>
+                <h4>No Locations Found</h4>
+                <p class="text-muted">This policy doesn't have any locations yet, or none match your search criteria.</p>
+                <div class="mt-4">
+                    <a href="{% url 'applications:add_location' policy.policy_id %}" class="btn btn-primary me-2">
+                        <i class="fas fa-plus"></i> Add First Location
+                    </a>
+                    {% if search or state_filter or occupancy_filter %}
+                    <a href="{% url 'applications:policy_locations' policy.policy_id %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-times"></i> Clear Filters
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Recent Schedules -->
+    {% if schedules %}
+    <div class="card mt-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h6 class="mb-0">Location Schedules</h6>
+            <a href="{% url 'applications:location_schedule_list' policy.policy_id %}" class="btn btn-sm btn-outline-primary">
+                View All
+            </a>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                {% for schedule in schedules|slice:":3" %}
+                <div class="col-md-4">
+                    <div class="card border">
+                        <div class="card-body">
+                            <h6 class="card-title">{{ schedule.schedule_name }}</h6>
+                            <p class="card-text small text-muted">
+                                {{ schedule.total_locations }} locations<br>
+                                ${{ schedule.total_building_limit|add:schedule.total_contents_limit|floatformat:0 }} total limits
+                            </p>
+                            <div class="btn-group btn-group-sm w-100">
+                                <a href="{% url 'applications:edit_location_schedule' policy.policy_id schedule.schedule_id %}" 
+                                   class="btn btn-outline-primary">Edit</a>
+                                <a href="{% url 'applications:generate_locations_schedule_endorsement' policy.policy_id schedule.schedule_id %}" 
+                                   class="btn btn-success">Generate</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Deactivate Location</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to deactivate this location?</p>
+                <p><strong>Note:</strong> This will mark the location as inactive but preserve all historical data. This action can be reversed by editing the location.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form method="POST" id="deleteForm" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Deactivate Location</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function deleteLocation(locationId) {
+    const deleteForm = document.getElementById('deleteForm');
+    deleteForm.action = `/policies/{{ policy.policy_id }}/locations/${locationId}/delete/`;
+    
+    const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    modal.show();
+}
+
+// Auto-refresh totals when filtering
+document.addEventListener('DOMContentLoaded', function() {
+    const searchParams = new URLSearchParams(window.location.search);
+    if (searchParams.has('search') || searchParams.has('state') || searchParams.has('occupancy')) {
+        // Could add AJAX to update totals without page refresh
+    }
+});
+</script>
+
+{% endblock %}

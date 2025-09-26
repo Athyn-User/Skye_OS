@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<!-- Sidebar CSS -->
+<link rel="stylesheet" href="{% static 'css/sidebar.css' %}">
+{{ block.super }}
+{% endblock %}
+
+{% block content %}
+<div class="sidebar-container">
+    <!-- Include the sidebar navigation with proper context -->
+    {% block sidebar %}
+        {% include 'includes/sidebar_navigation.html' %}
+    {% endblock %}
+    
+    <!-- Main content area with adjusted margin for sidebar -->
+    <div class="main-content">
+        <!-- Breadcrumb (optional) -->
+        {% block breadcrumb %}
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'applications:dashboard' %}">Home</a></li>
+                {% block breadcrumb_items %}{% endblock %}
+            </ol>
+        </nav>
+        {% endblock %}
+        
+        <!-- Page header -->
+        {% block page_header %}{% endblock %}
+        
+        <!-- Main content block -->
+        {% block page_content %}{% endblock %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Sidebar JavaScript -->
+<script src="{% static 'js/sidebar.js' %}"></script>
+
+<!-- Optional: Update badge counts dynamically -->
+<script>
+    // Example: Update badge counts after page load
+    document.addEventListener('DOMContentLoaded', function() {
+        // These can be populated from Django context or AJAX calls
+        {% if location_count %}
+        updateSidebarBadge('locations', {{ location_count }});
+        {% endif %}
+        
+        {% if additional_insured_count %}
+        updateSidebarBadge('additional_insureds', {{ additional_insured_count }});
+        {% endif %}
+        
+        {% if endorsement_count %}
+        updateSidebarBadge('endorsements', {{ endorsement_count }});
+        {% endif %}
+        
+        {% if certificate_count %}
+        updateSidebarBadge('certificates', {{ certificate_count }});
+        {% endif %}
+        
+        {% if pending_payments %}
+        updateSidebarBadge('billing', {{ pending_payments }});
+        {% endif %}
+        
+        {% if active_claims %}
+        updateSidebarBadge('claims', {{ active_claims }});
+        {% endif %}
+    });
+</script>
+
+{{ block.super }}
+{% endblock %}

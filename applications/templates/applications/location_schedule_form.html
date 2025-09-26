@@ -1,0 +1,264 @@
+<!-- Path: applications/templates/applications/location_schedule_form.html -->
+{% extends 'base_with_sidebar.html' %}
+{% load static %}
+
+{% block title %}Create Location Schedule - Policy {{ policy.policy_number }}{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item"><a href="{% url 'applications:policy_list' %}">Policies</a></li>
+<li class="breadcrumb-item"><a href="{% url 'applications:policy_detail' policy.policy_id %}">{{ policy.policy_number }}</a></li>
+<li class="breadcrumb-item"><a href="{% url 'applications:policy_locations' policy.policy_id %}">Locations</a></li>
+<li class="breadcrumb-item active">Create Schedule</li>
+{% endblock %}
+
+{% block page_header %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Create Location Schedule</h2>
+    <a href="{% url 'applications:policy_locations' policy.policy_id %}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Back to Locations
+    </a>
+</div>
+{% endblock %}
+
+{% block page_content %}
+<!-- Include sidebar with correct context -->
+{% include 'includes/sidebar_navigation.html' with object=policy object_type='policy' active_tab='locations' %}
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Schedule Details</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    
+                    <!-- Basic Information -->
+                    <div class="row mb-3">
+                        <div class="col-md-8">
+                            <label for="{{ form.schedule_name.id_for_label }}" class="form-label required">
+                                {{ form.schedule_name.label }}
+                            </label>
+                            {{ form.schedule_name }}
+                            {% if form.schedule_name.help_text %}
+                            <small class="form-text text-muted">{{ form.schedule_name.help_text }}</small>
+                            {% endif %}
+                            {% if form.schedule_name.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.schedule_name.errors.0 }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4">
+                            <label for="{{ form.schedule_type.id_for_label }}" class="form-label">
+                                {{ form.schedule_type.label }}
+                            </label>
+                            {{ form.schedule_type }}
+                            {% if form.schedule_type.help_text %}
+                            <small class="form-text text-muted">{{ form.schedule_type.help_text }}</small>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Schedule Criteria -->
+                    <div id="schedule-criteria" class="mb-4">
+                        <h6>Schedule Criteria</h6>
+                        
+                        <div class="row mb-3" id="states-field" style="display: none;">
+                            <div class="col-md-12">
+                                <label for="{{ form.include_states.id_for_label }}" class="form-label">
+                                    Include States
+                                </label>
+                                {{ form.include_states }}
+                                {% if form.include_states.help_text %}
+                                <small class="form-text text-muted">{{ form.include_states.help_text }}</small>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3" id="occupancies-field" style="display: none;">
+                            <div class="col-md-12">
+                                <label for="{{ form.include_occupancies.id_for_label }}" class="form-label">
+                                    Include Occupancies
+                                </label>
+                                {{ form.include_occupancies }}
+                                {% if form.include_occupancies.help_text %}
+                                <small class="form-text text-muted">{{ form.include_occupancies.help_text }}</small>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="{{ form.min_limit.id_for_label }}" class="form-label">
+                                    Minimum Limit
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    {{ form.min_limit }}
+                                </div>
+                                {% if form.min_limit.help_text %}
+                                <small class="form-text text-muted">{{ form.min_limit.help_text }}</small>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="{{ form.max_limit.id_for_label }}" class="form-label">
+                                    Maximum Limit
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    {{ form.max_limit }}
+                                </div>
+                                {% if form.max_limit.help_text %}
+                                <small class="form-text text-muted">{{ form.max_limit.help_text }}</small>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Display Options -->
+                    <div class="mb-4">
+                        <h6>Display Options</h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    {{ form.show_building_limits }}
+                                    <label class="form-check-label" for="{{ form.show_building_limits.id_for_label }}">
+                                        Show Building Limits
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    {{ form.show_contents_limits }}
+                                    <label class="form-check-label" for="{{ form.show_contents_limits.id_for_label }}">
+                                        Show Contents Limits
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    {{ form.show_deductibles }}
+                                    <label class="form-check-label" for="{{ form.show_deductibles.id_for_label }}">
+                                        Show Deductibles
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    {{ form.show_construction_details }}
+                                    <label class="form-check-label" for="{{ form.show_construction_details.id_for_label }}">
+                                        Show Construction Details
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    {{ form.show_protection_features }}
+                                    <label class="form-check-label" for="{{ form.show_protection_features.id_for_label }}">
+                                        Show Protection Features
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Form Errors -->
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {{ form.non_field_errors }}
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Submit Buttons -->
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Create Schedule
+                        </button>
+                        <a href="{% url 'applications:policy_locations' policy.policy_id %}" class="btn btn-secondary">
+                            Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Available Locations</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">
+                    This policy has <strong>{{ available_locations.count }}</strong> active locations 
+                    that can be included in schedules.
+                </p>
+                
+                {% if available_locations %}
+                <div class="small">
+                    <strong>States:</strong><br>
+                    {% for state in available_locations.values_list.state|dictsort:0 %}
+                    <span class="badge bg-secondary">{{ state }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5 class="mb-0">Schedule Type Help</h5>
+            </div>
+            <div class="card-body small">
+                <dl>
+                    <dt>All Locations</dt>
+                    <dd>Include every active location</dd>
+                    
+                    <dt>Selected Locations</dt>
+                    <dd>Manually choose specific locations</dd>
+                    
+                    <dt>Locations by State</dt>
+                    <dd>Include all locations in specific states</dd>
+                    
+                    <dt>Locations by Occupancy</dt>
+                    <dd>Include all locations with specific occupancy types</dd>
+                    
+                    <dt>Custom Schedule</dt>
+                    <dd>Complex criteria with multiple filters</dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.required::after {
+    content: " *";
+    color: red;
+}
+</style>
+
+<script>
+function toggleScheduleCriteria() {
+    const scheduleType = document.getElementById('id_schedule_type').value;
+    const statesField = document.getElementById('states-field');
+    const occupanciesField = document.getElementById('occupancies-field');
+    
+    // Hide all criteria fields first
+    statesField.style.display = 'none';
+    occupanciesField.style.display = 'none';
+    
+    // Show relevant fields based on schedule type
+    if (scheduleType === 'locations_by_state') {
+        statesField.style.display = 'block';
+    } else if (scheduleType === 'locations_by_occupancy') {
+        occupanciesField.style.display = 'block';
+    } else if (scheduleType === 'custom') {
+        statesField.style.display = 'block';
+        occupanciesField.style.display = 'block';
+    }
+}
+
+// Run on page load
+document.addEventListener('DOMContentLoaded', function() {
+    toggleScheduleCriteria();
+});
+</script>
+
+{% endblock %}

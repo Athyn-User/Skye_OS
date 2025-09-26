@@ -208,3 +208,81 @@ def commission_report(request):
     }
     return render(request, 'billing/commission_report.html', context)
 
+@login_required
+def policy_billing(request, policy_id):
+    """View billing information for a specific policy (sidebar navigation)"""
+    policy = get_object_or_404(Policy, policy_id=policy_id)
+    
+    # Check if billing schedule exists
+    has_billing_schedule = hasattr(policy, 'billingschedule')
+    billing_schedule = None
+    payment_records = []
+    pending_payments = 0
+    total_paid = 0
+    total_due = 0
+    
+    if has_billing_schedule:
+        billing_schedule = policy.billingschedule
+        payment_records = PaymentRecord.objects.filter(
+            policy=policy
+        ).order_by('due_date')
+        
+        # Calculate payment statistics
+        pending_payments = payment_records.filter(
+            payment_status='pending'
+        ).count()
+        
+        total_paid = payment_records.filter(
+            payment_status='paid'
+        ).aggregate(
+            total=Sum('amount_paid')
+        )['total'] or 0
+        
+        total_due = payment_records.filter(
+            payment_status='pending'
+        ).aggregate(
+            total=Sum('amount_due')
+        )['total'] or 0
+    
+    # Check for overdue payments
+    overdue_payments = []
+    if payment_records:
+        today = date.today()
+        overdue_payments = payment_records.filter(
+            payment_status='pending',
+            due_date__lt=today
+        )
+    
+    context = {
+        'policy': policy,
+        'object': policy,  # For sidebar compatibility
+        'object_type': 'policy',  # For sidebar compatibility
+        'active_tab': 'billing',  # For sidebar highlighting
+        'has_billing_schedule': has_billing_schedule,
+        'billing_schedule': billing_schedule,
+        'payment_records': payment_records,
+        'pending_payments': pending_payments,
+        'total_paid': total_paid,
+        'total_due': total_due,
+        'overdue_payments': overdue_payments,
+        'title': f'Billing - Policy {policy.policy_number}'
+    }
+    
+    # Check if the billing template exists, otherwise use placeholder
+    try:
+        return render(request, 'billing/policy_billing.html', context)
+    except:
+        # If template doesn't exist, use the placeholder template
+        context.update({
+            'page_title': 'Billing & Payments',
+            'icon': 'fa-credit-card',
+            'description': 'Manage billing and payment schedules for this policy.',
+            'features': [
+                'View payment schedule',
+                'Process payments',
+                'Track payment history',
+                'Generate invoices',
+                'Manage payment methods'
+            ]
+        })
+        return render(request, 'applications/placeholder_page.html', context)

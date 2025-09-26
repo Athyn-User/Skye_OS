@@ -1,0 +1,182 @@
+<!-- Path: templates/includes/sidebar_navigation.html -->
+<!-- Reusable sidebar navigation component for Policy and Quote detail pages -->
+
+<div id="sidebar" class="sidebar">
+    <!-- Sidebar Toggle Button -->
+    <div class="sidebar-toggle" onclick="toggleSidebar()">
+        <i class="fas fa-bars"></i>
+    </div>
+    
+    <!-- Sidebar Header -->
+    <div class="sidebar-header">
+        <h5 class="sidebar-title">
+            <i class="fas fa-{{ icon_type|default:'file-contract' }}"></i>
+            <span class="sidebar-text">{{ sidebar_title|default:'Navigation' }}</span>
+        </h5>
+    </div>
+    
+    <!-- Sidebar Navigation Items -->
+    <nav class="sidebar-nav">
+        <!-- Overview -->
+        {% if object_type == 'policy' %}
+        <a href="{% url 'applications:policy_detail' object.policy_id %}" 
+           class="sidebar-item {% if active_tab == 'overview' %}active{% endif %}">
+            <i class="fas fa-home"></i>
+            <span class="sidebar-text">Overview</span>
+        </a>
+        {% elif object_type == 'quote' %}
+        <a href="{% url 'applications:quote_detail' object.pk %}" 
+           class="sidebar-item {% if active_tab == 'overview' %}active{% endif %}">
+            <i class="fas fa-home"></i>
+            <span class="sidebar-text">Overview</span>
+        </a>
+        {% endif %}
+        
+        <!-- Company Locations -->
+        {% if object_type == 'policy' %}
+        <a href="{% url 'applications:policy_locations' object.policy_id %}" 
+           class="sidebar-item {% if active_tab == 'locations' %}active{% endif %}">
+            <i class="fas fa-map-marker-alt"></i>
+            <span class="sidebar-text">Company Locations</span>
+            {% if location_count %}
+            <span class="sidebar-badge">{{ location_count }}</span>
+            {% endif %}
+        </a>
+        {% else %}
+        <a href="#" 
+           class="sidebar-item {% if active_tab == 'locations' %}active{% endif %}">
+            <i class="fas fa-map-marker-alt"></i>
+            <span class="sidebar-text">Company Locations</span>
+        </a>
+        {% endif %}
+        
+        <!-- Additional Insureds -->
+        <a href="#" 
+           class="sidebar-item {% if active_tab == 'additional_insureds' %}active{% endif %}">
+            <i class="fas fa-user-plus"></i>
+            <span class="sidebar-text">Additional Insureds</span>
+            {% if additional_insured_count %}
+            <span class="sidebar-badge">{{ additional_insured_count }}</span>
+            {% endif %}
+        </a>
+        
+        <!-- Documents -->
+        {% if object_type == 'policy' %}
+        <a href="{% url 'applications:view_policy_documents' object.policy_id %}" 
+           class="sidebar-item {% if active_tab == 'documents' %}active{% endif %}">
+            <i class="fas fa-file-alt"></i>
+            <span class="sidebar-text">Documents</span>
+            {% if has_documents %}
+            <span class="sidebar-badge success"><i class="fas fa-check"></i></span>
+            {% endif %}
+        </a>
+        {% else %}
+        <a href="#" 
+           class="sidebar-item {% if active_tab == 'documents' %}active{% endif %}">
+            <i class="fas fa-file-alt"></i>
+            <span class="sidebar-text">Documents</span>
+        </a>
+        {% endif %}
+        
+        <!-- Endorsements (Policy Only) -->
+        {% if object_type == 'policy' %}
+        <a href="{% url 'applications:view_endorsements' object.policy_id %}" 
+           class="sidebar-item {% if active_tab == 'endorsements' %}active{% endif %}">
+            <i class="fas fa-file-signature"></i>
+            <span class="sidebar-text">Endorsements</span>
+            {% if endorsement_count %}
+            <span class="sidebar-badge">{{ endorsement_count }}</span>
+            {% endif %}
+        </a>
+        {% endif %}
+        
+        <!-- Certificates -->
+        <a href="#" 
+           class="sidebar-item {% if active_tab == 'certificates' %}active{% endif %}">
+            <i class="fas fa-certificate"></i>
+            <span class="sidebar-text">Certificates</span>
+            {% if certificate_count %}
+            <span class="sidebar-badge">{{ certificate_count }}</span>
+            {% endif %}
+        </a>
+        
+        <!-- Billing & Payments (Policy Only) -->
+        {% if object_type == 'policy' %}
+        <a href="{% url 'applications:policy_billing' object.policy_id %}" 
+           class="sidebar-item {% if active_tab == 'billing' %}active{% endif %}">
+            <i class="fas fa-credit-card"></i>
+            <span class="sidebar-text">Billing & Payments</span>
+            {% if pending_payments %}
+            <span class="sidebar-badge warning">{{ pending_payments }}</span>
+            {% endif %}
+        </a>
+        {% endif %}
+        
+        <!-- Claims -->
+        <a href="#" 
+           class="sidebar-item {% if active_tab == 'claims' %}active{% endif %}">
+            <i class="fas fa-exclamation-triangle"></i>
+            <span class="sidebar-text">Claims</span>
+            {% if active_claims %}
+            <span class="sidebar-badge danger">{{ active_claims }}</span>
+            {% endif %}
+        </a>
+        
+        <!-- Divider -->
+        <div class="sidebar-divider"></div>
+        
+        <!-- Future Features (Placeholders) -->
+        
+        <!-- Loss Runs -->
+        <a href="#" class="sidebar-item disabled" title="Coming Soon">
+            <i class="fas fa-chart-line"></i>
+            <span class="sidebar-text">Loss Runs</span>
+            <span class="sidebar-badge">Soon</span>
+        </a>
+        
+        <!-- Audit Information -->
+        <a href="#" class="sidebar-item disabled" title="Coming Soon">
+            <i class="fas fa-clipboard-check"></i>
+            <span class="sidebar-text">Audit Information</span>
+            <span class="sidebar-badge">Soon</span>
+        </a>
+        
+        <!-- Premium Finance -->
+        <a href="#" class="sidebar-item disabled" title="Coming Soon">
+            <i class="fas fa-dollar-sign"></i>
+            <span class="sidebar-text">Premium Finance</span>
+            <span class="sidebar-badge">Soon</span>
+        </a>
+        
+        <!-- Communications -->
+        <a href="#" class="sidebar-item disabled" title="Coming Soon">
+            <i class="fas fa-comments"></i>
+            <span class="sidebar-text">Communications</span>
+            <span class="sidebar-badge">Soon</span>
+        </a>
+        
+        <!-- History/Timeline -->
+        <a href="#" 
+           class="sidebar-item {% if active_tab == 'history' %}active{% endif %}">
+            <i class="fas fa-history"></i>
+            <span class="sidebar-text">History</span>
+        </a>
+    </nav>
+    
+    <!-- Sidebar Footer -->
+    <div class="sidebar-footer">
+        <div class="sidebar-item sidebar-info">
+            <i class="fas fa-info-circle"></i>
+            <span class="sidebar-text">
+                {% if object_type == 'policy' %}
+                    Policy: {{ object.policy_number|truncatechars:15 }}
+                {% elif object_type == 'quote' %}
+                    Quote: {{ object.quote_number|truncatechars:15 }}
+                {% endif %}
+            </span>
+        </div>
+    </div>
+</div>
+
+<!-- Overlay for mobile -->
+<div id="sidebar-overlay" class="sidebar-overlay" onclick="toggleSidebar()"></div>

@@ -1,0 +1,256 @@
+<!-- Path: applications/templates/applications/location_form.html -->
+{% extends 'base_with_sidebar.html' %}
+{% load static %}
+
+{% block title %}{{ action }} Location - Policy {{ policy.policy_number }}{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item"><a href="{% url 'applications:policy_list' %}">Policies</a></li>
+<li class="breadcrumb-item"><a href="{% url 'applications:policy_detail' policy.policy_id %}">{{ policy.policy_number }}</a></li>
+<li class="breadcrumb-item"><a href="{% url 'applications:policy_locations' policy.policy_id %}">Locations</a></li>
+<li class="breadcrumb-item active">{{ action }} Location</li>
+{% endblock %}
+
+{% block page_header %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>{{ action }} Location</h2>
+    <a href="{% url 'applications:policy_locations' policy.policy_id %}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Back to Locations
+    </a>
+</div>
+{% endblock %}
+
+{% block page_content %}
+<!-- Include sidebar with correct context -->
+{% include 'includes/sidebar_navigation.html' with object=policy object_type='policy' active_tab='locations' %}
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Location Details</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    
+                    <!-- Location Identification -->
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label for="{{ form.location_number.id_for_label }}" class="form-label">
+                                {{ form.location_number.label }}
+                            </label>
+                            {{ form.location_number }}
+                            {% if form.location_number.help_text %}
+                            <small class="form-text text-muted">{{ form.location_number.help_text }}</small>
+                            {% endif %}
+                            {% if form.location_number.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.location_number.errors.0 }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-8">
+                            <label for="{{ form.location_name.id_for_label }}" class="form-label">
+                                {{ form.location_name.label }}
+                            </label>
+                            {{ form.location_name }}
+                            {% if form.location_name.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.location_name.errors.0 }}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Address Information -->
+                    <h6 class="mb-3">Address Information</h6>
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label for="{{ form.street_address.id_for_label }}" class="form-label required">
+                                {{ form.street_address.label }}
+                            </label>
+                            {{ form.street_address }}
+                            {% if form.street_address.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.street_address.errors.0 }}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label for="{{ form.address_line_2.id_for_label }}" class="form-label">
+                                {{ form.address_line_2.label }}
+                            </label>
+                            {{ form.address_line_2 }}
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-5">
+                            <label for="{{ form.city.id_for_label }}" class="form-label required">
+                                {{ form.city.label }}
+                            </label>
+                            {{ form.city }}
+                            {% if form.city.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.city.errors.0 }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-3">
+                            <label for="{{ form.state.id_for_label }}" class="form-label required">
+                                {{ form.state.label }}
+                            </label>
+                            {{ form.state }}
+                            {% if form.state.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.state.errors.0 }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4">
+                            <label for="{{ form.zip_code.id_for_label }}" class="form-label required">
+                                {{ form.zip_code.label }}
+                            </label>
+                            {{ form.zip_code }}
+                            {% if form.zip_code.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.zip_code.errors.0 }}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Coverage Limits -->
+                    <h6 class="mb-3">Coverage Limits</h6>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="{{ form.building_limit.id_for_label }}" class="form-label">
+                                {{ form.building_limit.label }}
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                {{ form.building_limit }}
+                            </div>
+                            {% if form.building_limit.help_text %}
+                            <small class="form-text text-muted">{{ form.building_limit.help_text }}</small>
+                            {% endif %}
+                            {% if form.building_limit.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.building_limit.errors.0 }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label for="{{ form.contents_limit.id_for_label }}" class="form-label">
+                                {{ form.contents_limit.label }}
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                {{ form.contents_limit }}
+                            </div>
+                            {% if form.contents_limit.help_text %}
+                            <small class="form-text text-muted">{{ form.contents_limit.help_text }}</small>
+                            {% endif %}
+                            {% if form.contents_limit.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.contents_limit.errors.0 }}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Effective Date -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="{{ form.effective_date.id_for_label }}" class="form-label">
+                                {{ form.effective_date.label }}
+                            </label>
+                            {{ form.effective_date }}
+                            {% if form.effective_date.help_text %}
+                            <small class="form-text text-muted">{{ form.effective_date.help_text }}</small>
+                            {% endif %}
+                            {% if form.effective_date.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.effective_date.errors.0 }}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Form Errors -->
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {{ form.non_field_errors }}
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Submit Buttons -->
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Save Location
+                        </button>
+                        <a href="{% url 'applications:policy_locations' policy.policy_id %}" class="btn btn-secondary">
+                            Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Policy Information</h5>
+            </div>
+            <div class="card-body">
+                <dl>
+                    <dt>Policy Number</dt>
+                    <dd>{{ policy.policy_number }}</dd>
+                    
+                    <dt>Insured</dt>
+                    <dd>{{ policy.quote.application.company.company_name }}</dd>
+                    
+                    <dt>Effective Date</dt>
+                    <dd>{{ policy.effective_date|date:"M d, Y" }}</dd>
+                    
+                    <dt>Expiration Date</dt>
+                    <dd>{{ policy.expiration_date|date:"M d, Y" }}</dd>
+                </dl>
+            </div>
+        </div>
+        
+        {% if location %}
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5 class="mb-0">Location Summary</h5>
+            </div>
+            <div class="card-body">
+                <dl>
+                    <dt>Total Coverage</dt>
+                    <dd class="h4">${{ location.total_limit|floatformat:0 }}</dd>
+                    
+                    <dt>Created</dt>
+                    <dd>{{ location.created_at|date:"M d, Y" }}</dd>
+                    
+                    <dt>Last Modified</dt>
+                    <dd>{{ location.updated_at|date:"M d, Y" }}</dd>
+                </dl>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.required::after {
+    content: " *";
+    color: red;
+}
+</style>
+
+{% endblock %}

@@ -827,3 +827,11 @@ from .document_models import (
     EndorsementDocument,
     DocumentDelivery
 )
+
+# Import location models
+from .location_models import (
+    PolicyLocation,
+    LocationSchedule,
+    LocationScheduleItem,
+    LocationEndorsement
+)

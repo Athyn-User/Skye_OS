@@ -1,8 +1,9 @@
 ﻿from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from django.db.models import Count, Q
-from .models import Application, Quote, Company, Broker, Product
+from .models import Application, Quote, Company, Broker, Product, Policy
 from .endorsement_generator import EndorsementGenerator
+from django.contrib.auth.decorators import login_required
 
 def dashboard(request):
     # Dashboard statistics
@@ -588,3 +589,287 @@ def test_endorsement_generation(request, policy_id):
     except Exception as e:
         messages.error(request, f'Error creating test endorsements: {str(e)}')
         return redirect('applications:policy_detail', policy_id=policy_id)
+
+@login_required
+def policy_loss_runs_placeholder(request, policy_id):
+    """Placeholder for Loss Runs feature"""
+    policy = get_object_or_404(Policy, policy_id=policy_id)
+    
+    context = {
+        'object': policy,
+        'object_type': 'policy',
+        'page_title': 'Loss Runs',
+        'active_tab': 'loss_runs',
+        'icon': 'fa-chart-line',
+        'description': 'View and manage loss run reports for this policy.',
+        'features': [
+            'Import loss run reports',
+            'Track claim history',
+            'Generate loss summaries',
+            'Analyze loss trends',
+            'Export reports for underwriting'
+        ]
+    }
+    return render(request, 'applications/placeholder_page.html', context)
+
+@login_required
+def policy_audit_placeholder(request, policy_id):
+    """Placeholder for Audit Information feature"""
+    policy = get_object_or_404(Policy, policy_id=policy_id)
+    
+    context = {
+        'object': policy,
+        'object_type': 'policy',
+        'page_title': 'Audit Information',
+        'active_tab': 'audit',
+        'icon': 'fa-clipboard-check',
+        'description': 'Manage premium audits and compliance reviews.',
+        'features': [
+            'Schedule premium audits',
+            'Track audit results',
+            'Calculate audit adjustments',
+            'Manage audit worksheets',
+            'Generate audit reports'
+        ]
+    }
+    return render(request, 'applications/placeholder_page.html', context)
+
+@login_required
+def policy_premium_finance_placeholder(request, policy_id):
+    """Placeholder for Premium Finance feature"""
+    policy = get_object_or_404(Policy, policy_id=policy_id)
+    
+    context = {
+        'object': policy,
+        'object_type': 'policy',
+        'page_title': 'Premium Finance',
+        'active_tab': 'premium_finance',
+        'icon': 'fa-dollar-sign',
+        'description': 'Manage premium financing options and agreements.',
+        'features': [
+            'Set up financing agreements',
+            'Track payment schedules',
+            'Calculate interest and fees',
+            'Manage finance company relationships',
+            'Generate finance documents'
+        ]
+    }
+    return render(request, 'applications/placeholder_page.html', context)
+
+@login_required
+def policy_communications_placeholder(request, policy_id):
+    """Placeholder for Communications feature"""
+    policy = get_object_or_404(Policy, policy_id=policy_id)
+    
+    context = {
+        'object': policy,
+        'object_type': 'policy',
+        'page_title': 'Communications',
+        'active_tab': 'communications',
+        'icon': 'fa-comments',
+        'description': 'Track all communications related to this policy.',
+        'features': [
+            'Log emails and phone calls',
+            'Track correspondence history',
+            'Set follow-up reminders',
+            'Manage communication templates',
+            'Generate communication reports'
+        ]
+    }
+    return render(request, 'applications/placeholder_page.html', context)
+
+# ==========================================
+# ADDITIONAL INSUREDS PLACEHOLDER VIEWS
+# ==========================================
+
+@login_required
+def policy_additional_insureds(request, policy_id):
+    """View and manage additional insureds for a policy"""
+    policy = get_object_or_404(Policy, policy_id=policy_id)
+    
+    # For now, return a placeholder
+    # Replace this with actual implementation when ready
+    context = {
+        'object': policy,
+        'object_type': 'policy',
+        'page_title': 'Additional Insureds',
+        'active_tab': 'additional_insureds',
+        'icon': 'fa-user-plus',
+        'description': 'Manage additional insureds for this policy.',
+        'features': [
+            'Add additional insured entities',
+            'Manage coverage specifications',
+            'Generate additional insured endorsements',
+            'Track additional insured certificates',
+            'Manage waiver of subrogation'
+        ]
+    }
+    return render(request, 'applications/placeholder_page.html', context)
+
+@login_required
+def quote_additional_insureds(request, quote_id):
+    """View and manage additional insureds for a quote"""
+    quote = get_object_or_404(Quote, quote_id=quote_id)
+    
+    context = {
+        'object': quote,
+        'object_type': 'quote',
+        'page_title': 'Additional Insureds',
+        'active_tab': 'additional_insureds',
+        'icon': 'fa-user-plus',
+        'description': 'Manage additional insureds for this quote.',
+        'features': [
+            'Add additional insured entities',
+            'Specify coverage requirements',
+            'Calculate premium adjustments',
+            'Preview endorsement language'
+        ]
+    }
+    return render(request, 'applications/placeholder_page.html', context)
+
+# ==========================================
+# POLICY-SPECIFIC VIEWS
+# ==========================================
+
+@login_required
+def policy_certificates(request, policy_id):
+    """View certificates specific to a policy"""
+    policy = get_object_or_404(Policy, policy_id=policy_id)
+    
+    # This would show certificates filtered for this specific policy
+    # For now, using placeholder
+    context = {
+        'object': policy,
+        'object_type': 'policy',
+        'page_title': 'Certificates',
+        'active_tab': 'certificates',
+        'icon': 'fa-certificate',
+        'description': 'Manage certificates of insurance for this policy.',
+        'features': [
+            'Generate new certificates',
+            'Track certificate holders',
+            'Manage certificate requirements',
+            'Email certificates to holders',
+            'Track certificate expiration'
+        ]
+    }
+    return render(request, 'applications/placeholder_page.html', context)
+
+@login_required
+def policy_claims(request, policy_id):
+    """View claims for a specific policy"""
+    policy = get_object_or_404(Policy, policy_id=policy_id)
+    
+    context = {
+        'object': policy,
+        'object_type': 'policy',
+        'page_title': 'Claims',
+        'active_tab': 'claims',
+        'icon': 'fa-exclamation-triangle',
+        'description': 'View and manage claims for this policy.',
+        'features': [
+            'File new claims',
+            'Track claim status',
+            'Upload claim documents',
+            'Communicate with adjusters',
+            'View claim payments'
+        ]
+    }
+    return render(request, 'applications/placeholder_page.html', context)
+
+@login_required
+def policy_history(request, policy_id):
+    """View history/timeline for a policy"""
+    policy = get_object_or_404(Policy, policy_id=policy_id)
+    
+    context = {
+        'object': policy,
+        'object_type': 'policy',
+        'page_title': 'History & Timeline',
+        'active_tab': 'history',
+        'icon': 'fa-history',
+        'description': 'View the complete history and activity timeline for this policy.',
+        'features': [
+            'Track all policy changes',
+            'View endorsement history',
+            'Monitor user activity',
+            'Review document generation logs',
+            'Export audit trails'
+        ]
+    }
+    return render(request, 'applications/placeholder_page.html', context)
+
+# ==========================================
+# QUOTE-SPECIFIC VIEWS
+# ==========================================
+
+@login_required
+def quote_certificates(request, quote_id):
+    """View certificates for a quote"""
+    quote = get_object_or_404(Quote, quote_id=quote_id)
+    
+    context = {
+        'object': quote,
+        'object_type': 'quote',
+        'page_title': 'Certificates',
+        'active_tab': 'certificates',
+        'icon': 'fa-certificate',
+        'description': 'Manage certificate requirements for this quote.',
+        'features': [
+            'Preview certificate requirements',
+            'Estimate certificate costs',
+            'Track holder requirements',
+            'Generate sample certificates'
+        ]
+    }
+    return render(request, 'applications/placeholder_page.html', context)
+
+@login_required
+def quote_history(request, quote_id):
+    """View history for a quote"""
+    quote = get_object_or_404(Quote, quote_id=quote_id)
+    
+    context = {
+        'object': quote,
+        'object_type': 'quote',
+        'page_title': 'History & Timeline',
+        'active_tab': 'history',
+        'icon': 'fa-history',
+        'description': 'View the activity history for this quote.',
+        'features': [
+            'Track quote revisions',
+            'View status changes',
+            'Monitor communications',
+            'Review calculation history'
+        ]
+    }
+    return render(request, 'applications/placeholder_page.html', context)
+
+# ==========================================
+# STUB FUNCTIONS FOR OTHER FEATURES
+# (Replace these with actual implementations)
+# ==========================================
+
+@login_required
+def add_additional_insured(request, policy_id):
+    """Add an additional insured to a policy"""
+    # Implement actual functionality
+    pass
+
+@login_required
+def edit_additional_insured(request, policy_id, insured_id):
+    """Edit an additional insured"""
+    # Implement actual functionality
+    pass
+
+@login_required
+def delete_additional_insured(request, policy_id, insured_id):
+    """Delete an additional insured"""
+    # Implement actual functionality
+    pass
+
+@login_required
+def add_quote_additional_insured(request, quote_id):
+    """Add an additional insured to a quote"""
+    # Implement actual functionality
+    pass

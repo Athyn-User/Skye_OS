@@ -1,0 +1,394 @@
+/* ===========================
+   SIDEBAR LAYOUT & STRUCTURE
+   =========================== */
+
+/* Root variables for easy customization */
+:root {
+    --sidebar-width: 260px;
+    --sidebar-collapsed-width: 60px;
+    --sidebar-bg: #ffffff;
+    --sidebar-border: #e0e0e0;
+    --sidebar-text: #5f6368;
+    --sidebar-hover-bg: #f8f9fa;
+    --sidebar-active-bg: #e8f0fe;
+    --sidebar-active-text: #1a73e8;
+    --sidebar-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --content-margin: 270px;
+}
+
+/* Main container adjustment when sidebar is present */
+.sidebar-container {
+    display: flex;
+    min-height: calc(100vh - 56px); /* Adjust based on navbar height */
+}
+
+/* Sidebar wrapper */
+.sidebar {
+    position: fixed;
+    top: 56px; /* Below navbar */
+    left: 0;
+    width: var(--sidebar-width);
+    height: calc(100vh - 56px);
+    background: var(--sidebar-bg);
+    border-right: 1px solid var(--sidebar-border);
+    transition: var(--sidebar-transition);
+    z-index: 1040;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+    box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+}
+
+/* Collapsed state */
+.sidebar.collapsed {
+    width: var(--sidebar-collapsed-width);
+}
+
+/* Main content area */
+.main-content {
+    margin-left: var(--sidebar-width);
+    flex: 1;
+    padding: 20px;
+    transition: var(--sidebar-transition);
+    width: calc(100% - var(--sidebar-width));
+}
+
+.sidebar.collapsed + .main-content,
+.main-content.sidebar-collapsed {
+    margin-left: var(--sidebar-collapsed-width);
+    width: calc(100% - var(--sidebar-collapsed-width));
+}
+
+/* ===========================
+   SIDEBAR COMPONENTS
+   =========================== */
+
+/* Toggle button */
+.sidebar-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 48px;
+    cursor: pointer;
+    border-bottom: 1px solid var(--sidebar-border);
+    color: var(--sidebar-text);
+    transition: var(--sidebar-transition);
+}
+
+.sidebar-toggle:hover {
+    background: var(--sidebar-hover-bg);
+    color: var(--sidebar-active-text);
+}
+
+/* Sidebar header */
+.sidebar-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--sidebar-border);
+    display: flex;
+    align-items: center;
+}
+
+.sidebar-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--sidebar-text);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.sidebar.collapsed .sidebar-title {
+    justify-content: center;
+}
+
+/* Navigation container */
+.sidebar-nav {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px 0;
+}
+
+/* Navigation items */
+.sidebar-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 20px;
+    color: var(--sidebar-text);
+    text-decoration: none;
+    transition: var(--sidebar-transition);
+    position: relative;
+    font-size: 14px;
+    gap: 16px;
+}
+
+.sidebar-item:hover {
+    background: var(--sidebar-hover-bg);
+    color: var(--sidebar-text);
+    text-decoration: none;
+}
+
+.sidebar-item.active {
+    background: var(--sidebar-active-bg);
+    color: var(--sidebar-active-text);
+    font-weight: 500;
+}
+
+.sidebar-item.active::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: var(--sidebar-active-text);
+}
+
+/* Disabled items */
+.sidebar-item.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* Icons */
+.sidebar-item i {
+    width: 20px;
+    text-align: center;
+    font-size: 16px;
+    flex-shrink: 0;
+}
+
+/* Text that hides when collapsed */
+.sidebar-text {
+    white-space: nowrap;
+    overflow: hidden;
+    transition: opacity 0.3s;
+}
+
+.sidebar.collapsed .sidebar-text {
+    opacity: 0;
+    width: 0;
+}
+
+/* Badges */
+.sidebar-badge {
+    margin-left: auto;
+    background: #e0e0e0;
+    color: #5f6368;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 500;
+    transition: var(--sidebar-transition);
+}
+
+.sidebar-badge.success {
+    background: #e6f4ea;
+    color: #1e8e3e;
+}
+
+.sidebar-badge.warning {
+    background: #fef7e0;
+    color: #f9ab00;
+}
+
+.sidebar-badge.danger {
+    background: #fce8e6;
+    color: #d33b27;
+}
+
+.sidebar.collapsed .sidebar-badge {
+    display: none;
+}
+
+/* Divider */
+.sidebar-divider {
+    height: 1px;
+    background: var(--sidebar-border);
+    margin: 8px 0;
+}
+
+/* Footer */
+.sidebar-footer {
+    padding: 12px;
+    border-top: 1px solid var(--sidebar-border);
+    background: #f8f9fa;
+}
+
+.sidebar-info {
+    font-size: 12px;
+    color: #80868b;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.sidebar.collapsed .sidebar-info .sidebar-text {
+    display: none;
+}
+
+/* ===========================
+   MOBILE & RESPONSIVE
+   =========================== */
+
+/* Overlay for mobile */
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1035;
+}
+
+.sidebar-overlay.active {
+    display: block;
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+    .sidebar {
+        transform: translateX(-100%);
+        box-shadow: 5px 0 15px rgba(0,0,0,0.1);
+    }
+    
+    .sidebar.active {
+        transform: translateX(0);
+    }
+    
+    .main-content {
+        margin-left: 0 !important;
+        width: 100% !important;
+    }
+    
+    .sidebar-toggle {
+        position: fixed;
+        top: 64px;
+        left: 10px;
+        z-index: 1050;
+        background: white;
+        border: 1px solid var(--sidebar-border);
+        border-radius: 4px;
+        width: 40px;
+        height: 40px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .sidebar.active .sidebar-toggle {
+        left: var(--sidebar-width);
+        transform: translateX(-50px);
+    }
+}
+
+/* Tablets */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .sidebar {
+        width: var(--sidebar-collapsed-width);
+    }
+    
+    .sidebar:hover {
+        width: var(--sidebar-width);
+    }
+    
+    .sidebar:hover .sidebar-text {
+        opacity: 1;
+        width: auto;
+    }
+    
+    .sidebar:hover .sidebar-badge {
+        display: inline-block;
+    }
+    
+    .main-content {
+        margin-left: var(--sidebar-collapsed-width);
+        width: calc(100% - var(--sidebar-collapsed-width));
+    }
+}
+
+/* ===========================
+   TOOLTIPS FOR COLLAPSED STATE
+   =========================== */
+
+.sidebar.collapsed .sidebar-item {
+    position: relative;
+}
+
+.sidebar.collapsed .sidebar-item:hover::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    left: 100%;
+    top: 50%;
+    transform: translateY(-50%);
+    background: #333;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    white-space: nowrap;
+    font-size: 12px;
+    margin-left: 10px;
+    z-index: 1060;
+    pointer-events: none;
+}
+
+/* ===========================
+   ANIMATIONS & TRANSITIONS
+   =========================== */
+
+@keyframes slideIn {
+    from {
+        transform: translateX(-100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.sidebar-item {
+    animation: slideIn 0.3s ease-out;
+    animation-fill-mode: both;
+}
+
+.sidebar-item:nth-child(1) { animation-delay: 0.05s; }
+.sidebar-item:nth-child(2) { animation-delay: 0.1s; }
+.sidebar-item:nth-child(3) { animation-delay: 0.15s; }
+.sidebar-item:nth-child(4) { animation-delay: 0.2s; }
+.sidebar-item:nth-child(5) { animation-delay: 0.25s; }
+
+/* ===========================
+   CUSTOM SCROLLBAR
+   =========================== */
+
+.sidebar-nav::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sidebar-nav::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.sidebar-nav::-webkit-scrollbar-thumb {
+    background: #dadce0;
+    border-radius: 3px;
+}
+
+.sidebar-nav::-webkit-scrollbar-thumb:hover {
+    background: #bdc1c6;
+}
+
+/* ===========================
+   UTILITY CLASSES
+   =========================== */
+
+.no-sidebar .sidebar {
+    display: none;
+}
+
+.no-sidebar .main-content {
+    margin-left: 0;
+    width: 100%;
+}

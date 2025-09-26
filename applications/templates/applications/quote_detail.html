@@ -1,8 +1,14 @@
-{% extends 'base.html' %}
+<!-- Path: applications/templates/applications/quote_detail.html -->
+{% extends 'base_with_sidebar.html' %}
 
 {% block title %}Quote {{ quote.quote_number }} - Skye OS{% endblock %}
 
-{% block content %}
+{% block breadcrumb_items %}
+<li class="breadcrumb-item"><a href="{% url 'applications:quote_list' %}">Quotes</a></li>
+<li class="breadcrumb-item active">{{ quote.quote_number }}</li>
+{% endblock %}
+
+{% block page_header %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1>Quote {{ quote.quote_number }}</h1>
     <div>
@@ -15,6 +21,11 @@
         <a href="{% url 'applications:application_detail' quote.application.pk %}" class="btn btn-outline-primary ms-2">View Application</a>
     </div>
 </div>
+{% endblock %}
+
+{% block page_content %}
+<!-- Pass context to sidebar -->
+{% include 'includes/sidebar_navigation.html' with object=quote object_type='quote' active_tab='overview' sidebar_title='Quote Navigation' icon_type='file-invoice-dollar' location_count=quote.locations.count additional_insured_count=quote.additional_insureds.count certificate_count=quote.certificate_set.count %}
 
 <div class="row">
     <div class="col-md-8">
@@ -83,113 +94,63 @@
         
         <div class="card mt-3">
             <div class="card-header">
-                <h5>Certificate Management</h5>
-            </div>
-            <div class="card-body">
-                {% if quote.certificate_set.exists %}
-                    <h6>Existing Certificates:</h6>
-                    {% for certificate in quote.certificate_set.all %}
-                        <div class="d-flex justify-content-between align-items-center border-bottom py-2">
-                            <div>
-                                <strong>{{ certificate.certificate_number }}</strong>
-                                <span class="badge bg-{% if certificate.certificate_status == 'issued' %}success{% elif certificate.certificate_status == 'draft' %}warning{% else %}secondary{% endif %}">
-                                    {{ certificate.get_certificate_status_display }}
-                                </span>
-                                <small class="text-muted d-block">
-                                    Effective: {{ certificate.effective_date|date:"M d, Y" }} - 
-                                    Expires: {{ certificate.expiration_date|date:"M d, Y" }}
-                                </small>
-                            </div>
-                            <div>
-                                <a href="{% url 'applications:certificate_detail' certificate.certificate_id %}" class="btn btn-sm btn-outline-primary">View</a>
-                            </div>
-                        </div>
-                    {% endfor %}
-                {% else %}
-                    <p class="text-muted">No certificates generated yet.</p>
-                {% endif %}
-                
-                <div class="mt-3">
-                    <a href="{% url 'applications:certificate_from_quote' quote.pk %}" class="btn btn-success btn-sm">
-                        <i class="fas fa-certificate"></i> Generate Certificate
-                    </a>
-                </div>
-            </div>
-        </div>
-
-        <div class="card mt-3">
-            <div class="card-header">
-                <h5>Policy Management</h5>
-            </div>
-            <div class="card-body">
-                {% if quote.quote_status == 'accepted' %}
-                    {% if quote.policy_set.exists %}
-                        <h6>Existing Policy:</h6>
-                        {% for policy in quote.policy_set.all %}
-                            <div class="d-flex justify-content-between align-items-center border-bottom py-2">
-                                <div>
-                                    <strong>{{ policy.policy_number }}</strong>
-                                    <span class="badge bg-success">{{ policy.get_policy_status_display }}</span>
-                                    <small class="text-muted d-block">
-                                        Effective: {{ policy.effective_date|date:"M d, Y" }} - 
-                                        Expires: {{ policy.expiration_date|date:"M d, Y" }}
-                                    </small>
-                                </div>
-                                <div>
-                                    <a href="{% url 'applications:policy_detail' policy.policy_id %}" class="btn btn-sm btn-outline-primary">View Policy</a>
-                                </div>
-                            </div>
-                        {% endfor %}
-                    {% else %}
-                        <p class="text-muted">No policy created yet.</p>
-                        <div class="mt-3">
-                            <a href="{% url 'applications:policy_from_quote' quote.pk %}" class="btn btn-success btn-sm">
-                                <i class="fas fa-file-contract"></i> Convert to Policy
-                            </a>
-                        </div>
-                    {% endif %}
-                {% else %}
-                    <p class="text-muted">Quote must be accepted before converting to policy.</p>
-                {% endif %}
-            </div>
-        </div>
-        
-        <div class="card mt-3">
-            <div class="card-header">
-                <h5>Document Actions</h5>
+                <h5>Quick Actions</h5>
             </div>
             <div class="card-body">
                 <div class="d-grid gap-2">
-                    <a href="{% url 'applications:quote_pdf_view' quote.pk %}" class="btn btn-outline-primary btn-sm" target="_blank">
-                        Preview PDF Quote
-                    </a>
-                    <a href="{% url 'applications:quote_pdf' quote.pk %}" class="btn btn-outline-success btn-sm">
-                        Download PDF Quote
-                    </a>
-                    <a href="{% url 'applications:quote_email' quote.pk %}" class="btn btn-outline-info btn-sm">
-                        Email to Client/Broker
-                    </a>
                     {% if quote.quote_status == 'draft' %}
                         <button class="btn btn-success btn-sm" onclick="updateQuoteStatus('presented')">
-                            Present Quote
+                            <i class="fas fa-paper-plane"></i> Present Quote
                         </button>
-                    {% endif %}
-                    {% if quote.quote_status == 'presented' %}
+                    {% elif quote.quote_status == 'presented' %}
                         <button class="btn btn-primary btn-sm" onclick="updateQuoteStatus('accepted')">
-                            Accept Quote
+                            <i class="fas fa-check"></i> Accept Quote
                         </button>
                         <button class="btn btn-danger btn-sm" onclick="updateQuoteStatus('declined')">
-                            Mark as Declined
+                            <i class="fas fa-times"></i> Mark as Declined
                         </button>
+                    {% elif quote.quote_status == 'accepted' %}
+                        {% if not quote.policy_set.exists %}
+                        <a href="{% url 'applications:policy_from_quote' quote.pk %}" class="btn btn-success">
+                            <i class="fas fa-file-contract"></i> Convert to Policy
+                        </a>
+                        {% else %}
+                        <a href="{% url 'applications:policy_detail' quote.policy_set.first.policy_id %}" class="btn btn-info">
+                            <i class="fas fa-shield-alt"></i> View Policy
+                        </a>
+                        {% endif %}
                     {% endif %}
+                    
+                    <hr>
+                    
+                    <a href="{% url 'applications:certificate_from_quote' quote.pk %}" class="btn btn-outline-success btn-sm">
+                        <i class="fas fa-certificate"></i> Generate Certificate
+                    </a>
+                    
+                    <a href="{% url 'applications:quote_email' quote.pk %}" class="btn btn-outline-info btn-sm">
+                        <i class="fas fa-envelope"></i> Email to Client/Broker
+                    </a>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<div class="mt-4">
-    <a href="{% url 'applications:quote_list' %}" class="btn btn-secondary">Back to Quotes</a>
+<!-- Activity Timeline -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5>Quote History</h5>
+            </div>
+            <div class="card-body">
+                <div class="timeline">
+                    <!-- Timeline items would go here -->
+                    <p class="text-muted">No history available</p>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>

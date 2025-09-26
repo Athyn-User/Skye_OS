@@ -1,0 +1,145 @@
+<!-- Path: applications/templates/applications/bulk_location_form.html -->
+{% extends 'base_with_sidebar.html' %}
+{% load static %}
+
+{% block title %}Bulk Add Locations - Policy {{ policy.policy_number }}{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item"><a href="{% url 'applications:policy_list' %}">Policies</a></li>
+<li class="breadcrumb-item"><a href="{% url 'applications:policy_detail' policy.policy_id %}">{{ policy.policy_number }}</a></li>
+<li class="breadcrumb-item"><a href="{% url 'applications:policy_locations' policy.policy_id %}">Locations</a></li>
+<li class="breadcrumb-item active">Bulk Add</li>
+{% endblock %}
+
+{% block page_header %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Bulk Add Locations</h2>
+    <a href="{% url 'applications:policy_locations' policy.policy_id %}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Back to Locations
+    </a>
+</div>
+{% endblock %}
+
+{% block page_content %}
+<!-- Include sidebar with correct context -->
+{% include 'includes/sidebar_navigation.html' with object=policy object_type='policy' active_tab='locations' %}
+
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">Add Multiple Locations</h5>
+    </div>
+    <div class="card-body">
+        <form method="post" novalidate>
+            {% csrf_token %}
+            {{ formset.management_form }}
+            
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> Enter location details below. Leave Location Number blank for auto-generation. 
+                Empty rows will be ignored.
+            </div>
+            
+            <div class="table-responsive">
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th width="8%">Location #</th>
+                            <th width="22%">Street Address</th>
+                            <th width="15%">City</th>
+                            <th width="8%">State</th>
+                            <th width="10%">ZIP</th>
+                            <th width="12%">Building Limit</th>
+                            <th width="12%">Contents Limit</th>
+                            <th width="8%">Delete</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for form in formset %}
+                        <tr class="formset-row">
+                            {% for hidden in form.hidden_fields %}
+                                {{ hidden }}
+                            {% endfor %}
+                            <td>{{ form.location_number }}</td>
+                            <td>{{ form.street_address }}</td>
+                            <td>{{ form.city }}</td>
+                            <td>{{ form.state }}</td>
+                            <td>{{ form.zip_code }}</td>
+                            <td>
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text">$</span>
+                                    {{ form.building_limit }}
+                                </div>
+                            </td>
+                            <td>
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text">$</span>
+                                    {{ form.contents_limit }}
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                {% if form.instance.pk %}{{ form.DELETE }}{% endif %}
+                            </td>
+                        </tr>
+                        {% if form.errors %}
+                        <tr>
+                            <td colspan="8">
+                                <div class="alert alert-danger alert-sm">
+                                    {{ form.errors }}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="mt-3">
+                <button type="button" class="btn btn-sm btn-outline-primary" onclick="addRow()">
+                    <i class="fas fa-plus"></i> Add More Rows
+                </button>
+            </div>
+            
+            {% if formset.non_form_errors %}
+            <div class="alert alert-danger mt-3">
+                {{ formset.non_form_errors }}
+            </div>
+            {% endif %}
+            
+            <div class="mt-4">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Save All Locations
+                </button>
+                <a href="{% url 'applications:policy_locations' policy.policy_id %}" class="btn btn-secondary">
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+// Dynamic formset management
+function addRow() {
+    const totalForms = document.getElementById('id_form-TOTAL_FORMS');
+    const currentFormCount = parseInt(totalForms.value);
+    const formRow = document.querySelector('.formset-row');
+    const newRow = formRow.cloneNode(true);
+    
+    // Update form field names and IDs
+    const regex = new RegExp('form-0', 'g');
+    newRow.innerHTML = newRow.innerHTML.replace(regex, 'form-' + currentFormCount);
+    
+    // Clear values
+    newRow.querySelectorAll('input[type="text"], input[type="number"], select').forEach(input => {
+        input.value = '';
+    });
+    
+    // Add to table
+    document.querySelector('tbody').appendChild(newRow);
+    
+    // Update form count
+    totalForms.value = currentFormCount + 1;
+}
+</script>
+
+{% endblock %}
